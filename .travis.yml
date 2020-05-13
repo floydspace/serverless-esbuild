@@ -4,8 +4,8 @@ node_js:
   - '10'
   - '8'
 
-after_success:
-  - npx semantic-release
+# after_success:
+#   - npx semantic-release
 
 branches:
   except:
