@@ -1,0 +1,59 @@
+{
+  "name": "serverless-esbuild",
+  "version": "0.0.0-semantic-release",
+  "license": "MIT",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "prepublish": "npm run build",
+    "precommit": "npm run test",
+    "build": "npm run clean && tsc",
+    "clean": "rm -rf ./dist",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "lint": "eslint . --ext .ts --ignore-path .gitignore"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/floydspace/serverless-esbuild.git"
+  },
+  "keywords": [
+    "serverless",
+    "serverless plugin",
+    "esbuild",
+    "aws lambda"
+  ],
+  "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
+    "@types/jest": "24.0.12",
+    "@types/node": "^12.12.38",
+    "@types/serverless": "^1.67.2",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "eslint": "^6.8.0",
+    "jest": "24.5.0",
+    "mock-fs": "^4.12.0",
+    "ts-jest": "24.0.2",
+    "typescript": "^3.9.2"
+  },
+  "dependencies": {
+    "esbuild": "^0.2.11",
+    "fs-extra": "^9.0.0",
+    "globby": "^11.0.0"
+  },
+  "peerDependencies": {
+    "esbuild": ">=0.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "main": "handler.js",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.91",
+    "@types/node": "^11.13.0",
+    "serverless-esbuild": "1.0.0"
+  }
+}
