@@ -6,6 +6,8 @@ import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
 
+import { extractFileNames } from './helper';
+
 const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';
 
@@ -69,6 +71,14 @@ export class EsbuildPlugin implements Plugin {
     return this.serverless.service.functions;
   }
 
+  get rootFileNames() {
+    return extractFileNames(
+      this.originalServicePath,
+      this.serverless.service.provider.name,
+      this.functions
+    );
+  }
+
   prepare() {
     // exclude serverless-esbuild
     for (const fnName in this.functions) {
@@ -101,15 +111,19 @@ export class EsbuildPlugin implements Plugin {
       bundle: true,
     };
 
-    const config: BuildOptions = {
-      ...defaultOptions,
-      ...options,
-      entryPoints: [],
-      outdir: BUILD_FOLDER,
-      platform: 'node',
-    };
+    await Promise.all(this.rootFileNames.map(entry => {
+      const config: BuildOptions = {
+        ...defaultOptions,
+        ...options,
+        entryPoints: [entry],
+        outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
+        platform: 'node',
+        stdio: 'inherit',
+      };
 
-    await build(config);
+      return build(config);
+    }));
+
     this.serverless.cli.log('Bundling completed.');
   }
 

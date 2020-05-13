@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "rootDir": ".",
     "target": "es6",
     "sourceMap": true,
     "skipLibCheck": true,
