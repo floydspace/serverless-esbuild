@@ -1,6 +1,6 @@
 {
   "name": "serverless-esbuild",
-  "version": "0.0.0-semantic-release",
+  "version": "0.0.0-development",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -15,11 +15,12 @@
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
     "test": "jest",
-    "lint": "eslint . --ext .ts --ignore-path .gitignore"
+    "lint": "eslint . --ext .ts --ignore-path .gitignore",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/floydspace/serverless-esbuild.git"
+    "url": "https://github.com/floydspace/serverless-esbuild.git"
   },
   "keywords": [
     "serverless",
@@ -38,22 +39,12 @@
     "jest": "24.5.0",
     "mock-fs": "^4.12.0",
     "ts-jest": "24.0.2",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.2",
+    "semantic-release": "^17.0.7"
   },
   "dependencies": {
     "esbuild": "^0.2.11",
     "fs-extra": "^9.0.0",
     "globby": "^11.0.0"
-  },
-  "peerDependencies": {
-    "esbuild": ">=0.2"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.ts$",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ]
   }
 }
