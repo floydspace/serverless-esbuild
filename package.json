@@ -14,7 +14,7 @@
     "build": "npm run clean && tsc",
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "semantic-release": "semantic-release"
   },
