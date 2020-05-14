@@ -1,15 +1,20 @@
 language: node_js
-node_js:
-  - '12'
-  - '10'
-  - '8'
 
-# after_success:
-#   - npx semantic-release
+node_js:
+  - 12
+  - 10
+  - 8
+
+jobs:
+  include:
+    - stage: release
+      node_js: lts/*
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script:
+          - npm run semantic-release
 
 branches:
-  except:
-    - /^v\d+\.\d+\.\d+$/
-
-notifications:
-  email: false
+  only:
+    - master
