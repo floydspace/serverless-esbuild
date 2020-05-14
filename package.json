@@ -1,6 +1,6 @@
 {
   "name": "serverless-esbuild",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -9,7 +9,7 @@
     "README.md"
   ],
   "scripts": {
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build",
     "precommit": "npm run test",
     "build": "npm run clean && tsc",
     "clean": "rm -rf ./dist",
@@ -30,17 +30,17 @@
   ],
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
-    "@types/jest": "24.0.12",
+    "@types/jest": "^25.2.2",
     "@types/node": "^12.12.38",
     "@types/serverless": "^1.67.2",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "eslint": "^6.8.0",
-    "jest": "24.5.0",
+    "jest": "^25.5.4",
     "mock-fs": "^4.12.0",
-    "ts-jest": "24.0.2",
-    "typescript": "^3.9.2",
-    "semantic-release": "^17.0.7"
+    "semantic-release": "^17.0.7",
+    "ts-jest": "^25.5.1",
+    "typescript": "^3.9.2"
   },
   "dependencies": {
     "esbuild": "^0.2.11",
