@@ -25,8 +25,14 @@
   "keywords": [
     "serverless",
     "serverless plugin",
+    "plugin",
     "esbuild",
-    "aws lambda"
+    "aws lambda",
+    "aws",
+    "lambda",
+    "bundler",
+    "minifier",
+    "typescript"
   ],
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
