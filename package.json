@@ -2,6 +2,7 @@
   "name": "serverless-esbuild",
   "version": "0.0.0-development",
   "license": "MIT",
+  "author": "Victor Korzunin",
   "main": "dist/index.js",
   "files": [
     "dist",
@@ -22,6 +23,10 @@
     "type": "git",
     "url": "https://github.com/floydspace/serverless-esbuild.git"
   },
+  "bugs": {
+    "url": "https://github.com/floydspace/serverless-esbuild/issues"
+  },
+  "homepage": "https://floydspace.github.io",
   "keywords": [
     "serverless",
     "serverless plugin",
