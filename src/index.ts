@@ -124,7 +124,7 @@ export class EsbuildPlugin implements Plugin {
       return build(config);
     }));
 
-    this.serverless.cli.log('Bundling completed.');
+    this.serverless.cli.log('Compiling completed.');
   }
 
   /** Link or copy extras such as node_modules or package.include definitions */
