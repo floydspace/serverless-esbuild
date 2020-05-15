@@ -52,7 +52,7 @@
     "typescript": "^3.9.2"
   },
   "dependencies": {
-    "esbuild": "^0.2.11",
+    "esbuild": "^0.3.2",
     "fs-extra": "^9.0.0",
     "globby": "^11.0.0"
   }
