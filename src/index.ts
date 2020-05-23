@@ -2,6 +2,7 @@ import { build, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
+import { compose, concat, mergeWith, uniq, pipe, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
@@ -107,19 +108,20 @@ export class EsbuildPlugin implements Plugin {
       this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
     }
 
-    const defaultOptions = {
+    const concatUniq = compose(uniq, concat as (l1: BuildOptions[], l2: BuildOptions[]) => BuildOptions[]);
+    const withDefaultOptions = mergeWith(concatUniq, {
       bundle: true,
-    };
+      external: ['aws-sdk'],
+    });
 
     await Promise.all(this.rootFileNames.map(entry => {
-      const config: BuildOptions = {
-        ...defaultOptions,
+      const config = withDefaultOptions<BuildOptions>({
         ...options,
         entryPoints: [entry],
         outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
         platform: 'node',
         stdio: 'inherit',
-      };
+      });
 
       return build(config);
     }));
