@@ -2,7 +2,7 @@ import { build, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
-import { compose, concat, mergeWith, uniq, pipe, mergeRight } from 'ramda';
+import { compose, concat, mergeWith, uniq } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
