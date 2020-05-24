@@ -111,6 +111,7 @@ export class EsbuildPlugin implements Plugin {
     const concatUniq = compose(uniq, concat as (l1: BuildOptions[], l2: BuildOptions[]) => BuildOptions[]);
     const withDefaultOptions = mergeWith(concatUniq, {
       bundle: true,
+      target: 'es2017',
       external: ['aws-sdk'],
     });
 
