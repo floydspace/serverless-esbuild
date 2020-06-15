@@ -17,16 +17,27 @@ interface ServiceExtended extends Service {
   functions?: Record<string, Serverless.FunctionDefinition>;
 }
 
+const DEFAULT_BUILD_OPTIONS: Partial<BuildOptions> = {
+  bundle: true,
+  target: 'es2017',
+  external: ['aws-sdk'],
+};
+
 export class EsbuildPlugin implements Plugin {
   private originalServicePath: string;
 
   serverless: Serverless & { service: ServiceExtended };
   options: Serverless.Options;
   hooks: Plugin.Hooks;
+  buildOptions: BuildOptions;
 
   constructor(serverless: Serverless, options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
+
+    const concatUniq = compose(uniq, concat as (l1: BuildOptions[], l2: BuildOptions[]) => BuildOptions[]);
+    const withDefaultOptions = mergeWith(concatUniq, DEFAULT_BUILD_OPTIONS);
+    this.buildOptions = withDefaultOptions(this.serverless.service.custom?.esbuild)
 
     this.hooks = {
       'before:run:run': async () => {
@@ -98,9 +109,6 @@ export class EsbuildPlugin implements Plugin {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
-    const { custom } = this.serverless.service;
-    const options = (custom && custom.esbuild) || {};
-
     if (!this.originalServicePath) {
       // Save original service path and functions
       this.originalServicePath = this.serverless.config.servicePath;
@@ -108,21 +116,14 @@ export class EsbuildPlugin implements Plugin {
       this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
     }
 
-    const concatUniq = compose(uniq, concat as (l1: BuildOptions[], l2: BuildOptions[]) => BuildOptions[]);
-    const withDefaultOptions = mergeWith(concatUniq, {
-      bundle: true,
-      target: 'es2017',
-      external: ['aws-sdk'],
-    });
-
     await Promise.all(this.rootFileNames.map(entry => {
-      const config = withDefaultOptions<BuildOptions>({
-        ...options,
+      const config: BuildOptions = {
+        ...this.buildOptions,
         entryPoints: [entry],
         outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
         platform: 'node',
         stdio: 'inherit',
-      });
+      };
 
       return build(config);
     }));
