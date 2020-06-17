@@ -8,6 +8,7 @@ import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
 
 import { extractFileNames } from './helper';
+import { packExternalModules } from './packExternalModules';
 
 const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';
@@ -17,10 +18,15 @@ interface ServiceExtended extends Service {
   functions?: Record<string, Serverless.FunctionDefinition>;
 }
 
-const DEFAULT_BUILD_OPTIONS: Partial<BuildOptions> = {
+interface Configuration extends BuildOptions {
+  packager: 'npm' | 'yarn';
+}
+
+const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
   target: 'es2017',
   external: ['aws-sdk'],
+  packager: 'npm',
 };
 
 export class EsbuildPlugin implements Plugin {
@@ -29,31 +35,37 @@ export class EsbuildPlugin implements Plugin {
   serverless: Serverless & { service: ServiceExtended };
   options: Serverless.Options;
   hooks: Plugin.Hooks;
-  buildOptions: BuildOptions;
+  buildOptions: Configuration;
+  packExternalModules: () => Promise<void>;
 
   constructor(serverless: Serverless, options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
+    this.packExternalModules = packExternalModules.bind(this);
 
-    const concatUniq = compose(uniq, concat as (l1: BuildOptions[], l2: BuildOptions[]) => BuildOptions[]);
+    const concatUniq = compose(uniq, concat as (l1: Configuration[], l2: Configuration[]) => Configuration[]);
     const withDefaultOptions = mergeWith(concatUniq, DEFAULT_BUILD_OPTIONS);
-    this.buildOptions = withDefaultOptions(this.serverless.service.custom?.esbuild)
+    this.buildOptions = withDefaultOptions(this.serverless.service.custom?.esbuild ?? {});
 
     this.hooks = {
       'before:run:run': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       },
       'before:offline:start': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       },
       'before:offline:start:init': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       },
       'before:package:createDeploymentArtifacts': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       },
       'after:package:createDeploymentArtifacts': async () => {
@@ -61,6 +73,7 @@ export class EsbuildPlugin implements Plugin {
       },
       'before:deploy:function:packageFunction': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       },
       'after:deploy:function:packageFunction': async () => {
@@ -68,6 +81,7 @@ export class EsbuildPlugin implements Plugin {
       },
       'before:invoke:local:invoke': async () => {
         await this.bundle();
+        await this.packExternalModules();
         await this.copyExtras();
       }
     };

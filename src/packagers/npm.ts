@@ -1,5 +1,6 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 
+import { JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import { Packager } from './packager';
 
@@ -79,7 +80,7 @@ export class NPM implements Packager {
    * Rebase package-lock is a temporary workaround and must be
    * removed as soon as https://github.com/npm/npm/issues/19183 gets fixed.
    */
-  rebaseLockfile(pathToPackageRoot: string, lockfile) {
+  rebaseLockfile(pathToPackageRoot: string, lockfile: JSONObject) {
     if (lockfile.version) {
       lockfile.version = this._rebaseFileReferences(pathToPackageRoot, lockfile.version);
     }

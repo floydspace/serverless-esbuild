@@ -1,5 +1,6 @@
 import { any, head, isEmpty, join, pathOr, reduce, replace, split, startsWith, tail } from 'ramda';
 
+import { JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import { Packager } from './packager';
 
@@ -57,7 +58,7 @@ export class Yarn implements Packager {
 
     const depJson = processOutput.stdout;
     const parsedTree = JSON.parse(depJson);
-    const convertTrees = reduce((__, tree: any) => {
+    const convertTrees = reduce((__, tree: JSONObject) => {
       const splitModule = split('@', tree.name);
       // If we have a scoped module we have to re-add the @
       if (startsWith('@', tree.name)) {
@@ -96,21 +97,16 @@ export class Yarn implements Packager {
     return reduce((__, replacement) => replace(__, replacement.oldRef, replacement.newRef), lockfile, replacements);
   }
 
-  async install(cwd, packagerOptions) {
+  async install(cwd) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     const args = ['install', '--frozen-lockfile', '--non-interactive'];
-
-    // Convert supported packagerOptions
-    if (packagerOptions.ignoreScripts) {
-      args.push('--ignore-scripts');
-    }
 
     await spawnProcess(command, args, { cwd });
   }
 
   // "Yarn install" prunes automatically
-  prune(cwd, packagerOptions) {
-    return this.install(cwd, packagerOptions);
+  prune(cwd) {
+    return this.install(cwd);
   }
 
   async runScripts(cwd, scriptNames: string[]) {
