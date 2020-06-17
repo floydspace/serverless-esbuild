@@ -136,7 +136,6 @@ export class EsbuildPlugin implements Plugin {
         entryPoints: [entry],
         outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
         platform: 'node',
-        stdio: 'inherit',
       };
 
       return build(config);
