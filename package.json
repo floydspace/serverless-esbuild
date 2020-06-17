@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "esbuild": "^0.5.3",
-    "fs-extra": "^9.0.0",
+    "fs-extra": "^9.0.1",
     "globby": "^11.0.0",
     "lodash.now": "^4.0.2",
     "lodash.remove": "^4.7.0",
