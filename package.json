@@ -40,7 +40,7 @@
     "typescript"
   ],
   "devDependencies": {
-    "@commitlint/cli": "^8.3.5",
+    "@commitlint/cli": "^9.0.1",
     "@commitlint/config-conventional": "^8.3.4",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^25.2.2",
