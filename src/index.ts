@@ -2,7 +2,7 @@ import { build, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
-import { compose, concat, mergeWith, uniq } from 'ramda';
+import { mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
@@ -43,9 +43,8 @@ export class EsbuildPlugin implements Plugin {
     this.options = options;
     this.packExternalModules = packExternalModules.bind(this);
 
-    const concatUniq = compose(uniq, concat as (l1: Configuration[], l2: Configuration[]) => Configuration[]);
-    const withDefaultOptions = mergeWith(concatUniq, DEFAULT_BUILD_OPTIONS);
-    this.buildOptions = withDefaultOptions(this.serverless.service.custom?.esbuild ?? {});
+    const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
+    this.buildOptions = withDefaultOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
 
     this.hooks = {
       'before:run:run': async () => {
