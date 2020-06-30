@@ -142,7 +142,8 @@ function getProdModules(externalModules: { external: string }[], packagePath: st
  * and performance.
  */
 export async function packExternalModules() {
-  const externals = without(['aws-sdk'], this.buildOptions.external);
+  const externalIgnore = this.buildOptions.externalIgnore;
+  const externals = without(['aws-sdk'], without(externalIgnore, this.buildOptions.external));
 
   if (!externals) {
     return;

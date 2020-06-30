@@ -41,6 +41,7 @@ custom:
 
 The `aws-sdk` module is exluded from bundle by default, and you can exclude additional dependencies using `external` option. 
 Check [esbuild](https://github.com/evanw/esbuild#command-line-usage) documentation for the full list of available options. Note that some options like `entryPoints` or `outdir` cannot be overwritten.
+The `externalIgnore` option allows you to exclude system-global packages such as those provided by the Runtime and Layers from the function.
 
 See [example folder](example) for a minimal example.
 
