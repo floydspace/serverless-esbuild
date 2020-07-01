@@ -18,14 +18,16 @@ interface ServiceExtended extends Service {
   functions?: Record<string, Serverless.FunctionDefinition>;
 }
 
-interface Configuration extends BuildOptions {
+export interface Configuration extends BuildOptions {
   packager: 'npm' | 'yarn';
+  exclude: string[];
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
   target: 'es2017',
-  external: ['aws-sdk'],
+  external: [],
+  exclude: ['aws-sdk'],
   packager: 'npm',
 };
 
@@ -132,6 +134,10 @@ export class EsbuildPlugin implements Plugin {
     await Promise.all(this.rootFileNames.map(entry => {
       const config: BuildOptions = {
         ...this.buildOptions,
+        external: [
+          ...this.buildOptions.external,
+          ...this.buildOptions.exclude,
+        ],
         entryPoints: [entry],
         outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
         platform: 'node',
