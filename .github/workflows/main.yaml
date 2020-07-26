@@ -1,0 +1,29 @@
+on: push
+name: Serverless ESBuild CI
+
+defaults:
+  run:
+    working-directory: example
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Test Example
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14.x'
+
+      - name: Install Example dependencies
+        run: yarn
+
+      - name: Run Unit Tests
+        run: yarn test
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          path: example/pm2.log

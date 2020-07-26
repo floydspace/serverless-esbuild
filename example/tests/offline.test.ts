@@ -2,15 +2,27 @@ import execa from 'execa';
 import fetch from 'node-fetch';
 import tcp from 'tcp-port-used';
 
-const testPort = 3000; //Default sls-offline port
-const testUrl = ({ env = 'dev', path }) =>
-  `http://localhost:${testPort}/${env}/${path}`;
+const testPort = 3000;
+
+const testUrl = ({ env = 'dev', port = testPort, path }) =>
+  `http://localhost:${port}/${env}/${path}`;
+
+const waitForPort = async ({ port = 3002, timeout }) => {
+  try {
+    await tcp.waitUntilUsed(port, 500, timeout);
+    console.log(`Port ${port} is ready.`);
+    return true;
+  } catch (error) {
+    console.log(`Something went wrong with port ${port}... ${error.message}`);
+  }
+};
 
 beforeAll(async () => {
+  const timeout = 15000;
   console.log('Booting up sls offline...');
   await execa('yarn', ['offline:start']);
-  await tcp.waitUntilUsed(3000, 500, 5000);
-  console.log('Port ready!');
+  await waitForPort({ timeout });
+  await waitForPort({ port: testPort, timeout });
 });
 
 afterAll(async () => {

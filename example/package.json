@@ -22,10 +22,10 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "start": "sls offline",
+    "start": "sls offline --http-port 3000",
     "test": "jest",
     "pm2": "pm2",
-    "offline:start": "pm2 start yarn --interpreter bash --name sls-esbuild-api -- start",
+    "offline:start": "pm2 start yarn --interpreter bash --name sls-esbuild-api -l pm2.log -- start",
     "offline:stop": "pm2 delete sls-esbuild-api"
   }
 }
