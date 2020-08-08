@@ -5,3 +5,4 @@ updates:
     target-branch: "develop"
     schedule:
       interval: "daily"
+    versioning-strategy: increase-if-necessary
