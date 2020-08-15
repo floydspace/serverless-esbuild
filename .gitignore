@@ -4,3 +4,4 @@ node_modules
 .serverless
 dist
 *.log
+package-lock.json
