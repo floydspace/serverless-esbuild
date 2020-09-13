@@ -1,5 +1,4 @@
 import * as fse from 'fs-extra';
-import * as now from 'lodash.now';
 import * as path from 'path';
 import {
   compose,
@@ -218,16 +217,16 @@ export async function packExternalModules() {
     }
   }
 
-  const start = now();
+  const start = Date.now();
   this.serverless.cli.log('Packing external modules: ' + compositeModules.join(', '));
   await packager.install(compositeModulePath);
-  this.options.verbose && this.serverless.cli.log(`Package took [${now() - start} ms]`);
+  this.options.verbose && this.serverless.cli.log(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
-  const startPrune = now();
+  const startPrune = Date.now();
   await packager.prune(compositeModulePath);
   this.options.verbose &&
-    this.serverless.cli.log(`Prune: ${compositeModulePath} [${now() - startPrune} ms]`);
+    this.serverless.cli.log(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
 
   // GOOGLE: Copy modules only if not google-cloud-functions
   //         GCF Auto installs the package json
