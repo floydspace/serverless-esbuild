@@ -143,6 +143,10 @@ export class EsbuildPlugin implements Plugin {
         platform: 'node',
       };
 
+      // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
+      delete config['exclude'];
+      delete config['packager'];
+
       return build(config);
     }));
 
