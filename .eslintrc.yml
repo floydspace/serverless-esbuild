@@ -1,14 +1,17 @@
 env:
   node: true
+ignorePatterns:
+  - dist
 extends:
   - eslint:recommended
-  - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
 rules:
   semi: 'off'
   quotes: 'off'
   no-use-before-define: 'off'
+  '@typescript-eslint/no-var-requires': 'off'
   '@typescript-eslint/explicit-function-return-type': 'off'
+  '@typescript-eslint/explicit-module-boundary-types': 'off'
   '@typescript-eslint/semi': error
   '@typescript-eslint/quotes':
     - error
