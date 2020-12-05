@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as Serverless from 'serverless';
 
-export function extractFileNames(cwd: string, provider: string, functions?: Record<string, Serverless.FunctionDefinition>): string[] {
+export function extractFileNames(cwd: string, provider: string, functions?: Record<string, Serverless.FunctionDefinition>) {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way
@@ -18,7 +18,7 @@ export function extractFileNames(cwd: string, provider: string, functions?: Reco
 
       // Either grab the package.json:main field, or use the index.ts file.
       // (This will be transpiled to index.js).
-      const main = packageFile.main ? packageFile.main.replace(/\.js$/, '.ts') : 'index.ts';
+      const main: string = packageFile.main ? packageFile.main.replace(/\.js$/, '.ts') : 'index.ts';
 
       // Check that the file indeed exists.
       if (!fs.existsSync(path.join(cwd, main))) {
@@ -26,26 +26,25 @@ export function extractFileNames(cwd: string, provider: string, functions?: Reco
         throw new Error('Compilation failed');
       }
 
-      return [main];
+      return [{entry: main, func: null}];
     }
   }
 
   return Object.values(functions)
-    .map(fn => fn.handler)
-    .map(h => {
-      const fnName = path.extname(h);
-      const fnNameLastAppearanceIndex = h.lastIndexOf(fnName);
+    .map(fn => {
+      const fnName = path.extname(fn.handler);
+      const fnNameLastAppearanceIndex = fn.handler.lastIndexOf(fnName);
       // replace only last instance to allow the same name for file and handler
-      const fileName = h.substring(0, fnNameLastAppearanceIndex);
+      const fileName = fn.handler.substring(0, fnNameLastAppearanceIndex);
 
       // Check if the .ts files exists. If so return that to watch
       if (fs.existsSync(path.join(cwd, fileName + '.ts'))) {
-        return fileName + '.ts';
+        return {entry: fileName + '.ts', func: fn};
       }
 
       // Check if the .js files exists. If so return that to watch
       if (fs.existsSync(path.join(cwd, fileName + '.js'))) {
-        return fileName + '.js';
+        return {entry: fileName + '.js', func: fn};
       }
 
       // Can't find the files. Watch will have an exception anyway. So throw one with error.

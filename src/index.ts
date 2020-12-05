@@ -8,6 +8,7 @@ import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
 
 import { extractFileNames } from './helper';
+import { packageModules } from './packageModules';
 import { packExternalModules } from './packExternalModules';
 
 const SERVERLESS_FOLDER = '.serverless';
@@ -38,12 +39,15 @@ export class EsbuildPlugin implements Plugin {
   options: Serverless.Options;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
+  compilerOutputs: {outdir: string, outfile: string}[];
   packExternalModules: () => Promise<void>;
+  packageModules: () => Promise<void>;
 
   constructor(serverless: Serverless, options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
     this.packExternalModules = packExternalModules.bind(this);
+    this.packageModules = packageModules.bind(this);
 
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
     this.buildOptions = withDefaultOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
@@ -52,21 +56,25 @@ export class EsbuildPlugin implements Plugin {
       'before:run:run': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       },
       'before:offline:start': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       },
       'before:offline:start:init': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       },
       'before:package:createDeploymentArtifacts': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       },
       'after:package:createDeploymentArtifacts': async () => {
@@ -75,6 +83,7 @@ export class EsbuildPlugin implements Plugin {
       'before:deploy:function:packageFunction': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       },
       'after:deploy:function:packageFunction': async () => {
@@ -83,6 +92,7 @@ export class EsbuildPlugin implements Plugin {
       'before:invoke:local:invoke': async () => {
         await this.bundle();
         await this.packExternalModules();
+        await this.packageModules();
         await this.copyExtras();
       }
     };
@@ -131,7 +141,8 @@ export class EsbuildPlugin implements Plugin {
       this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
     }
 
-    await Promise.all(this.rootFileNames.map(entry => {
+    this.compilerOutputs = await Promise.all(this.rootFileNames.map(async ({entry, func}) => {
+      const outdir = path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry));
       const config: BuildOptions = {
         ...this.buildOptions,
         external: [
@@ -139,7 +150,7 @@ export class EsbuildPlugin implements Plugin {
           ...this.buildOptions.exclude,
         ],
         entryPoints: [entry],
-        outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
+        outdir,
         platform: 'node',
       };
 
@@ -147,7 +158,9 @@ export class EsbuildPlugin implements Plugin {
       delete config['exclude'];
       delete config['packager'];
 
-      return build(config);
+      await build(config);
+
+      return {outdir, outfile: entry.replace(/.ts$/, '.js'), entryFunction: func};
     }));
 
     this.serverless.cli.log('Compiling completed.');
