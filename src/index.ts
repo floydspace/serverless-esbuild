@@ -14,12 +14,18 @@ const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';
 
 interface ServiceExtended extends Service {
+  service?: string;
   package?: Serverless.Package;
   functions?: Record<string, Serverless.FunctionDefinition>;
 }
 
+interface OptionsExtended extends Serverless.Options {
+  verbose?: boolean;
+}
+
 export interface Configuration extends BuildOptions {
   packager: 'npm' | 'yarn';
+  packagePath: string;
   exclude: string[];
 }
 
@@ -35,12 +41,12 @@ export class EsbuildPlugin implements Plugin {
   private originalServicePath: string;
 
   serverless: Serverless & { service: ServiceExtended };
-  options: Serverless.Options;
+  options: OptionsExtended;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
   packExternalModules: () => Promise<void>;
 
-  constructor(serverless: Serverless, options: Serverless.Options) {
+  constructor(serverless: Serverless, options: OptionsExtended) {
     this.serverless = serverless;
     this.options = options;
     this.packExternalModules = packExternalModules.bind(this);
@@ -146,6 +152,7 @@ export class EsbuildPlugin implements Plugin {
       // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
       delete config['exclude'];
       delete config['packager'];
+      delete config['packagePath'];
 
       return build(config);
     }));

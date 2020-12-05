@@ -22,6 +22,7 @@ import {
   without,
 } from 'ramda';
 
+import { EsbuildPlugin } from './index';
 import * as Packagers from './packagers';
 import { JSONObject } from './types';
 
@@ -140,7 +141,7 @@ function getProdModules(externalModules: { external: string }[], packagePath: st
  * This will utilize the npm cache at its best and give us the needed results
  * and performance.
  */
-export async function packExternalModules() {
+export async function packExternalModules(this: EsbuildPlugin) {
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
 
   if (!externals) {
@@ -148,7 +149,7 @@ export async function packExternalModules() {
   }
 
   // Read plugin configuration
-  const packagePath = './package.json';
+  const packagePath = this.buildOptions.packagePath || './package.json';
   const packageJsonPath = path.join(process.cwd(), packagePath);
 
   // Determine and create packager
@@ -159,8 +160,7 @@ export async function packExternalModules() {
   const packageJson = this.serverless.utils.readFileSync(packageJsonPath);
   const packageSections = pick(sectionNames, packageJson);
   if (!isEmpty(packageSections)) {
-    this.options.verbose &&
-      this.serverless.cli.log(`Using package.json sections ${join(', ', keys(packageSections))}`);
+    this.options.verbose && this.serverless.cli.log(`Using package.json sections ${join(', ', keys(packageSections))}`);
   }
 
   // Get first level dependency graph
@@ -210,7 +210,7 @@ export async function packExternalModules() {
 
       this.serverless.utils.writeFileSync(
         path.join(compositeModulePath, packager.lockfileName),
-        packageLockFile
+        packageLockFile as string
       );
     } catch (err) {
       this.serverless.cli.log(`Warning: Could not read lock file: ${err.message}`);
