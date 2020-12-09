@@ -1,5 +1,6 @@
 # serverless-esbuild
 [![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com) [![npm version](https://badge.fury.io/js/serverless-esbuild.svg)](https://badge.fury.io/js/serverless-esbuild) [![Build Status](https://travis-ci.org/floydspace/serverless-esbuild.svg?branch=master)](https://travis-ci.org/floydspace/serverless-esbuild) [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffloydspace%2Fserverless-esbuild.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffloydspace%2Fserverless-esbuild?ref=badge_shield)
 
 Serverless plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
 
@@ -111,3 +112,7 @@ Options are:
 [Victor Korzunin](https://floydspace.github.io/)
 
 Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffloydspace%2Fserverless-esbuild.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffloydspace%2Fserverless-esbuild?ref=badge_large)
