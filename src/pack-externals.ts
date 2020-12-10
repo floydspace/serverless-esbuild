@@ -64,9 +64,7 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
  * Resolve the needed versions of production dependencies for external modules.
  * @this - The active plugin instance
  */
-function getProdModules(externalModules: { external: string }[], packagePath: string, dependencyGraph: JSONObject) {
-  const packageJsonPath = path.join(process.cwd(), packagePath);
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+function getProdModules(externalModules: { external: string }[], packageJsonPath: string) {
   const packageJson = require(packageJsonPath);
   const prodModules = [];
 
@@ -85,7 +83,7 @@ function getProdModules(externalModules: { external: string }[], packagePath: st
       // Check if the module has any peer dependencies and include them too
       try {
         const modulePackagePath = path.join(
-          path.dirname(path.join(process.cwd(), packagePath)),
+          path.dirname(packageJsonPath),
           'node_modules',
           externalModule.external,
           'package.json'
@@ -95,8 +93,7 @@ function getProdModules(externalModules: { external: string }[], packagePath: st
           this.options.verbose && this.serverless.cli.log(`Adding explicit peers for dependency ${externalModule.external}`);
           const peerModules = getProdModules.call(this,
             compose(map(([external]) => ({ external })), toPairs)(peerDependencies),
-            packagePath,
-            dependencyGraph
+            packageJsonPath
           );
           Array.prototype.push.apply(prodModules, peerModules);
         }
@@ -151,8 +148,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   }
 
   // Read plugin configuration
-  const packagePath = this.buildOptions.packagePath || path.join(findProjectRoot(), './package.json');
-  const packageJsonPath = path.join(process.cwd(), packagePath);
+  const packageJsonPath = this.buildOptions.packagePath || path.join(findProjectRoot(), './package.json');
 
   // Determine and create packager
   const packager = await Packagers.get(this.buildOptions.packager);
@@ -168,11 +164,9 @@ export async function packExternalModules(this: EsbuildPlugin) {
   // Get first level dependency graph
   this.options.verbose && this.serverless.cli.log(`Fetch dependency graph from ${packageJsonPath}`);
 
-  const dependencyGraph = await packager.getProdDependencies(path.dirname(packageJsonPath), 1);
-
   // (1) Generate dependency composition
   const externalModules = map(external => ({ external }), externals);
-  const compositeModules: JSONObject = uniq(getProdModules.call(this, externalModules, packagePath, dependencyGraph));
+  const compositeModules: JSONObject = uniq(getProdModules.call(this, externalModules, packageJsonPath));
 
   if (isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
