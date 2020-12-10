@@ -1,4 +1,6 @@
 import * as childProcess from 'child_process';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { join } from 'ramda';
 
 export class SpawnError extends Error {
@@ -45,4 +47,32 @@ export function spawnProcess(command: string, args: string[], options: childProc
       }
     });
   });
+}
+
+/**
+ * Find a file by walking up parent directories
+ */
+export function findUp(name: string, directory: string = process.cwd()): string | undefined {
+  const absoluteDirectory = path.resolve(directory);
+
+  if (fs.existsSync(path.join(directory, name))) {
+    return directory;
+  }
+
+  const { root } = path.parse(absoluteDirectory);
+  if (absoluteDirectory === root) {
+    return undefined;
+  }
+
+  return findUp(name, path.dirname(absoluteDirectory));
+}
+
+/**
+ * Forwards `rootDir` or finds project root folder.
+ */
+export function findProjectRoot(rootDir?: string): string | undefined {
+  return rootDir
+    ?? findUp('yarn.lock')
+    ?? findUp('package-lock.json')
+    ?? findUp('package.json');
 }

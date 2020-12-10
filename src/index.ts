@@ -8,7 +8,7 @@ import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
 
 import { extractFileNames } from './helper';
-import { packExternalModules } from './packExternalModules';
+import { packExternalModules } from './pack-externals';
 
 const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';

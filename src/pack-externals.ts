@@ -22,9 +22,11 @@ import {
   without,
 } from 'ramda';
 
-import { EsbuildPlugin } from './index';
 import * as Packagers from './packagers';
 import { JSONObject } from './types';
+import { findProjectRoot } from './utils';
+
+import type { EsbuildPlugin } from './index';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
@@ -144,12 +146,12 @@ function getProdModules(externalModules: { external: string }[], packagePath: st
 export async function packExternalModules(this: EsbuildPlugin) {
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
 
-  if (!externals) {
+  if (!externals || !externals.length) {
     return;
   }
 
   // Read plugin configuration
-  const packagePath = this.buildOptions.packagePath || './package.json';
+  const packagePath = this.buildOptions.packagePath || path.join(findProjectRoot(), './package.json');
   const packageJsonPath = path.join(process.cwd(), packagePath);
 
   // Determine and create packager
