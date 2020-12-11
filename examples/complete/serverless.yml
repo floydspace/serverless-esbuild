@@ -1,0 +1,23 @@
+service: complete-example
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    minify: true
+    external:
+      - isin-validator
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+functions:
+  validateIsin:
+    handler: src/index.handler
+    events:
+      - http:
+          path: validate-isin/{isin}
+          method: get

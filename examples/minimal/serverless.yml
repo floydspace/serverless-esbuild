@@ -1,4 +1,4 @@
-service: serverless-example
+service: minimal-example
 
 plugins:
   - serverless-esbuild
@@ -9,9 +9,9 @@ provider:
   runtime: nodejs12.x
 
 functions:
-  hello:
-    handler: handler.hello
+  validateIsin:
+    handler: index.handler
     events:
       - http:
-          path: hello
+          path: validate-isin/{isin}
           method: get
