@@ -16,8 +16,7 @@
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
     "test": "jest --passWithNoTests",
-    "lint": "eslint .",
-    "semantic-release": "semantic-release"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
