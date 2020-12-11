@@ -1,7 +1,13 @@
-# serverless-esbuild
-[![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com) [![npm version](https://badge.fury.io/js/serverless-esbuild.svg)](https://badge.fury.io/js/serverless-esbuild) [![Build Status](https://travis-ci.org/floydspace/serverless-esbuild.svg?branch=master)](https://travis-ci.org/floydspace/serverless-esbuild) [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+💨 serverless-esbuild
+==============
 
 Serverless plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
+
+[![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
+[![npm version](https://badge.fury.io/js/serverless-esbuild.svg)](https://badge.fury.io/js/serverless-esbuild)
+[![Build Status](https://img.shields.io/github/workflow/status/floydspace/serverless-esbuild/release)](https://github.com/floydspace/serverless-esbuild/actions)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+
 
 ## Features
 
