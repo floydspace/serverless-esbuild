@@ -24,10 +24,16 @@ interface OptionsExtended extends Serverless.Options {
   verbose?: boolean;
 }
 
+export interface WatchConfiguration {
+  pattern?: string[] | string;
+  ignore?: string[] | string;
+}
+
 export interface Configuration extends BuildOptions {
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: string[];
+  watch: WatchConfiguration;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -36,6 +42,10 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   external: [],
   exclude: ['aws-sdk'],
   packager: 'npm',
+  watch: {
+    pattern: '.',
+    ignore: ['.build', 'dist', 'node_modules', '.serverless'],
+  },
 };
 
 export class EsbuildPlugin implements Plugin {
@@ -123,13 +133,14 @@ export class EsbuildPlugin implements Plugin {
   }
 
   async watch(): Promise<void> {
-    const pattern = '.';
-    const ignored = ['.build', 'dist'];
-
-    const options = { ignored, awaitWriteFinish: true, ignoreInitial: true };
+    const options = {
+      ignored: this.buildOptions.watch.ignore,
+      awaitWriteFinish: true,
+      ignoreInitial: true,
+    };
 
     chokidar
-      .watch(pattern, options)
+      .watch(this.buildOptions.watch.pattern, options)
       .on('all', () =>
         this.bundle(true).then(() => this.serverless.cli.log('Watching files for changes...'))
       );
@@ -177,6 +188,7 @@ export class EsbuildPlugin implements Plugin {
         delete config['exclude'];
         delete config['packager'];
         delete config['packagePath'];
+        delete config['watch'];
 
         return build(config);
       })
