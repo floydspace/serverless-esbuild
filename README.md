@@ -36,7 +36,7 @@ plugins:
 
 ## Configure
 
-By default, no configuration required, but you can change esbuild behavior in custom `esbuild` section in `serverless.yaml` config:
+By default, no configuration is required, but you can change esbuild behavior in custom `esbuild` section in `serverless.yaml` config:
 
 ```yml
 custom:
@@ -84,6 +84,25 @@ precedes `serverless-offline` as the order is important:
 Run `serverless offline` or `serverless offline start` to start the Lambda/API simulation.
 
 In comparison to `serverless offline`, the `start` command will fire an `init` and a `end` lifecycle hook which is needed for `serverless-offline` and e.g. `serverless-dynamodb-local` to switch off resources (see below)
+
+Automatic compilation is available while using the plugin with `serverless-offline`. Following are the default configuration:
+
+```
+pattern: './**/*.(js|ts)' # watches all javascript or typescripts files in the project
+ignore: [.build, 'dist', 'node_modules', '.serverless']
+```
+
+You can override the defaults by using `watch` option in serverless esbuild config. Both options take [anymatch-compatible definition] (https://github.com/es128/anymatch)
+
+```
+custom:
+  esbuild:
+    watch:
+      pattern: ['src/**/*.ts'] # match only typescript files in src directory
+      ignore: ['temp/**/*']
+```
+
+Note: When overriding ignore pattern, remember to ignore `.build` directory to avoid endless compilation.
 
 #### serverless-dynamodb-local
 
