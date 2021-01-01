@@ -2,7 +2,11 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as Serverless from 'serverless';
 
-export function extractFileNames(cwd: string, provider: string, functions?: Record<string, Serverless.FunctionDefinition>): string[] {
+export function extractFileNames(
+  cwd: string,
+  provider: string,
+  functions?: Record<string, Serverless.FunctionDefinitionHandler>
+): string[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way
@@ -12,7 +16,6 @@ export function extractFileNames(cwd: string, provider: string, functions?: Reco
   if (provider === 'google') {
     const packageFilePath = path.join(cwd, 'package.json');
     if (fs.existsSync(packageFilePath)) {
-
       // Load in the package.json file.
       const packageFile = JSON.parse(fs.readFileSync(packageFilePath).toString());
 
