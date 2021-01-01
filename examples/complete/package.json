@@ -9,7 +9,8 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "isin-validator": "^1.1.1"
+    "isin-validator": "^1.1.1",
+    "serverless": "^2.17.0"
   },
   "scripts": {
     "start": "sls offline"

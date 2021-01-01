@@ -9,6 +9,10 @@ custom:
     minify: true
     external:
       - isin-validator
+    watch:
+      # anymatch-compatible definition (https://github.com/es128/anymatch)
+      pattern: ['./index.ts', 'src/**/*.ts'] # default .
+      ignore: ['.serverless/**/*', '.build'] # default ['.build', 'dist', 'node_modules']
 
 provider:
   name: aws
