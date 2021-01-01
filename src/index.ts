@@ -44,7 +44,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   packager: 'npm',
   watch: {
     pattern: '.',
-    ignore: ['.build', 'dist', 'node_modules', '.serverless'],
+    ignore: [BUILD_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
   },
 };
 
