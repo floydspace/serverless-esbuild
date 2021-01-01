@@ -52,7 +52,9 @@ export class EsbuildPlugin implements Plugin {
     this.packExternalModules = packExternalModules.bind(this);
 
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
-    this.buildOptions = withDefaultOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
+    this.buildOptions = withDefaultOptions<Configuration>(
+      this.serverless.service.custom?.esbuild ?? {}
+    );
 
     this.hooks = {
       'before:run:run': async () => {
@@ -90,14 +92,14 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
-      }
+      },
     };
   }
 
   get functions(): Record<string, Serverless.FunctionDefinition> {
     if (this.options.function) {
       return {
-        [this.options.function]: this.serverless.service.getFunction(this.options.function)
+        [this.options.function]: this.serverless.service.getFunction(this.options.function),
       };
     }
 
@@ -122,7 +124,9 @@ export class EsbuildPlugin implements Plugin {
       };
 
       // Add plugin to excluded packages or an empty array if exclude is undefined
-      fn.package.exclude = [...new Set([...fn.package.exclude || [], 'node_modules/serverless-esbuild'])];
+      fn.package.exclude = [
+        ...new Set([...(fn.package.exclude || []), 'node_modules/serverless-esbuild']),
+      ];
     }
   }
 
@@ -137,25 +141,24 @@ export class EsbuildPlugin implements Plugin {
       this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
     }
 
-    await Promise.all(this.rootFileNames.map(entry => {
-      const config: BuildOptions = {
-        ...this.buildOptions,
-        external: [
-          ...this.buildOptions.external,
-          ...this.buildOptions.exclude,
-        ],
-        entryPoints: [entry],
-        outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
-        platform: 'node',
-      };
+    await Promise.all(
+      this.rootFileNames.map(entry => {
+        const config: BuildOptions = {
+          ...this.buildOptions,
+          external: [...this.buildOptions.external, ...this.buildOptions.exclude],
+          entryPoints: [entry],
+          outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
+          platform: 'node',
+        };
 
-      // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
-      delete config['exclude'];
-      delete config['packager'];
-      delete config['packagePath'];
+        // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
+        delete config['exclude'];
+        delete config['packager'];
+        delete config['packagePath'];
 
-      return build(config);
-    }));
+        return build(config);
+      })
+    );
 
     this.serverless.cli.log('Compiling completed.');
   }
