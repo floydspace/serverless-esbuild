@@ -43,7 +43,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   exclude: ['aws-sdk'],
   packager: 'npm',
   watch: {
-    pattern: '.',
+    pattern: './**/*.(js|ts)',
     ignore: [BUILD_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
   },
 };
