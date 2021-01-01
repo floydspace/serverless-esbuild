@@ -1,7 +1,7 @@
 const validateIsin = require('isin-validator');
 
 module.exports.handler = (event, context, callback) => {
-  const isInvalid = validateIsin.default(event.pathParameters.isin);
+  const isInvalid = validateIsin(event.pathParameters.isin);
 
   callback(null, {
     statusCode: 200,
