@@ -1,4 +1,4 @@
-import { build, BuildOptions } from 'esbuild';
+import { build, BuildResult, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
@@ -6,6 +6,7 @@ import { mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as Service from 'serverless/classes/Service';
+import * as chokidar from 'chokidar';
 
 import { extractFileNames } from './helper';
 import { packExternalModules } from './pack-externals';
@@ -66,11 +67,13 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        this.watch();
       },
       'before:offline:start:init': async () => {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        this.watch();
       },
       'before:package:createDeploymentArtifacts': async () => {
         await this.bundle();
@@ -119,6 +122,19 @@ export class EsbuildPlugin implements Plugin {
     );
   }
 
+  async watch(): Promise<void> {
+    const pattern = '.';
+    const ignored = ['.build', 'dist'];
+
+    const options = { ignored, awaitWriteFinish: true, ignoreInitial: true };
+
+    chokidar
+      .watch(pattern, options)
+      .on('all', () =>
+        this.bundle(true).then(() => this.serverless.cli.log('Watching files for changes...'))
+      );
+  }
+
   prepare() {
     // exclude serverless-esbuild
     for (const fnName in this.functions) {
@@ -135,7 +151,7 @@ export class EsbuildPlugin implements Plugin {
     }
   }
 
-  async bundle(): Promise<void> {
+  async bundle(incremental = false): Promise<BuildResult[]> {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
@@ -146,7 +162,7 @@ export class EsbuildPlugin implements Plugin {
       this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
     }
 
-    await Promise.all(
+    return Promise.all(
       this.rootFileNames.map(entry => {
         const config: BuildOptions = {
           ...this.buildOptions,
@@ -154,6 +170,7 @@ export class EsbuildPlugin implements Plugin {
           entryPoints: [entry],
           outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
           platform: 'node',
+          incremental,
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
@@ -163,9 +180,10 @@ export class EsbuildPlugin implements Plugin {
 
         return build(config);
       })
-    );
-
-    this.serverless.cli.log('Compiling completed.');
+    ).then(result => {
+      this.serverless.cli.log('Compiling completed.');
+      return result;
+    });
   }
 
   /** Link or copy extras such as node_modules or package.include definitions */
