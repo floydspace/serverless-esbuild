@@ -109,14 +109,19 @@ export class EsbuildPlugin implements Plugin {
     };
   }
 
-  get functions(): Record<string, Serverless.FunctionDefinition> {
+  get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
     if (this.options.function) {
       return {
-        [this.options.function]: this.serverless.service.getFunction(this.options.function),
+        [this.options.function]: this.serverless.service.getFunction(
+          this.options.function
+        ) as Serverless.FunctionDefinitionHandler,
       };
     }
 
-    return this.serverless.service.functions;
+    return this.serverless.service.functions as Record<
+      string,
+      Serverless.FunctionDefinitionHandler
+    >;
   }
 
   get rootFileNames() {
