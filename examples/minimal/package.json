@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "devDependencies": {
     "@types/node": "^11.13.0",
+    "serverless": "^2.17.0",
     "serverless-esbuild": "^1.5.0",
     "serverless-offline": "^6.4.0"
   },
   "dependencies": {
-    "isin-validator": "^1.1.1",
-    "serverless": "^2.17.0"
+    "isin-validator": "^1.1.1"
   },
   "scripts": {
     "start": "sls offline"
