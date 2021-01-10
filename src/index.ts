@@ -5,7 +5,6 @@ import * as path from 'path';
 import { mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
-import * as Service from 'serverless/classes/Service';
 import * as chokidar from 'chokidar';
 
 import { extractFileNames } from './helper';
@@ -13,12 +12,6 @@ import { packExternalModules } from './pack-externals';
 
 const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';
-
-interface ServiceExtended extends Service {
-  service?: string;
-  package?: Serverless.Package;
-  functions?: Record<string, Serverless.FunctionDefinition>;
-}
 
 interface OptionsExtended extends Serverless.Options {
   verbose?: boolean;
@@ -51,7 +44,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
 export class EsbuildPlugin implements Plugin {
   private originalServicePath: string;
 
-  serverless: Serverless & { service: ServiceExtended };
+  serverless: Serverless;
   options: OptionsExtended;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
