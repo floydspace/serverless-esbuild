@@ -22,7 +22,7 @@ export interface WatchConfiguration {
   ignore?: string[] | string;
 }
 
-export interface Configuration extends BuildOptions {
+export interface Configuration extends Omit<BuildOptions, 'watch'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: string[];
@@ -168,7 +168,7 @@ export class EsbuildPlugin implements Plugin {
 
     return Promise.all(
       this.rootFileNames.map(entry => {
-        const config: BuildOptions = {
+        const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
           external: [...this.buildOptions.external, ...this.buildOptions.exclude],
           entryPoints: [entry],
