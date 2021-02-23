@@ -4,6 +4,8 @@ import * as glob from 'glob';
 import * as path from 'path';
 import { intersection, isEmpty, path as get, uniq } from 'ramda';
 import * as semver from 'semver';
+import { SERVERLESS_FOLDER } from '.';
+import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 
 function setArtifactPath(func, artifactPath) {
@@ -21,22 +23,6 @@ function setArtifactPath(func, artifactPath) {
     };
   }
 }
-
-const flatDep = (deps: any, filter?: string[]) => {
-  if (!deps) return [];
-  return Object.entries(deps).reduce((acc, [depName, details]) => {
-    if (filter && !filter.includes(depName)) return acc;
-    // @ts-ignore
-    return uniq([...acc, depName, ...flatDep(details.dependencies)]);
-  }, []);
-};
-
-const getDepsFromBundle = (bundlePath: string) => {
-  const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  // @ts-ignore
-  const requireMatch = bundleContent.matchAll(/require\("(.*?)"\)/gim);
-  return uniq(Array.from(requireMatch).map(match => match[1]));
-};
 
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
@@ -87,7 +73,7 @@ export async function packIndividually() {
       // Create zip and open it
       const zip = archiver.create('zip');
       const zipName = `${name}.zip`;
-      const artifactPath = path.join(buildDir, '.serverless', zipName);
+      const artifactPath = path.join(buildDir, SERVERLESS_FOLDER, zipName);
       this.serverless.utils.writeFileDir(artifactPath);
       const output = fs.createWriteStream(artifactPath);
 
@@ -103,9 +89,12 @@ export async function packIndividually() {
           if (filePath.endsWith('.zip')) return;
 
           // exclude non whitelisted dependencies
-          const arrayPath = filePath.split('/');
-          if (arrayPath[0] === 'node_modules') {
-            if (!depWhiteList.includes(arrayPath[1])) return;
+          if (filePath.startsWith('node_modules')) {
+            if (
+              // this is needed for dependencies that maps to a path (like scopped ones)
+              !depWhiteList.find(dep => doSharePath(filePath, 'node_modules/' + dep))
+            )
+              return;
           }
 
           // exclude directories

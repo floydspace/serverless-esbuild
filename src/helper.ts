@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { uniq } from 'ramda';
 import * as Serverless from 'serverless';
 
 export function extractFileNames(
@@ -55,3 +56,35 @@ export function extractFileNames(
     throw new Error('Compilation failed. Please ensure handlers exists with ext .ts or .js');
   });
 }
+
+/**
+ * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
+ * @param deps A nested object as given by the `npm list --json` command
+ * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
+ */
+export const flatDep = (deps: any, filter?: string[]) => {
+  if (!deps) return [];
+  return Object.entries(deps).reduce((acc, [depName, details]) => {
+    if (filter && !filter.includes(depName)) return acc;
+    // @ts-ignore
+    return uniq([...acc, depName, ...flatDep(details.dependencies)]);
+  }, []);
+};
+
+/**
+ * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
+ * @param bundlePath Absolute path to a bundled JS file
+ */
+export const getDepsFromBundle = (bundlePath: string) => {
+  const bundleContent = fs.readFileSync(bundlePath, 'utf8');
+  // @ts-ignore
+  const requireMatch = bundleContent.matchAll(/require\("(.*?)"\)/gim);
+  return uniq(Array.from(requireMatch).map(match => match[1]));
+};
+
+export const doSharePath = (child, parent) => {
+  if (child === parent) return true;
+  const parentTokens = parent.split('/');
+  const childToken = child.split('/');
+  return parentTokens.every((t, i) => childToken[i] === t);
+};

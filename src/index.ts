@@ -11,8 +11,8 @@ import { extractFileNames } from './helper';
 import { packExternalModules } from './pack-externals';
 import { packIndividually } from './pack-individually';
 
-const SERVERLESS_FOLDER = '.serverless';
-const BUILD_FOLDER = '.build';
+export const SERVERLESS_FOLDER = '.serverless';
+export const BUILD_FOLDER = '.build';
 
 interface OptionsExtended extends Serverless.Options {
   verbose?: boolean;
