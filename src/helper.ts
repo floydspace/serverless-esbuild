@@ -6,7 +6,7 @@ export function extractFileNames(
   cwd: string,
   provider: string,
   functions?: Record<string, Serverless.FunctionDefinitionHandler>
-): string[] {
+): { entry: string; func: any }[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way
@@ -33,26 +33,25 @@ export function extractFileNames(
     }
   }
 
-  return Object.values(functions)
-    .map(fn => fn.handler)
-    .map(h => {
-      const fnName = path.extname(h);
-      const fnNameLastAppearanceIndex = h.lastIndexOf(fnName);
-      // replace only last instance to allow the same name for file and handler
-      const fileName = h.substring(0, fnNameLastAppearanceIndex);
+  return Object.values(functions).map(func => {
+    const h = func.handler;
+    const fnName = path.extname(h);
+    const fnNameLastAppearanceIndex = h.lastIndexOf(fnName);
+    // replace only last instance to allow the same name for file and handler
+    const fileName = h.substring(0, fnNameLastAppearanceIndex);
 
-      // Check if the .ts files exists. If so return that to watch
-      if (fs.existsSync(path.join(cwd, fileName + '.ts'))) {
-        return fileName + '.ts';
-      }
+    // Check if the .ts files exists. If so return that to watch
+    if (fs.existsSync(path.join(cwd, fileName + '.ts'))) {
+      return { entry: fileName + '.ts', func };
+    }
 
-      // Check if the .js files exists. If so return that to watch
-      if (fs.existsSync(path.join(cwd, fileName + '.js'))) {
-        return fileName + '.js';
-      }
+    // Check if the .js files exists. If so return that to watch
+    if (fs.existsSync(path.join(cwd, fileName + '.js'))) {
+      return { entry: fileName + '.js', func };
+    }
 
-      // Can't find the files. Watch will have an exception anyway. So throw one with error.
-      console.log(`Cannot locate handler - ${fileName} not found`);
-      throw new Error('Compilation failed. Please ensure handlers exists with ext .ts or .js');
-    });
+    // Can't find the files. Watch will have an exception anyway. So throw one with error.
+    console.log(`Cannot locate handler - ${fileName} not found`);
+    throw new Error('Compilation failed. Please ensure handlers exists with ext .ts or .js');
+  });
 }

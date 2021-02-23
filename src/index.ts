@@ -9,6 +9,7 @@ import * as chokidar from 'chokidar';
 
 import { extractFileNames } from './helper';
 import { packExternalModules } from './pack-externals';
+import { packIndividually } from './pack-individually';
 
 const SERVERLESS_FOLDER = '.serverless';
 const BUILD_FOLDER = '.build';
@@ -48,12 +49,19 @@ export class EsbuildPlugin implements Plugin {
   options: OptionsExtended;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
+  buildResults: {
+    result: BuildResult;
+    bundlePath: string;
+    func: any;
+  }[];
   packExternalModules: () => Promise<void>;
+  packIndividually: () => Promise<void>;
 
   constructor(serverless: Serverless, options: OptionsExtended) {
     this.serverless = serverless;
     this.options = options;
     this.packExternalModules = packExternalModules.bind(this);
+    this.packIndividually = packIndividually.bind(this);
 
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
     this.buildOptions = withDefaultOptions<Configuration>(
@@ -82,6 +90,7 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        await this.packIndividually();
       },
       'after:package:createDeploymentArtifacts': async () => {
         await this.cleanup();
@@ -90,6 +99,7 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        await this.packIndividually();
       },
       'after:deploy:function:packageFunction': async () => {
         await this.cleanup();
@@ -132,11 +142,13 @@ export class EsbuildPlugin implements Plugin {
       ignoreInitial: true,
     };
 
-    chokidar
-      .watch(this.buildOptions.watch.pattern, options)
-      .on('all', () =>
-        this.bundle(true).then(() => this.serverless.cli.log('Watching files for changes...'))
-      );
+    chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
+      this.bundle(true)
+        .then(() => this.serverless.cli.log('Watching files for changes...'))
+        .catch(() =>
+          this.serverless.cli.log('Bundle error, waiting for a file change to reload...')
+        )
+    );
   }
 
   prepare() {
@@ -167,7 +179,7 @@ export class EsbuildPlugin implements Plugin {
     }
 
     return Promise.all(
-      this.rootFileNames.map(entry => {
+      this.rootFileNames.map(async ({ entry, func }) => {
         const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
           external: [...this.buildOptions.external, ...this.buildOptions.exclude],
@@ -183,11 +195,15 @@ export class EsbuildPlugin implements Plugin {
         delete config['packagePath'];
         delete config['watch'];
 
-        return build(config);
+        const result = await build(config);
+
+        const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
+        return { result, bundlePath, func };
       })
-    ).then(result => {
+    ).then(results => {
       this.serverless.cli.log('Compiling completed.');
-      return result;
+      this.buildResults = results;
+      return results.map(r => r.result);
     });
   }
 
