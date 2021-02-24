@@ -52,8 +52,8 @@ export async function packIndividually() {
   // get a list of external dependencies already listed in package.json
   const externals = Object.keys(require(path.join(buildDir, 'package.json')).dependencies);
 
-  // get a list of all production dependencies
-  const { dependencies } = await packager.getProdDependencies(buildDir, 10);
+  // get a tree of all production dependencies
+  const { dependencies } = await packager.getProdDependencies(buildDir);
 
   // package each function
   await Promise.all(
