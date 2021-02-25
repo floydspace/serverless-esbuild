@@ -7,6 +7,7 @@ import * as semver from 'semver';
 import { SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
+import { findProjectRoot } from './utils';
 
 function setArtifactPath(func, artifactPath) {
   const version = this.serverless.getVersion();
@@ -50,7 +51,7 @@ export async function packIndividually() {
   const bundlePathList = buildResults.map(b => b.bundlePath);
 
   // get a list of external dependencies already listed in package.json
-  const externals = Object.keys(require(path.join(buildDir, 'package.json')).dependencies);
+  const externals = Object.keys(require(path.join(findProjectRoot(), 'package.json')).dependencies);
 
   // get a tree of all production dependencies
   const { dependencies } = await packager.getProdDependencies(buildDir);

@@ -67,7 +67,7 @@ export class Yarn implements Packager {
 
     const depJson = processOutput.stdout;
     const parsedTree = JSON.parse(depJson);
-    const convertTrees = reduce((__, tree: JSONObject) => {
+    const convertTrees = convertingTrees => reduce((__, tree: JSONObject) => {
       const splitModule = split('@', tree.name);
       // If we have a scoped module we have to re-add the @
       if (startsWith('@', tree.name)) {
@@ -79,7 +79,7 @@ export class Yarn implements Packager {
         dependencies: convertTrees(tree.children),
       };
       return __;
-    }, {});
+    }, {}, convertingTrees);
 
     const trees = pathOr([], ['data', 'trees'], parsedTree);
     const result = {
