@@ -2,12 +2,12 @@ import * as archiver from 'archiver';
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
 import * as path from 'path';
-import { intersection, isEmpty, path as get, uniq } from 'ramda';
+import { intersection, isEmpty, path as get, without } from 'ramda';
 import * as semver from 'semver';
 import { SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
-import { findProjectRoot } from './utils';
+import { humanSize } from './utils';
 
 function setArtifactPath(func, artifactPath) {
   const version = this.serverless.getVersion();
@@ -28,11 +28,11 @@ function setArtifactPath(func, artifactPath) {
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
 export async function packIndividually() {
-  const buildDir = this.serverless.config.servicePath;
-
   // If individually is not set, ignore this part
-  if (!get(['service', 'package', 'individually'], this.serverless)) return null;
+  if (!this.serverless?.service?.package?.individually) return null;
+
   const packager = await Packagers.get(this.buildOptions.packager);
+  const buildDir = this.serverless.config.servicePath;
 
   // get a list of all path in build
   const files = glob.sync('**', {
@@ -51,10 +51,11 @@ export async function packIndividually() {
   const bundlePathList = buildResults.map(b => b.bundlePath);
 
   // get a list of external dependencies already listed in package.json
-  const externals = Object.keys(require(path.join(findProjectRoot(), 'package.json')).dependencies);
+  const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
+  const hasExternals = !!externals?.length;
 
   // get a tree of all production dependencies
-  const { dependencies } = await packager.getProdDependencies(buildDir);
+  const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(buildDir) : {};
 
   // package each function
   await Promise.all(
@@ -67,9 +68,14 @@ export async function packIndividually() {
         ...bundlePathList.filter(p => p !== bundlePath),
       ];
 
-      const bundleDeps = getDepsFromBundle(path.join(buildDir, bundlePath));
-      const bundleExternals = intersection(bundleDeps, externals);
-      const depWhiteList = flatDep(dependencies, bundleExternals);
+      // allowed external dependencies in the final zip
+      let depWhiteList = [];
+
+      if (hasExternals) {
+        const bundleDeps = getDepsFromBundle(path.join(buildDir, bundlePath));
+        const bundleExternals = intersection(bundleDeps, externals);
+        depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
+      }
 
       // Create zip and open it
       const zip = archiver.create('zip');
@@ -91,6 +97,7 @@ export async function packIndividually() {
 
           // exclude non whitelisted dependencies
           if (filePath.startsWith('node_modules')) {
+            if (!hasExternals) return;
             if (
               // this is needed for dependencies that maps to a path (like scopped ones)
               !depWhiteList.find(dep => doSharePath(filePath, 'node_modules/' + dep))
@@ -115,7 +122,11 @@ export async function packIndividually() {
 
       return new Promise((resolve, reject) => {
         output.on('close', () => {
-          this.serverless.cli.log(`Zip function: ${func.name} [${Date.now() - startZip} ms]`);
+          // log zip results
+          const { size } = fs.statSync(artifactPath);
+          this.serverless.cli.log(
+            `Zip function: ${func.name} - ${humanSize(size)} [${Date.now() - startZip} ms]`
+          );
 
           // defined present zip as output artifact
           setArtifactPath.call(this, func, path.relative(this.originalServicePath, artifactPath));

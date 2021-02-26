@@ -67,19 +67,24 @@ export class Yarn implements Packager {
 
     const depJson = processOutput.stdout;
     const parsedTree = JSON.parse(depJson);
-    const convertTrees = convertingTrees => reduce((__, tree: JSONObject) => {
-      const splitModule = split('@', tree.name);
-      // If we have a scoped module we have to re-add the @
-      if (startsWith('@', tree.name)) {
-        splitModule.splice(0, 1);
-        splitModule[0] = '@' + splitModule[0];
-      }
-      __[head(splitModule)] = {
-        version: join('@', tail(splitModule)),
-        dependencies: convertTrees(tree.children),
-      };
-      return __;
-    }, {}, convertingTrees);
+    const convertTrees = convertingTrees =>
+      reduce(
+        (__, tree: JSONObject) => {
+          const splitModule = split('@', tree.name);
+          // If we have a scoped module we have to re-add the @
+          if (startsWith('@', tree.name)) {
+            splitModule.splice(0, 1);
+            splitModule[0] = '@' + splitModule[0];
+          }
+          __[head(splitModule)] = {
+            version: join('@', tail(splitModule)),
+            dependencies: convertTrees(tree.children),
+          };
+          return __;
+        },
+        {},
+        convertingTrees
+      );
 
     const trees = pathOr([], ['data', 'trees'], parsedTree);
     const result = {

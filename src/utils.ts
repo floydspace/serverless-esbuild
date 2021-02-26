@@ -21,8 +21,12 @@ export class SpawnError extends Error {
  * @param {string[]} [args] - Arguments
  * @param {Object} [options] - Options for child_process.spawn
  */
-export function spawnProcess(command: string, args: string[], options: childProcess.SpawnOptionsWithoutStdio) {
-  return new Promise<{stdout: string; stderr: string}>((resolve, reject) => {
+export function spawnProcess(
+  command: string,
+  args: string[],
+  options: childProcess.SpawnOptionsWithoutStdio
+) {
+  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
     const child = childProcess.spawn(command, args, options);
     let stdout = '';
     let stderr = '';
@@ -41,7 +45,13 @@ export function spawnProcess(command: string, args: string[], options: childProc
     });
     child.on('close', exitCode => {
       if (exitCode !== 0) {
-        reject(new SpawnError(`${command} ${join(' ', args)} failed with code ${exitCode}`, stdout, stderr));
+        reject(
+          new SpawnError(
+            `${command} ${join(' ', args)} failed with code ${exitCode}`,
+            stdout,
+            stderr
+          )
+        );
       } else {
         resolve({ stdout, stderr });
       }
@@ -71,8 +81,11 @@ export function findUp(name: string, directory: string = process.cwd()): string 
  * Forwards `rootDir` or finds project root folder.
  */
 export function findProjectRoot(rootDir?: string): string | undefined {
-  return rootDir
-    ?? findUp('yarn.lock')
-    ?? findUp('package-lock.json')
-    ?? findUp('package.json');
+  return rootDir ?? findUp('yarn.lock') ?? findUp('package-lock.json') ?? findUp('package.json');
 }
+
+export const humanSize = (size: number) => {
+  const i = Math.floor(Math.log(size) / Math.log(1024));
+  const sanitized = (size / Math.pow(1024, i)).toFixed(2);
+  return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
+};
