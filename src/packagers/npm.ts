@@ -20,20 +20,20 @@ export class NPM implements Packager {
     return true;
   }
 
-  async getProdDependencies(cwd: string, depth: number) {
+  async getProdDependencies(cwd: string, depth?: number) {
     // Get first level dependency graph
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = [
       'ls',
       '-prod', // Only prod dependencies
       '-json',
-      `-depth=${depth || 1}`
-    ];
+      depth ? `-depth=${depth}` : null,
+    ].filter(Boolean);
 
     const ignoredNpmErrors = [
       { npmError: 'extraneous', log: false },
       { npmError: 'missing', log: false },
-      { npmError: 'peer dep missing', log: true }
+      { npmError: 'peer dep missing', log: true },
     ];
 
     try {
@@ -45,15 +45,22 @@ export class NPM implements Packager {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
         const errors = split('\n', err.stderr);
-        const failed = reduce((f, error) => {
-          if (f) {
-            return true;
-          }
-          return (
-            !isEmpty(error) &&
-            !any(ignoredError => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredNpmErrors)
-          );
-        }, false, errors);
+        const failed = reduce(
+          (f, error) => {
+            if (f) {
+              return true;
+            }
+            return (
+              !isEmpty(error) &&
+              !any(
+                ignoredError => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
+                ignoredNpmErrors
+              )
+            );
+          },
+          false,
+          errors
+        );
 
         if (!failed && !isEmpty(err.stdout)) {
           return { stdout: err.stdout };
@@ -111,10 +118,12 @@ export class NPM implements Packager {
   async runScripts(cwd, scriptNames) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
 
-    await Promise.all(scriptNames.map(scriptName => {
-      const args = ['run', scriptName];
+    await Promise.all(
+      scriptNames.map(scriptName => {
+        const args = ['run', scriptName];
 
-      return spawnProcess(command, args, { cwd });
-    }));
+        return spawnProcess(command, args, { cwd });
+      })
+    );
   }
 }

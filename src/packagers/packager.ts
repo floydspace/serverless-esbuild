@@ -4,7 +4,7 @@ export interface Packager {
   lockfileName: string;
   copyPackageSectionNames: Array<string>;
   mustCopyModules: boolean;
-  getProdDependencies(cwd: string, depth: number): Promise<JSONObject>;
+  getProdDependencies(cwd: string, depth?: number): Promise<JSONObject>;
   rebaseLockfile(pathToPackageRoot: string, lockfile: JSONObject): JSONObject;
   install(cwd: string): Promise<void>;
   prune(cwd: string): Promise<void>;

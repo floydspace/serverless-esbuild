@@ -24,9 +24,11 @@ export class Yarn implements Packager {
     return false;
   }
 
-  async getProdDependencies(cwd, depth) {
+  async getProdDependencies(cwd: string, depth?: number) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    const args = ['list', `--depth=${depth || 1}`, '--json', '--production'];
+    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(
+      Boolean
+    );
 
     // If we need to ignore some errors add them here
     const ignoredYarnErrors = [];
@@ -38,15 +40,22 @@ export class Yarn implements Packager {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
         const errors = split('\n', err.stderr);
-        const failed = reduce((f, error) => {
-          if (f) {
-            return true;
-          }
-          return (
-            !isEmpty(error) &&
-            !any(ignoredError => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredYarnErrors)
-          );
-        }, false, errors);
+        const failed = reduce(
+          (f, error) => {
+            if (f) {
+              return true;
+            }
+            return (
+              !isEmpty(error) &&
+              !any(
+                ignoredError => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
+                ignoredYarnErrors
+              )
+            );
+          },
+          false,
+          errors
+        );
 
         if (!failed && !isEmpty(err.stdout)) {
           return { stdout: err.stdout };
@@ -58,24 +67,29 @@ export class Yarn implements Packager {
 
     const depJson = processOutput.stdout;
     const parsedTree = JSON.parse(depJson);
-    const convertTrees = reduce((__, tree: JSONObject) => {
-      const splitModule = split('@', tree.name);
-      // If we have a scoped module we have to re-add the @
-      if (startsWith('@', tree.name)) {
-        splitModule.splice(0, 1);
-        splitModule[0] = '@' + splitModule[0];
-      }
-      __[head(splitModule)] = {
-        version: join('@', tail(splitModule)),
-        dependencies: convertTrees(tree.children)
-      };
-      return __;
-    }, {});
+    const convertTrees = convertingTrees =>
+      reduce(
+        (__, tree: JSONObject) => {
+          const splitModule = split('@', tree.name);
+          // If we have a scoped module we have to re-add the @
+          if (startsWith('@', tree.name)) {
+            splitModule.splice(0, 1);
+            splitModule[0] = '@' + splitModule[0];
+          }
+          __[head(splitModule)] = {
+            version: join('@', tail(splitModule)),
+            dependencies: convertTrees(tree.children),
+          };
+          return __;
+        },
+        {},
+        convertingTrees
+      );
 
     const trees = pathOr([], ['data', 'trees'], parsedTree);
     const result = {
       problems: [],
-      dependencies: convertTrees(trees)
+      dependencies: convertTrees(trees),
     };
     return result;
   }
@@ -89,12 +103,16 @@ export class Yarn implements Packager {
     while ((match = fileVersionMatcher.exec(lockfile)) !== null) {
       replacements.push({
         oldRef: match[1],
-        newRef: replace(/\\/g, '/', `${pathToPackageRoot}/${match[1]}`)
+        newRef: replace(/\\/g, '/', `${pathToPackageRoot}/${match[1]}`),
       });
     }
 
     // Replace all lines in lockfile
-    return reduce((__, replacement) => replace(__, replacement.oldRef, replacement.newRef), lockfile, replacements);
+    return reduce(
+      (__, replacement) => replace(__, replacement.oldRef, replacement.newRef),
+      lockfile,
+      replacements
+    );
   }
 
   async install(cwd) {
@@ -111,6 +129,8 @@ export class Yarn implements Packager {
 
   async runScripts(cwd, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    await Promise.all(scriptNames.map(scriptName => spawnProcess(command, ['run', scriptName], { cwd })));
+    await Promise.all(
+      scriptNames.map(scriptName => spawnProcess(command, ['run', scriptName], { cwd }))
+    );
   }
 }
