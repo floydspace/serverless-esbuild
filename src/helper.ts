@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { uniq } from 'ramda';
 import * as Serverless from 'serverless';
+import * as matchAll from 'string.prototype.matchall';
 
 export function extractFileNames(
   cwd: string,
@@ -66,8 +67,7 @@ export const flatDep = (deps: any, filter?: string[]) => {
   if (!deps) return [];
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
-    // @ts-ignore
-    return uniq([...acc, depName, ...flatDep(details.dependencies)]);
+    return uniq([...acc, depName, ...flatDep((details as any).dependencies)]);
   }, []);
 };
 
@@ -77,8 +77,7 @@ export const flatDep = (deps: any, filter?: string[]) => {
  */
 export const getDepsFromBundle = (bundlePath: string) => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  // @ts-ignore
-  const requireMatch = bundleContent.matchAll(/require\("(.*?)"\)/gim);
+  const requireMatch = matchAll(bundleContent, /require\("(.*?)"\)/gim);
   return uniq(Array.from(requireMatch).map(match => match[1]));
 };
 
