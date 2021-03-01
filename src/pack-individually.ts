@@ -1,13 +1,12 @@
-import * as archiver from 'archiver';
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
 import * as path from 'path';
 import { intersection, isEmpty, path as get, without } from 'ramda';
 import * as semver from 'semver';
-import { SERVERLESS_FOLDER } from '.';
+import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
-import { humanSize } from './utils';
+import { humanSize, zip } from './utils';
 
 function setArtifactPath(func, artifactPath) {
   const version = this.serverless.getVersion();
@@ -27,24 +26,23 @@ function setArtifactPath(func, artifactPath) {
 
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
-export async function packIndividually() {
-  // If individually is not set, ignore this part
-  if (!this.serverless?.service?.package?.individually) return null;
-
-  const packager = await Packagers.get(this.buildOptions.packager);
-  const buildDir = this.serverless.config.servicePath;
-
+export async function packIndividually(this: EsbuildPlugin) {
   // get a list of all path in build
   const files = glob.sync('**', {
-    cwd: buildDir,
+    cwd: this.buildDirPath,
     dot: true,
     silent: true,
     follow: true,
   });
 
   if (isEmpty(files)) {
-    throw new this.serverless.classes.Error('Packaging: No files found');
+    throw new Error('Packaging: No files found');
   }
+
+  // If individually is not set, ignore this part
+  if (!this.serverless?.service?.package?.individually) return null;
+
+  const packager = await Packagers.get(this.buildOptions.packager);
 
   // get a list of every function bundle
   const buildResults = this.buildResults;
@@ -55,12 +53,13 @@ export async function packIndividually() {
   const hasExternals = !!externals?.length;
 
   // get a tree of all production dependencies
-  const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(buildDir) : {};
+  const packagerDependenciesList = hasExternals
+    ? await packager.getProdDependencies(this.buildDirPath)
+    : {};
 
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, bundlePath }) => {
-      const startZip = Date.now();
       const name = func.name;
 
       const excludedFilesOrDirectory = [
@@ -72,68 +71,50 @@ export async function packIndividually() {
       let depWhiteList = [];
 
       if (hasExternals) {
-        const bundleDeps = getDepsFromBundle(path.join(buildDir, bundlePath));
+        const bundleDeps = getDepsFromBundle(path.join(this.buildDirPath, bundlePath));
         const bundleExternals = intersection(bundleDeps, externals);
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }
 
-      // Create zip and open it
-      const zip = archiver.create('zip');
       const zipName = `${name}.zip`;
-      const artifactPath = path.join(buildDir, SERVERLESS_FOLDER, zipName);
-      this.serverless.utils.writeFileDir(artifactPath);
-      const output = fs.createWriteStream(artifactPath);
+      const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
-      // write zip
-      output.on('open', () => {
-        zip.pipe(output);
-
-        files.forEach((filePath: string) => {
+      // filter files
+      const filesPathList = files
+        .filter((filePath: string) => {
           // exclude non individual files based on file or dir path
-          if (excludedFilesOrDirectory.find(p => filePath.startsWith(p))) return;
-
-          // exclude generated zip TODO:better logic
-          if (filePath.endsWith('.zip')) return;
+          if (excludedFilesOrDirectory.find(p => filePath.startsWith(p))) return false;
 
           // exclude non whitelisted dependencies
           if (filePath.startsWith('node_modules')) {
-            if (!hasExternals) return;
+            if (!hasExternals) return false;
             if (
               // this is needed for dependencies that maps to a path (like scopped ones)
               !depWhiteList.find(dep => doSharePath(filePath, 'node_modules/' + dep))
             )
-              return;
+              return false;
           }
 
-          // exclude directories
-          const fullPath = path.resolve(buildDir, filePath);
-          const stats = fs.statSync(fullPath);
-          if (stats.isDirectory()) return;
+          return true;
+        })
+        // get absolute path
+        .map(name => ({ path: path.join(this.buildDirPath, name), name }));
 
-          zip.append(fs.readFileSync(fullPath), {
-            name: filePath,
-            mode: stats.mode,
-            date: new Date(0), // necessary to get the same hash when zipping the same content
-          });
-        });
+      const startZip = Date.now();
+      await zip(artifactPath, filesPathList);
 
-        zip.finalize();
-      });
+      const { size } = fs.statSync(artifactPath);
 
-      return new Promise((resolve, reject) => {
-        output.on('close', () => {
-          // log zip results
-          const { size } = fs.statSync(artifactPath);
-          this.serverless.cli.log(
-            `Zip function: ${func.name} - ${humanSize(size)} [${Date.now() - startZip} ms]`
-          );
+      this.serverless.cli.log(
+        `Zip function: ${func.name} - ${humanSize(size)} [${Date.now() - startZip} ms]`
+      );
 
-          // defined present zip as output artifact
-          setArtifactPath.call(this, func, path.relative(this.originalServicePath, artifactPath));
-          resolve(artifactPath);
-        });
-        zip.on('error', err => reject(err));
-      });
+      // defined present zip as output artifact
+      setArtifactPath.call(
+        this,
+        func,
+        path.relative(this.serverless.config.servicePath, artifactPath)
+      );
     })
   );
 }

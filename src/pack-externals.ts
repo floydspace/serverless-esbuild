@@ -44,7 +44,11 @@ function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) 
 /**
  * Add the given modules to a package json's dependencies.
  */
-function addModulesToPackageJson(externalModules: string[], packageJson: JSONObject, pathToPackageRoot: string) {
+function addModulesToPackageJson(
+  externalModules: string[],
+  packageJson: JSONObject,
+  pathToPackageRoot: string
+) {
   forEach(externalModule => {
     const splitModule = split('@', externalModule);
     // If we have a scoped module we have to re-add the @
@@ -88,17 +92,29 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
           externalModule.external,
           'package.json'
         );
-        const peerDependencies = require(modulePackagePath).peerDependencies as Record<string, string>;
+        const peerDependencies = require(modulePackagePath).peerDependencies as Record<
+          string,
+          string
+        >;
         if (!isEmpty(peerDependencies)) {
-          this.options.verbose && this.serverless.cli.log(`Adding explicit peers for dependency ${externalModule.external}`);
-          const peerModules = getProdModules.call(this,
-            compose(map(([external]) => ({ external })), toPairs)(peerDependencies),
+          this.options.verbose &&
+            this.serverless.cli.log(
+              `Adding explicit peers for dependency ${externalModule.external}`
+            );
+          const peerModules = getProdModules.call(
+            this,
+            compose(
+              map(([external]) => ({ external })),
+              toPairs
+            )(peerDependencies),
             packageJsonPath
           );
           Array.prototype.push.apply(prodModules, peerModules);
         }
       } catch (e) {
-        this.serverless.cli.log(`WARNING: Could not check for peer dependencies of ${externalModule.external}`);
+        this.serverless.cli.log(
+          `WARNING: Could not check for peer dependencies of ${externalModule.external}`
+        );
       }
     } else {
       if (!packageJson.devDependencies || !packageJson.devDependencies[externalModule.external]) {
@@ -113,7 +129,9 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
           this.serverless.cli.log(
             `ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`
           );
-          throw new this.serverless.classes.Error(`Serverless-webpack dependency error: ${externalModule.external}.`);
+          throw new this.serverless.classes.Error(
+            `Serverless-webpack dependency error: ${externalModule.external}.`
+          );
         }
 
         this.options.verbose &&
@@ -148,7 +166,8 @@ export async function packExternalModules(this: EsbuildPlugin) {
   }
 
   // Read plugin configuration
-  const packageJsonPath = this.buildOptions.packagePath || path.join(findProjectRoot(), './package.json');
+  const packageJsonPath =
+    this.buildOptions.packagePath || path.join(findProjectRoot(), './package.json');
 
   // Determine and create packager
   const packager = await Packagers.get(this.buildOptions.packager);
@@ -158,7 +177,8 @@ export async function packExternalModules(this: EsbuildPlugin) {
   const packageJson = this.serverless.utils.readFileSync(packageJsonPath);
   const packageSections = pick(sectionNames, packageJson);
   if (!isEmpty(packageSections)) {
-    this.options.verbose && this.serverless.cli.log(`Using package.json sections ${join(', ', keys(packageSections))}`);
+    this.options.verbose &&
+      this.serverless.cli.log(`Using package.json sections ${join(', ', keys(packageSections))}`);
   }
 
   // Get first level dependency graph
@@ -166,7 +186,9 @@ export async function packExternalModules(this: EsbuildPlugin) {
 
   // (1) Generate dependency composition
   const externalModules = map(external => ({ external }), externals);
-  const compositeModules: JSONObject = uniq(getProdModules.call(this, externalModules, packageJsonPath));
+  const compositeModules: JSONObject = uniq(
+    getProdModules.call(this, externalModules, packageJsonPath)
+  );
 
   if (isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
@@ -175,7 +197,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   }
 
   // (1.a) Install all needed modules
-  const compositeModulePath = this.serverless.config.servicePath;
+  const compositeModulePath = this.buildDirPath;
   const compositePackageJson = path.join(compositeModulePath, 'package.json');
 
   // (1.a.1) Create a package.json
@@ -190,7 +212,10 @@ export async function packExternalModules(this: EsbuildPlugin) {
   );
   const relativePath = path.relative(compositeModulePath, path.dirname(packageJsonPath));
   addModulesToPackageJson(compositeModules, compositePackage, relativePath);
-  this.serverless.utils.writeFileSync(compositePackageJson, JSON.stringify(compositePackage, null, 2));
+  this.serverless.utils.writeFileSync(
+    compositePackageJson,
+    JSON.stringify(compositePackage, null, 2)
+  );
 
   // (1.a.2) Copy package-lock.json if it exists, to prevent unwanted upgrades
   const packageLockPath = path.join(path.dirname(packageJsonPath), packager.lockfileName);
