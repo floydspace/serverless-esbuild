@@ -48,7 +48,7 @@ export async function packIndividually() {
 
   // get a list of every function bundle
   const buildResults = this.buildResults;
-  const bundlePathList = buildResults.map(b => b.bundlePath);
+  const bundlePathList = buildResults.map(b => path.dirname(b.bundlePath));
 
   // get a list of external dependencies already listed in package.json
   const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
@@ -63,9 +63,9 @@ export async function packIndividually() {
       const startZip = Date.now();
       const name = func.name;
 
-      const excludedFiles = [
+      const excludedFilesOrDirectory = [
         ...excludedFilesDefault,
-        ...bundlePathList.filter(p => p !== bundlePath),
+        ...bundlePathList.filter(p => !bundlePath.startsWith(p)),
       ];
 
       // allowed external dependencies in the final zip
@@ -89,8 +89,8 @@ export async function packIndividually() {
         zip.pipe(output);
 
         files.forEach((filePath: string) => {
-          // exclude non individual files
-          if (excludedFiles.includes(filePath)) return;
+          // exclude non individual files based on file or dir path
+          if (excludedFilesOrDirectory.find(p => filePath.startsWith(p))) return;
 
           // exclude generated zip TODO:better logic
           if (filePath.endsWith('.zip')) return;
