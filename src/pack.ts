@@ -8,7 +8,7 @@ import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 import { humanSize, zip } from './utils';
 
-function setArtifactPath(func, artifactPath) {
+function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
   const version = this.serverless.getVersion();
   // Serverless changed the artifact path location in version 1.18
   if (semver.lt(version, '1.18.0')) {
@@ -26,22 +26,42 @@ function setArtifactPath(func, artifactPath) {
 
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
-export async function packIndividually(this: EsbuildPlugin) {
+export async function pack(this: EsbuildPlugin) {
   // get a list of all path in build
-  const files = glob.sync('**', {
-    cwd: this.buildDirPath,
-    dot: true,
-    silent: true,
-    follow: true,
-  });
+  const files: { localPath: string; rootPath: string }[] = glob
+    .sync('**', {
+      cwd: this.buildDirPath,
+      dot: true,
+      silent: true,
+      follow: true,
+    })
+    .filter(p => !excludedFilesDefault.includes(p))
+    .map(localPath => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
     throw new Error('Packaging: No files found');
   }
 
-  // If individually is not set, ignore this part
-  if (!this.serverless?.service?.package?.individually) return null;
+  // 1) If individually is not set, just zip the all build dir and return
+  if (!this.serverless?.service?.package?.individually) {
+    const zipName = `${this.serverless.service.service}.zip`;
+    const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
+    const startZip = Date.now();
+    await zip(artifactPath, files);
+    const { size } = fs.statSync(artifactPath);
+
+    this.serverless.cli.log(
+      `Zip service ${this.serverless.service.service} - ${humanSize(size)} [${
+        Date.now() - startZip
+      } ms]`
+    );
+    // defined present zip as output artifact
+    this.serverless.service.package.artifact = artifactPath;
+    return;
+  }
+
+  // 2) If individually is set, we'll optimize files and zip per-function
   const packager = await Packagers.get(this.buildOptions.packager);
 
   // get a list of every function bundle
@@ -62,10 +82,7 @@ export async function packIndividually(this: EsbuildPlugin) {
     buildResults.map(async ({ func, bundlePath }) => {
       const name = func.name;
 
-      const excludedFilesOrDirectory = [
-        ...excludedFilesDefault,
-        ...bundlePathList.filter(p => !bundlePath.startsWith(p)),
-      ];
+      const excludedFilesOrDirectory = bundlePathList.filter(p => !bundlePath.startsWith(p));
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];
@@ -80,25 +97,22 @@ export async function packIndividually(this: EsbuildPlugin) {
       const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
       // filter files
-      const filesPathList = files
-        .filter((filePath: string) => {
-          // exclude non individual files based on file or dir path
-          if (excludedFilesOrDirectory.find(p => filePath.startsWith(p))) return false;
+      const filesPathList = files.filter(({ rootPath, localPath }) => {
+        // exclude non individual files based on file or dir path
+        if (excludedFilesOrDirectory.find(p => localPath.startsWith(p))) return false;
 
-          // exclude non whitelisted dependencies
-          if (filePath.startsWith('node_modules')) {
-            if (!hasExternals) return false;
-            if (
-              // this is needed for dependencies that maps to a path (like scopped ones)
-              !depWhiteList.find(dep => doSharePath(filePath, 'node_modules/' + dep))
-            )
-              return false;
-          }
+        // exclude non whitelisted dependencies
+        if (localPath.startsWith('node_modules')) {
+          if (!hasExternals) return false;
+          if (
+            // this is needed for dependencies that maps to a path (like scopped ones)
+            !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
+          )
+            return false;
+        }
 
-          return true;
-        })
-        // get absolute path
-        .map(name => ({ path: path.join(this.buildDirPath, name), name }));
+        return true;
+      });
 
       const startZip = Date.now();
       await zip(artifactPath, filesPathList);
@@ -110,7 +124,7 @@ export async function packIndividually(this: EsbuildPlugin) {
       );
 
       // defined present zip as output artifact
-      setArtifactPath.call(
+      setFunctionArtifactPath.call(
         this,
         func,
         path.relative(this.serverless.config.servicePath, artifactPath)

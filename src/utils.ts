@@ -91,8 +91,9 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = (zipPath: string, filesPathList: { path: string; name: string }[]) => {
+export const zip = (zipPath: string, filesPathList: { rootPath: string; localPath: string }[]) => {
   fs.mkdirpSync(path.dirname(zipPath));
+
   const zip = archiver.create('zip');
   const output = fs.createWriteStream(zipPath);
 
@@ -101,11 +102,11 @@ export const zip = (zipPath: string, filesPathList: { path: string; name: string
     zip.pipe(output);
 
     filesPathList.forEach(file => {
-      const stats = fs.statSync(file.path);
+      const stats = fs.statSync(file.rootPath);
       if (stats.isDirectory()) return;
 
-      zip.append(fs.readFileSync(file.path), {
-        name: file.name,
+      zip.append(fs.readFileSync(file.rootPath), {
+        name: file.localPath,
         mode: stats.mode,
         date: new Date(0), // necessary to get the same hash when zipping the same content
       });
