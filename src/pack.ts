@@ -27,6 +27,10 @@ function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
 export async function pack(this: EsbuildPlugin) {
+  // GOOGLE Provider requires a package.json and NO node_modules
+  const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
+  const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
+
   // get a list of all path in build
   const files: { localPath: string; rootPath: string }[] = glob
     .sync('**', {
@@ -35,7 +39,7 @@ export async function pack(this: EsbuildPlugin) {
       silent: true,
       follow: true,
     })
-    .filter(p => !excludedFilesDefault.includes(p))
+    .filter(p => !excludedFiles.includes(p))
     .map(localPath => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
@@ -68,7 +72,7 @@ export async function pack(this: EsbuildPlugin) {
   const buildResults = this.buildResults;
   const bundlePathList = buildResults.map(b => path.dirname(b.bundlePath));
 
-  // get a list of external dependencies already listed in package.json
+  // get a list of externals
   const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
   const hasExternals = !!externals?.length;
 
@@ -103,7 +107,8 @@ export async function pack(this: EsbuildPlugin) {
 
         // exclude non whitelisted dependencies
         if (localPath.startsWith('node_modules')) {
-          if (!hasExternals) return false;
+          // if no externals is set or if the provider is google, we do not need any files from node_modules
+          if (!hasExternals || isGoogleProvider) return false;
           if (
             // this is needed for dependencies that maps to a path (like scopped ones)
             !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
