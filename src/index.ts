@@ -9,10 +9,13 @@ import * as chokidar from 'chokidar';
 
 import { extractFileNames } from './helper';
 import { packExternalModules } from './pack-externals';
-import { packIndividually } from './pack-individually';
+import { pack } from './pack';
+import { preOffline } from './pre-offline';
+import { preLocal } from './pre-local';
 
 export const SERVERLESS_FOLDER = '.serverless';
 export const BUILD_FOLDER = '.build';
+export const WORK_FOLDER = '.esbuild';
 
 interface OptionsExtended extends Serverless.Options {
   verbose?: boolean;
@@ -38,12 +41,13 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   packager: 'npm',
   watch: {
     pattern: './**/*.(js|ts)',
-    ignore: [BUILD_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
+    ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
   },
 };
 
 export class EsbuildPlugin implements Plugin {
-  private originalServicePath: string;
+  workDirPath: string;
+  buildDirPath: string;
 
   serverless: Serverless;
   options: OptionsExtended;
@@ -55,13 +59,20 @@ export class EsbuildPlugin implements Plugin {
     func: any;
   }[];
   packExternalModules: () => Promise<void>;
-  packIndividually: () => Promise<void>;
+  pack: () => Promise<void>;
+  preOffline: () => Promise<void>;
+  preLocal: () => void;
 
   constructor(serverless: Serverless, options: OptionsExtended) {
     this.serverless = serverless;
     this.options = options;
     this.packExternalModules = packExternalModules.bind(this);
-    this.packIndividually = packIndividually.bind(this);
+    this.pack = pack.bind(this);
+    this.preOffline = preOffline.bind(this);
+    this.preLocal = preLocal.bind(this);
+
+    this.workDirPath = path.join(this.serverless.config.servicePath, WORK_FOLDER);
+    this.buildDirPath = path.join(this.workDirPath, BUILD_FOLDER);
 
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
     this.buildOptions = withDefaultOptions<Configuration>(
@@ -78,19 +89,21 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        await this.preOffline();
         this.watch();
       },
       'before:offline:start:init': async () => {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        await this.preOffline();
         this.watch();
       },
       'before:package:createDeploymentArtifacts': async () => {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
-        await this.packIndividually();
+        await this.pack();
       },
       'after:package:createDeploymentArtifacts': async () => {
         await this.cleanup();
@@ -99,7 +112,7 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
-        await this.packIndividually();
+        await this.pack();
       },
       'after:deploy:function:packageFunction': async () => {
         await this.cleanup();
@@ -108,6 +121,7 @@ export class EsbuildPlugin implements Plugin {
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
+        await this.preLocal();
       },
     };
   }
@@ -129,7 +143,7 @@ export class EsbuildPlugin implements Plugin {
 
   get rootFileNames() {
     return extractFileNames(
-      this.originalServicePath,
+      this.serverless.config.servicePath,
       this.serverless.service.provider.name,
       this.functions
     );
@@ -152,6 +166,8 @@ export class EsbuildPlugin implements Plugin {
   }
 
   prepare() {
+    fs.mkdirpSync(this.buildDirPath);
+    fs.mkdirpSync(path.join(this.workDirPath, SERVERLESS_FOLDER));
     // exclude serverless-esbuild
     for (const fnName in this.functions) {
       const fn = this.serverless.service.getFunction(fnName);
@@ -171,20 +187,13 @@ export class EsbuildPlugin implements Plugin {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
-    if (!this.originalServicePath) {
-      // Save original service path and functions
-      this.originalServicePath = this.serverless.config.servicePath;
-      // Fake service path so that serverless will know what to zip
-      this.serverless.config.servicePath = path.join(this.originalServicePath, BUILD_FOLDER);
-    }
-
     return Promise.all(
       this.rootFileNames.map(async ({ entry, func }) => {
         const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
           external: [...this.buildOptions.external, ...this.buildOptions.exclude],
           entryPoints: [entry],
-          outdir: path.join(this.originalServicePath, BUILD_FOLDER, path.dirname(entry)),
+          outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',
           incremental,
         };
@@ -216,7 +225,7 @@ export class EsbuildPlugin implements Plugin {
       const files = await globby(service.package.include);
 
       for (const filename of files) {
-        const destFileName = path.resolve(path.join(BUILD_FOLDER, filename));
+        const destFileName = path.resolve(path.join(this.buildDirPath, filename));
         const dirname = path.dirname(destFileName);
 
         if (!fs.existsSync(dirname)) {
@@ -224,7 +233,7 @@ export class EsbuildPlugin implements Plugin {
         }
 
         if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), path.resolve(path.join(BUILD_FOLDER, filename)));
+          fs.copySync(path.resolve(filename), path.resolve(path.join(this.buildDirPath, filename)));
         }
       }
     }
@@ -238,14 +247,14 @@ export class EsbuildPlugin implements Plugin {
     const { service } = this.serverless;
 
     await fs.copy(
-      path.join(this.originalServicePath, BUILD_FOLDER, SERVERLESS_FOLDER),
-      path.join(this.originalServicePath, SERVERLESS_FOLDER)
+      path.join(this.workDirPath, SERVERLESS_FOLDER),
+      path.join(this.serverless.config.servicePath, SERVERLESS_FOLDER)
     );
 
     if (this.options.function) {
       const fn = service.getFunction(this.options.function);
       fn.package.artifact = path.join(
-        this.originalServicePath,
+        this.serverless.config.servicePath,
         SERVERLESS_FOLDER,
         path.basename(fn.package.artifact)
       );
@@ -256,7 +265,7 @@ export class EsbuildPlugin implements Plugin {
       const functionNames = service.getAllFunctions();
       functionNames.forEach(name => {
         service.getFunction(name).package.artifact = path.join(
-          this.originalServicePath,
+          this.serverless.config.servicePath,
           SERVERLESS_FOLDER,
           path.basename(service.getFunction(name).package.artifact)
         );
@@ -265,7 +274,7 @@ export class EsbuildPlugin implements Plugin {
     }
 
     service.package.artifact = path.join(
-      this.originalServicePath,
+      this.serverless.config.servicePath,
       SERVERLESS_FOLDER,
       path.basename(service.package.artifact)
     );
@@ -273,10 +282,8 @@ export class EsbuildPlugin implements Plugin {
 
   async cleanup(): Promise<void> {
     await this.moveArtifacts();
-    // Restore service path
-    this.serverless.config.servicePath = this.originalServicePath;
     // Remove temp build folder
-    fs.removeSync(path.join(this.originalServicePath, BUILD_FOLDER));
+    fs.removeSync(path.join(this.workDirPath));
   }
 }
 

@@ -1,5 +1,4 @@
-💨 serverless-esbuild
-==============
+# 💨 serverless-esbuild
 
 Serverless plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
 
@@ -9,16 +8,15 @@ Serverless plugin for zero-config JavaScript and TypeScript code bundling using 
 [![build status](https://img.shields.io/github/workflow/status/floydspace/serverless-esbuild/release)](https://github.com/floydspace/serverless-esbuild/actions)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-
 ## Features
 
-* Zero-config: Works out of the box without the need to install any other compiler or plugins
-* Supports ESNext syntax with transforming limitations (See *Note*)
-* Supports `sls package`, `sls deploy` and `sls deploy function`
-* Supports `sls invoke local`
-* Integrates nicely with [`serverless-offline`](https://github.com/dherault/serverless-offline)
+- Zero-config: Works out of the box without the need to install any other compiler or plugins
+- Supports ESNext syntax with transforming limitations (See _Note_)
+- Supports `sls package`, `sls deploy` and `sls deploy function`
+- Supports `sls invoke local`
+- Integrates nicely with [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
-*Note*: The default JavaScript syntax target is set to [`ES2017`](https://node.green/#ES2017), so the final bundle will be supported by all [AWS Lambda Node.js runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). If you still using an old lambda runtime and have to respect it you can play with esbuild `target` option, see [JavaScript syntax support](https://github.com/evanw/esbuild#javascript-syntax-support) for more details about syntax transform limitations.
+_Note_: The default JavaScript syntax target is set to [`ES2017`](https://node.green/#ES2017), so the final bundle will be supported by all [AWS Lambda Node.js runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). If you still using an old lambda runtime and have to respect it you can play with esbuild `target` option, see [JavaScript syntax support](https://github.com/evanw/esbuild#javascript-syntax-support) for more details about syntax transform limitations.
 
 ## Install
 
@@ -55,7 +53,6 @@ See [example folder](example) for a minimal example.
 
 All files from `package/include` will be included in the final build file. See [Exclude/Include](https://serverless.com/framework/docs/providers/aws/guide/packaging#exclude--include)
 
-
 ## Usage
 
 ### Automatic compilation
@@ -73,13 +70,13 @@ simulate AWS Lambda and AWS API Gateway locally.
 
 Add the plugins to your `serverless.yml` file and make sure that `serverless-esbuild`
 precedes `serverless-offline` as the order is important:
+
 ```yaml
-  plugins:
-    ...
-    - serverless-esbuild
-    ...
-    - serverless-offline
-    ...
+plugins: ...
+  - serverless-esbuild
+  ...
+  - serverless-offline
+  ...
 ```
 
 Run `serverless offline` or `serverless offline start` to start the Lambda/API simulation.
@@ -109,11 +106,12 @@ Note: When overriding ignore pattern, remember to ignore `.build` directory to a
 
 Configure your service the same as mentioned above, but additionally add the `serverless-dynamodb-local`
 plugin as follows:
+
 ```yaml
-  plugins:
-    - serverless-esbuild
-    - serverless-dynamodb-local
-    - serverless-offline
+plugins:
+  - serverless-esbuild
+  - serverless-dynamodb-local
+  - serverless-offline
 ```
 
 Run `serverless offline start`.
@@ -136,4 +134,8 @@ Options are:
 
 [Victor Korzunin](https://floydspace.github.io/)
 
-Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript)
+## Contributors
+
+[Loup Topalian](https://github.com/olup)
+
+Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)

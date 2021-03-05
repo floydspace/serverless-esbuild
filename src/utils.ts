@@ -1,3 +1,4 @@
+import * as archiver from 'archiver';
 import * as childProcess from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -88,4 +89,36 @@ export const humanSize = (size: number) => {
   const i = Math.floor(Math.log(size) / Math.log(1024));
   const sanitized = (size / Math.pow(1024, i)).toFixed(2);
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
+};
+
+export const zip = (zipPath: string, filesPathList: { rootPath: string; localPath: string }[]) => {
+  fs.mkdirpSync(path.dirname(zipPath));
+
+  const zip = archiver.create('zip');
+  const output = fs.createWriteStream(zipPath);
+
+  // write zip
+  output.on('open', () => {
+    zip.pipe(output);
+
+    filesPathList.forEach(file => {
+      const stats = fs.statSync(file.rootPath);
+      if (stats.isDirectory()) return;
+
+      zip.append(fs.readFileSync(file.rootPath), {
+        name: file.localPath,
+        mode: stats.mode,
+        date: new Date(0), // necessary to get the same hash when zipping the same content
+      });
+    });
+
+    zip.finalize();
+  });
+
+  return new Promise((resolve, reject) => {
+    output.on('close', () => {
+      resolve(zipPath);
+    });
+    zip.on('error', err => reject(err));
+  });
 };
