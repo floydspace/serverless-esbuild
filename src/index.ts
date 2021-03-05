@@ -9,7 +9,7 @@ import * as chokidar from 'chokidar';
 
 import { extractFileNames } from './helper';
 import { packExternalModules } from './pack-externals';
-import { pack } from './pack-individually';
+import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 
