@@ -70,7 +70,7 @@ export async function pack(this: EsbuildPlugin) {
 
   // get a list of every function bundle
   const buildResults = this.buildResults;
-  const bundlePathList = buildResults.map(b => path.dirname(b.bundlePath));
+  const bundlePathList = buildResults.map(b => b.bundlePath);
 
   // get a list of externals
   const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
@@ -86,7 +86,7 @@ export async function pack(this: EsbuildPlugin) {
     buildResults.map(async ({ func, bundlePath }) => {
       const name = func.name;
 
-      const excludedFilesOrDirectory = bundlePathList.filter(p => !bundlePath.startsWith(p));
+      const excludedFiles = bundlePathList.filter(p => !bundlePath.startsWith(p));
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];
@@ -102,15 +102,15 @@ export async function pack(this: EsbuildPlugin) {
 
       // filter files
       const filesPathList = files.filter(({ rootPath, localPath }) => {
-        // exclude non individual files based on file or dir path
-        if (excludedFilesOrDirectory.find(p => localPath.startsWith(p))) return false;
+        // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
+        if (excludedFiles.find(p => localPath.startsWith(p))) return false;
 
         // exclude non whitelisted dependencies
         if (localPath.startsWith('node_modules')) {
           // if no externals is set or if the provider is google, we do not need any files from node_modules
           if (!hasExternals || isGoogleProvider) return false;
           if (
-            // this is needed for dependencies that maps to a path (like scopped ones)
+            // this is needed for dependencies that maps to a path (like scoped ones)
             !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
           )
             return false;
