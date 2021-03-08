@@ -53,6 +53,17 @@ See [example folder](example) for a minimal example.
 
 All files from `package/include` will be included in the final build file. See [Exclude/Include](https://serverless.com/framework/docs/providers/aws/guide/packaging#exclude--include)
 
+### External Dependencies
+
+Packages that are marked as `external` and exist in the package.json's `dependencies` will be installed and included with your build under `node_modules`. You can configure how these are installed:
+
+```yml
+custom:
+  esbuild:
+    packager: yarn # optional - npm or yarn, default is npm
+    packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
+```
+
 ## Usage
 
 ### Automatic compilation
