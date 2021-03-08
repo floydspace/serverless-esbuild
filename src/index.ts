@@ -29,7 +29,6 @@ export interface WatchConfiguration {
 export interface Configuration extends Omit<BuildOptions, 'watch'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
-  rootPackagePath: string;
   exclude: string[];
   watch: WatchConfiguration;
 }

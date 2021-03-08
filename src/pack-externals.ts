@@ -185,8 +185,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   // Read plugin configuration
   // get the root package.json by looking up until we hit a lockfile
   // if this is a yarn workspace, it will be the monorepo package.json
-  const rootPackageJsonPath =
-    this.buildOptions.rootPackagePath || path.join(findProjectRoot(), './package.json');
+  const rootPackageJsonPath = path.join(findProjectRoot(), './package.json');
 
   // get the local package.json by looking up until we hit a package.json file
   // if this is *not* a yarn workspace, it will be the same as rootPackageJsonPath
