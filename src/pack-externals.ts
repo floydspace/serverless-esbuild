@@ -232,7 +232,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   }
 
   // (1.a) Install all needed modules
-  const compositeModulePath = this.serverless.config.servicePath;
+  const compositeModulePath = this.buildDirPath;
   const compositePackageJson = path.join(compositeModulePath, 'package.json');
 
   // (1.a.1) Create a package.json
@@ -273,6 +273,12 @@ export async function packExternalModules(this: EsbuildPlugin) {
     }
   }
 
+  // GOOGLE: Copy modules only if not google-cloud-functions
+  // GCF Auto installs the package json
+  if (get(['service', 'provider', 'name'], this.serverless) === 'google') {
+    return;
+  }
+
   const start = Date.now();
   this.serverless.cli.log('Packing external modules: ' + compositeModules.join(', '));
   await packager.install(compositeModulePath, exists);
@@ -283,10 +289,4 @@ export async function packExternalModules(this: EsbuildPlugin) {
   await packager.prune(compositeModulePath);
   this.options.verbose &&
     this.serverless.cli.log(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
-
-  // GOOGLE: Copy modules only if not google-cloud-functions
-  //         GCF Auto installs the package json
-  if (get(['service', 'provider', 'name'], this.serverless) === 'google') {
-    await fse.remove(path.join(compositeModulePath, 'node_modules'));
-  }
 }
