@@ -51,6 +51,7 @@ export class EsbuildPlugin implements Plugin {
 
   serverless: Serverless;
   options: OptionsExtended;
+  esbuildCache: any;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
   buildResults: {
@@ -70,6 +71,7 @@ export class EsbuildPlugin implements Plugin {
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
+    this.esbuildCache = {};
 
     this.workDirPath = path.join(this.serverless.config.servicePath, WORK_FOLDER);
     this.buildDirPath = path.join(this.workDirPath, BUILD_FOLDER);
@@ -152,17 +154,19 @@ export class EsbuildPlugin implements Plugin {
   async watch(): Promise<void> {
     const options = {
       ignored: this.buildOptions.watch.ignore,
-      awaitWriteFinish: true,
+      awaitWriteFinish: {
+        stabilityThreshold: 50,
+      },
       ignoreInitial: true,
     };
 
-    chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
+    chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () => {
       this.bundle(true)
         .then(() => this.serverless.cli.log('Watching files for changes...'))
-        .catch(() =>
+        .catch(e =>
           this.serverless.cli.log('Bundle error, waiting for a file change to reload...')
-        )
-    );
+        );
+    });
   }
 
   prepare() {
@@ -187,7 +191,7 @@ export class EsbuildPlugin implements Plugin {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
-    return Promise.all(
+    const results = await Promise.all(
       this.rootFileNames.map(async ({ entry, func }) => {
         const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
@@ -204,16 +208,26 @@ export class EsbuildPlugin implements Plugin {
         delete config['packagePath'];
         delete config['watch'];
 
-        const result = await build(config);
+        let result;
+
+        if (this.esbuildCache[entry] && this.esbuildCache[entry].rebuild) {
+          result = await this.esbuildCache[entry].rebuild();
+        } else {
+          result = await build(config);
+
+          if (incremental) {
+            this.esbuildCache[entry] = result;
+          }
+        }
 
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
         return { result, bundlePath, func };
       })
-    ).then(results => {
-      this.serverless.cli.log('Compiling completed.');
-      this.buildResults = results;
-      return results.map(r => r.result);
-    });
+    );
+
+    this.serverless.cli.log('Compiling completed.');
+    this.buildResults = results;
+    return results.map(r => r.result);
   }
 
   /** Link or copy extras such as node_modules or package.include definitions */
