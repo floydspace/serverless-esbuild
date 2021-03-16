@@ -199,7 +199,7 @@ export class EsbuildPlugin implements Plugin {
           entryPoints: [entry],
           outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',
-          // incremental,
+          incremental,
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
