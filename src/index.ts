@@ -51,7 +51,7 @@ export class EsbuildPlugin implements Plugin {
 
   serverless: Serverless;
   options: OptionsExtended;
-  esbuildCache: any;
+  esbuildCache: Record<string, BuildResult>;
   hooks: Plugin.Hooks;
   buildOptions: Configuration;
   buildResults: {
@@ -163,7 +163,7 @@ export class EsbuildPlugin implements Plugin {
     chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () => {
       this.bundle(true)
         .then(() => this.serverless.cli.log('Watching files for changes...'))
-        .catch(e =>
+        .catch(() =>
           this.serverless.cli.log('Bundle error, waiting for a file change to reload...')
         );
     });
@@ -199,7 +199,7 @@ export class EsbuildPlugin implements Plugin {
           entryPoints: [entry],
           outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',
-          incremental,
+          // incremental,
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
