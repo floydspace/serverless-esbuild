@@ -23,15 +23,15 @@ export function extractFileNames(
 
       // Either grab the package.json:main field, or use the index.ts file.
       // (This will be transpiled to index.js).
-      const main = packageFile.main ? packageFile.main.replace(/\.js$/, '.ts') : 'index.ts';
+      const entry = packageFile.main ? packageFile.main.replace(/\.js$/, '.ts') : 'index.ts';
 
       // Check that the file indeed exists.
-      if (!fs.existsSync(path.join(cwd, main))) {
-        console.log(`Cannot locate entrypoint, ${main} not found`);
+      if (!fs.existsSync(path.join(cwd, entry))) {
+        console.log(`Cannot locate entrypoint, ${entry} not found`);
         throw new Error('Compilation failed');
       }
 
-      return [main];
+      return [{ entry, func: null }];
     }
   }
 
@@ -54,7 +54,9 @@ export function extractFileNames(
 
     // Can't find the files. Watch will have an exception anyway. So throw one with error.
     console.log(`Cannot locate handler - ${fileName} not found`);
-    throw new Error('Compilation failed. Please ensure handlers exists with ext .ts or .js');
+    throw new Error(
+      'Compilation failed. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json'
+    );
   });
 }
 
