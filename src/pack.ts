@@ -31,6 +31,12 @@ export async function pack(this: EsbuildPlugin) {
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
   const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
 
+  // Google provider cannot use individual packaging for now - this could be built in a future release
+  if (isGoogleProvider && this.serverless?.service?.package?.individually)
+    throw new Error(
+      'Packaging failed: cannot package function individually when using Google provider'
+    );
+
   // get a list of all path in build
   const files: { localPath: string; rootPath: string }[] = glob
     .sync('**', {
