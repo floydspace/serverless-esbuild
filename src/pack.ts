@@ -107,9 +107,12 @@ export async function pack(this: EsbuildPlugin) {
       const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
       // filter files
-      const filesPathList = files.filter(({ rootPath, localPath }) => {
+      const filesPathList = files.filter(({ localPath }) => {
         // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
         if (excludedFiles.find(p => localPath.startsWith(p))) return false;
+
+        // exclude files that belong to individual functions
+        if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${name}/`)) return false;
 
         // exclude non whitelisted dependencies
         if (localPath.startsWith('node_modules')) {
@@ -123,7 +126,9 @@ export async function pack(this: EsbuildPlugin) {
         }
 
         return true;
-      });
+      })
+      // remove prefix from individual function extra files
+      .map(({localPath, ...rest}) => ({ localPath: localPath.replace(`__only_${name}/`, ''), ...rest}));
 
       const startZip = Date.now();
       await zip(artifactPath, filesPathList);

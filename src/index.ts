@@ -172,13 +172,12 @@ export class EsbuildPlugin implements Plugin {
     for (const fnName in this.functions) {
       const fn = this.serverless.service.getFunction(fnName);
       fn.package = fn.package || {
-        exclude: [],
-        include: [],
+        patterns: [],
       };
 
       // Add plugin to excluded packages or an empty array if exclude is undefined
-      fn.package.exclude = [
-        ...new Set([...(fn.package.exclude || []), 'node_modules/serverless-esbuild']),
+      fn.package.patterns = [
+        ...new Set([ ...(fn.package.patterns || []), '!node_modules/serverless-esbuild' ]),
       ];
     }
   }
@@ -216,13 +215,13 @@ export class EsbuildPlugin implements Plugin {
     });
   }
 
-  /** Link or copy extras such as node_modules or package.include definitions */
+  /** Link or copy extras such as node_modules or package.patterns definitions */
   async copyExtras() {
     const { service } = this.serverless;
 
-    // include any "extras" from the "include" section
-    if (service.package.include && service.package.include.length > 0) {
-      const files = await globby(service.package.include);
+    // include any "extras" from the "patterns" section
+    if (service.package.patterns && service.package.patterns.length > 0) {
+      const files = await globby(service.package.patterns);
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, filename));
@@ -233,7 +232,28 @@ export class EsbuildPlugin implements Plugin {
         }
 
         if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), path.resolve(path.join(this.buildDirPath, filename)));
+          fs.copySync(path.resolve(filename), destFileName);
+        }
+      }
+    }
+
+    // include any "extras" from the individual function "patterns" section
+    for (const fnName in this.functions) {
+      const fn = this.serverless.service.getFunction(fnName);
+      if (!fn.package?.patterns?.length) {
+        continue;
+      }
+      const files = await globby(fn.package.patterns);
+      for (const filename of files) {
+        const destFileName = path.resolve(path.join(this.buildDirPath, `__only_${fn.name}`, filename));
+        const dirname = path.dirname(destFileName);
+
+        if (!fs.existsSync(dirname)) {
+          fs.mkdirpSync(dirname);
+        }
+
+        if (!fs.existsSync(destFileName)) {
+          fs.copySync(path.resolve(filename), destFileName);
         }
       }
     }
