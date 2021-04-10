@@ -2,7 +2,7 @@ import { build, BuildResult, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
-import { mergeRight } from 'ramda';
+import { concat, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as chokidar from 'chokidar';
@@ -173,11 +173,12 @@ export class EsbuildPlugin implements Plugin {
       const fn = this.serverless.service.getFunction(fnName);
       fn.package = fn.package || {
         patterns: [],
+        exclude: [],
       };
 
       // Add plugin to excluded packages or an empty array if exclude is undefined
       fn.package.patterns = [
-        ...new Set([ ...(fn.package.patterns || []), '!node_modules/serverless-esbuild' ]),
+        ...new Set([ ...(fn.package.exclude || []).map(concat('!')), ...(fn.package.patterns || []), '!node_modules/serverless-esbuild' ]),
       ];
     }
   }
@@ -220,8 +221,11 @@ export class EsbuildPlugin implements Plugin {
     const { service } = this.serverless;
 
     // include any "extras" from the "patterns" section
-    if (service.package.patterns && service.package.patterns.length > 0) {
-      const files = await globby(service.package.patterns);
+    const globalPatterns = [
+      ...new Set([ ...(service.package.include || []), ...(service.package.patterns || []) ]),
+    ];
+    if (globalPatterns.length > 0) {
+      const files = await globby(globalPatterns);
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, filename));
@@ -240,10 +244,13 @@ export class EsbuildPlugin implements Plugin {
     // include any "extras" from the individual function "patterns" section
     for (const fnName in this.functions) {
       const fn = this.serverless.service.getFunction(fnName);
-      if (!fn.package?.patterns?.length) {
+      const fnPatterns = [
+        ...new Set([ ...(fn.package.include || []), ...(fn.package.patterns || []) ]),
+      ];
+      if (fnPatterns.length === 0) {
         continue;
       }
-      const files = await globby(fn.package.patterns);
+      const files = await globby(fnPatterns);
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, `__only_${fn.name}`, filename));
         const dirname = path.dirname(destFileName);
