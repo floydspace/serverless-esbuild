@@ -169,16 +169,30 @@ export class EsbuildPlugin implements Plugin {
     fs.mkdirpSync(this.buildDirPath);
     fs.mkdirpSync(path.join(this.workDirPath, SERVERLESS_FOLDER));
     // exclude serverless-esbuild
+    this.serverless.service.package = {
+      ...(this.serverless.service.package || {}),
+      patterns: [
+        ...new Set([
+          ...(this.serverless.service.package?.include || []),
+          ...(this.serverless.service.package?.exclude || []).map(concat('!')),
+          ...(this.serverless.service.package?.patterns || []),
+          '!node_modules/serverless-esbuild',
+        ]),
+      ]
+    };
+
     for (const fnName in this.functions) {
       const fn = this.serverless.service.getFunction(fnName);
-      fn.package = fn.package || {
-        patterns: [],
+      fn.package = {
+        ...(fn.package || {}),
+        patterns: [
+          ...new Set([
+            ...(fn.package?.include || []),
+            ...(fn.package?.exclude || []).map(concat('!')),
+            ...(fn.package?.patterns || []),
+          ]),
+        ]
       };
-
-      // Add plugin to excluded packages or an empty array if exclude is undefined
-      fn.package.patterns = [
-        ...new Set([ ...(fn.package.exclude || []).map(concat('!')), ...(fn.package.patterns || []), '!node_modules/serverless-esbuild' ]),
-      ];
     }
   }
 
@@ -220,11 +234,8 @@ export class EsbuildPlugin implements Plugin {
     const { service } = this.serverless;
 
     // include any "extras" from the "patterns" section
-    const globalPatterns = [
-      ...new Set([ ...(service.package.include || []), ...(service.package.patterns || []) ]),
-    ];
-    if (globalPatterns.length > 0) {
-      const files = await globby(globalPatterns);
+    if (service.package.patterns.length > 0) {
+      const files = await globby(service.package.patterns);
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, filename));
