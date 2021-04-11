@@ -1,11 +1,12 @@
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
 import * as path from 'path';
-import { intersection, isEmpty, path as get, without } from 'ramda';
+import { intersection, isEmpty, lensProp, map, over, path as get, pipe, reject, replace, test, without } from 'ramda';
 import * as semver from 'semver';
 import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
+import { IFiles } from './types';
 import { humanSize, zip } from './utils';
 
 function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
@@ -38,7 +39,7 @@ export async function pack(this: EsbuildPlugin) {
     );
 
   // get a list of all path in build
-  const files: { localPath: string; rootPath: string }[] = glob
+  const files: IFiles = glob
     .sync('**', {
       cwd: this.buildDirPath,
       dot: true,
@@ -57,8 +58,14 @@ export async function pack(this: EsbuildPlugin) {
     const zipName = `${this.serverless.service.service}.zip`;
     const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
+    // remove prefixes from individual extra files
+    const filesPathList = pipe<IFiles, IFiles, IFiles>(
+      reject(test(/^__only_[^/]+$/)) as (x: IFiles) => IFiles,
+      map(over(lensProp('localPath'), replace(/^__only_[^/]+\//, '')))
+    )(files);
+
     const startZip = Date.now();
-    await zip(artifactPath, files);
+    await zip(artifactPath, filesPathList);
     const { size } = fs.statSync(artifactPath);
 
     this.serverless.cli.log(
