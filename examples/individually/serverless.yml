@@ -13,6 +13,7 @@ provider:
 
 custom:
   esbuild:
+    plugins : ./plugins.js
     packager: yarn
     bundle: true
     minify: true
