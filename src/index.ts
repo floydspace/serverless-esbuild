@@ -173,7 +173,6 @@ export class EsbuildPlugin implements Plugin {
       const fn = this.serverless.service.getFunction(fnName);
       fn.package = fn.package || {
         patterns: [],
-        exclude: [],
       };
 
       // Add plugin to excluded packages or an empty array if exclude is undefined
@@ -244,13 +243,10 @@ export class EsbuildPlugin implements Plugin {
     // include any "extras" from the individual function "patterns" section
     for (const fnName in this.functions) {
       const fn = this.serverless.service.getFunction(fnName);
-      const fnPatterns = [
-        ...new Set([ ...(fn.package.include || []), ...(fn.package.patterns || []) ]),
-      ];
-      if (fnPatterns.length === 0) {
+      if (fn.package.patterns.length === 0) {
         continue;
       }
-      const files = await globby(fnPatterns);
+      const files = await globby(fn.package.patterns);
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, `__only_${fn.name}`, filename));
         const dirname = path.dirname(destFileName);
