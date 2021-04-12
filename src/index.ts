@@ -26,11 +26,12 @@ export interface WatchConfiguration {
   ignore?: string[] | string;
 }
 
-export interface Configuration extends Omit<BuildOptions, 'watch'> {
+export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: string[];
   watch: WatchConfiguration;
+  plugins?: string;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -196,6 +197,9 @@ export class EsbuildPlugin implements Plugin {
           outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',
           incremental,
+          plugins:
+            this.buildOptions.plugins &&
+            require(path.join(this.serverless.config.servicePath, this.buildOptions.plugins)),
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
@@ -203,6 +207,7 @@ export class EsbuildPlugin implements Plugin {
         delete config['packager'];
         delete config['packagePath'];
         delete config['watch'];
+        delete config['pugins'];
 
         const result = await build(config);
 

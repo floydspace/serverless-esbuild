@@ -64,6 +64,20 @@ custom:
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
 ```
 
+### Usign esbuild plugins
+
+*Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)*
+
+You can configure esbuild plugins by passing a plugins' configuration file:
+
+```yml
+custom:
+  esbuild:
+    plugins: plugins.js
+```
+
+The plugins' configuration file must be a javascript file exporting an array of plugins (see `examples/individually/plugins.js` for a dummy plugin example)
+
 ## Usage
 
 ### Automatic compilation
