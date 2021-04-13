@@ -51,7 +51,9 @@ See [example folder](example) for a minimal example.
 
 ### Including extra files
 
-All files from `package/include` will be included in the final build file. See [Exclude/Include](https://serverless.com/framework/docs/providers/aws/guide/packaging#exclude--include)
+All files from `package/patterns` will be included in the final build file. See [Patterns](https://serverless.com/framework/docs/providers/aws/guide/packaging#patterns).
+
+Include/exclude is deprecated, but still supported.
 
 ### External Dependencies
 

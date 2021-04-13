@@ -3,6 +3,7 @@ import * as childProcess from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { join } from 'ramda';
+import { IFiles } from './types';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -91,7 +92,7 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = (zipPath: string, filesPathList: { rootPath: string; localPath: string }[]) => {
+export const zip = (zipPath: string, filesPathList: IFiles) => {
   fs.mkdirpSync(path.dirname(zipPath));
 
   const zip = archiver.create('zip');
