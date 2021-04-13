@@ -11,8 +11,10 @@ import {
   keys,
   map,
   mergeRight,
+  omit,
   path as get,
   pick,
+  pickBy,
   replace,
   split,
   startsWith,
@@ -111,18 +113,25 @@ function getProdModules(
           : null;
 
         const modulePackage = require(modulePackagePath);
+
+        // find peer dependencies but remove optional ones
         const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
-        if (!isEmpty(peerDependencies)) {
+        const optionalPeerDependencies = Object.keys(
+          pickBy((val, key) => !val.optionnal, modulePackage.peerDependenciesMeta || {})
+        );
+        const peerDependenciesWithoutOptionals = omit(optionalPeerDependencies, peerDependencies);
+
+        if (!isEmpty(peerDependenciesWithoutOptionals)) {
           this.options.verbose &&
             this.serverless.cli.log(
-              `Adding explicit peers for dependency ${externalModule.external}`
+              `Adding explicit non-optionals peers for dependency ${externalModule.external}`
             );
           const peerModules = getProdModules.call(
             this,
             compose(
               map(([external]) => ({ external })),
               toPairs
-            )(peerDependencies),
+            )(peerDependenciesWithoutOptionals),
             packageJsonPath,
             rootPackageJsonPath
           );
