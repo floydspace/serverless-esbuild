@@ -17,7 +17,6 @@ import * as semver from 'semver';
 import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
-import { get as getPackager } from './packagers';
 import { IFiles } from './types';
 import { humanSize, zip } from './utils';
 
@@ -101,9 +100,8 @@ export async function pack(this: EsbuildPlugin) {
   const hasExternals = !!externals?.length;
 
   // get a tree of all production dependencies
-  // get a tree of all production dependencies
   const packagerDependenciesList = hasExternals
-    ? await (await getPackager('npm')).getProdDependencies(this.buildDirPath)
+    ? await packager.getProdDependencies(this.buildDirPath)
     : {};
 
   // package each function
