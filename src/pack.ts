@@ -1,7 +1,18 @@
 import * as fs from 'fs-extra';
-import * as glob from 'glob';
+import * as globby from 'globby';
 import * as path from 'path';
-import { intersection, isEmpty, lensProp, map, over, path as get, pipe, reject, replace, test, without } from 'ramda';
+import {
+  intersection,
+  isEmpty,
+  lensProp,
+  map,
+  over,
+  pipe,
+  reject,
+  replace,
+  test,
+  without,
+} from 'ramda';
 import * as semver from 'semver';
 import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
@@ -39,12 +50,11 @@ export async function pack(this: EsbuildPlugin) {
     );
 
   // get a list of all path in build
-  const files: IFiles = glob
+  const files: IFiles = globby
     .sync('**', {
       cwd: this.buildDirPath,
       dot: true,
-      silent: true,
-      follow: true,
+      onlyFiles: true,
     })
     .filter(p => !excludedFiles.includes(p))
     .map(localPath => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
@@ -114,28 +124,33 @@ export async function pack(this: EsbuildPlugin) {
       const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
       // filter files
-      const filesPathList = files.filter(({ localPath }) => {
-        // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
-        if (excludedFiles.find(p => localPath.startsWith(p))) return false;
+      const filesPathList = files
+        .filter(({ localPath }) => {
+          // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
+          if (excludedFiles.find(p => localPath.startsWith(p))) return false;
 
-        // exclude files that belong to individual functions
-        if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${name}/`)) return false;
-
-        // exclude non whitelisted dependencies
-        if (localPath.startsWith('node_modules')) {
-          // if no externals is set or if the provider is google, we do not need any files from node_modules
-          if (!hasExternals || isGoogleProvider) return false;
-          if (
-            // this is needed for dependencies that maps to a path (like scoped ones)
-            !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
-          )
+          // exclude files that belong to individual functions
+          if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${name}/`))
             return false;
-        }
 
-        return true;
-      })
-      // remove prefix from individual function extra files
-      .map(({localPath, ...rest}) => ({ localPath: localPath.replace(`__only_${name}/`, ''), ...rest}));
+          // exclude non whitelisted dependencies
+          if (localPath.startsWith('node_modules')) {
+            // if no externals is set or if the provider is google, we do not need any files from node_modules
+            if (!hasExternals || isGoogleProvider) return false;
+            if (
+              // this is needed for dependencies that maps to a path (like scoped ones)
+              !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
+            )
+              return false;
+          }
+
+          return true;
+        })
+        // remove prefix from individual function extra files
+        .map(({ localPath, ...rest }) => ({
+          localPath: localPath.replace(`__only_${name}/`, ''),
+          ...rest,
+        }));
 
       const startZip = Date.now();
       await zip(artifactPath, filesPathList);

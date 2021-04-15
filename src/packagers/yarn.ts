@@ -83,7 +83,7 @@ export class Yarn implements Packager {
           return __;
         },
         {},
-        convertingTrees
+        convertingTrees || []
       );
 
     const trees = pathOr([], ['data', 'trees'], parsedTree);
