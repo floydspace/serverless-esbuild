@@ -117,7 +117,7 @@ function getProdModules(
         // find peer dependencies but remove optional ones and excluded ones
         const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
         const optionalPeerDependencies = Object.keys(
-          pickBy((val, key) => !val.optional, modulePackage.peerDependenciesMeta || {})
+          pickBy(val => val.optional, modulePackage.peerDependenciesMeta || {})
         );
         const peerDependenciesWithoutOptionals = omit(
           [...optionalPeerDependencies, ...this.buildOptions.exclude],
