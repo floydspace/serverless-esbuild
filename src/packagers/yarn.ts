@@ -115,19 +115,19 @@ export class Yarn implements Packager {
     );
   }
 
-  async install(cwd, useLockfile = true) {
+  async install(cwd: string, extraArgs: Array<string>, useLockfile = true) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
 
     const args = useLockfile
-      ? ['install', '--frozen-lockfile', '--non-interactive']
-      : ['install', '--non-interactive'];
+      ? ['install', '--frozen-lockfile', '--non-interactive', ...extraArgs]
+      : ['install', '--non-interactive', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }
 
   // "Yarn install" prunes automatically
   prune(cwd) {
-    return this.install(cwd);
+    return this.install(cwd, []);
   }
 
   async runScripts(cwd, scriptNames: string[]) {
