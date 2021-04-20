@@ -7,7 +7,7 @@ export function preOffline(this: EsbuildPlugin) {
   if (!this.serverless?.service?.custom?.['serverless-offline']?.location) {
     const newServerless = assocPath(
       ['service', 'custom', 'serverless-offline', 'location'],
-      relative(this.serverless.config.servicePath, this.buildDirPath),
+      relative(this.serviceDirPath, this.buildDirPath),
       this.serverless
     );
     this.serverless.service.custom = newServerless.service.custom;
