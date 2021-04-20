@@ -47,6 +47,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
 };
 
 export class EsbuildPlugin implements Plugin {
+  serviceDirPath: string;
   workDirPath: string;
   buildDirPath: string;
 
@@ -72,7 +73,9 @@ export class EsbuildPlugin implements Plugin {
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
 
-    this.workDirPath = path.join(this.serverless.config.servicePath, WORK_FOLDER);
+    // @ts-ignore old verions use servicePath, new versions serviceDir. Types will use only one of them
+    this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
+    this.workDirPath = path.join(this.serviceDirPath, WORK_FOLDER);
     this.buildDirPath = path.join(this.workDirPath, BUILD_FOLDER);
 
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
@@ -144,7 +147,7 @@ export class EsbuildPlugin implements Plugin {
 
   get rootFileNames() {
     return extractFileNames(
-      this.serverless.config.servicePath,
+      this.serviceDirPath,
       this.serverless.service.provider.name,
       this.functions
     );
@@ -179,7 +182,7 @@ export class EsbuildPlugin implements Plugin {
           ...(this.serverless.service.package?.patterns || []),
           '!node_modules/serverless-esbuild',
         ]),
-      ]
+      ],
     };
 
     for (const fnName in this.functions) {
@@ -192,7 +195,7 @@ export class EsbuildPlugin implements Plugin {
             ...(fn.package?.exclude || []).map(concat('!')),
             ...(fn.package?.patterns || []),
           ]),
-        ]
+        ],
       };
     }
   }
@@ -212,7 +215,7 @@ export class EsbuildPlugin implements Plugin {
           incremental,
           plugins:
             this.buildOptions.plugins &&
-            require(path.join(this.serverless.config.servicePath, this.buildOptions.plugins)),
+            require(path.join(this.serviceDirPath, this.buildOptions.plugins)),
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
@@ -264,7 +267,9 @@ export class EsbuildPlugin implements Plugin {
       }
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
-        const destFileName = path.resolve(path.join(this.buildDirPath, `__only_${fn.name}`, filename));
+        const destFileName = path.resolve(
+          path.join(this.buildDirPath, `__only_${fn.name}`, filename)
+        );
         const dirname = path.dirname(destFileName);
 
         if (!fs.existsSync(dirname)) {
@@ -287,13 +292,13 @@ export class EsbuildPlugin implements Plugin {
 
     await fs.copy(
       path.join(this.workDirPath, SERVERLESS_FOLDER),
-      path.join(this.serverless.config.servicePath, SERVERLESS_FOLDER)
+      path.join(this.serviceDirPath, SERVERLESS_FOLDER)
     );
 
     if (this.options.function) {
       const fn = service.getFunction(this.options.function);
       fn.package.artifact = path.join(
-        this.serverless.config.servicePath,
+        this.serviceDirPath,
         SERVERLESS_FOLDER,
         path.basename(fn.package.artifact)
       );
@@ -304,7 +309,7 @@ export class EsbuildPlugin implements Plugin {
       const functionNames = service.getAllFunctions();
       functionNames.forEach(name => {
         service.getFunction(name).package.artifact = path.join(
-          this.serverless.config.servicePath,
+          this.serviceDirPath,
           SERVERLESS_FOLDER,
           path.basename(service.getFunction(name).package.artifact)
         );
@@ -313,7 +318,7 @@ export class EsbuildPlugin implements Plugin {
     }
 
     service.package.artifact = path.join(
-      this.serverless.config.servicePath,
+      this.serviceDirPath,
       SERVERLESS_FOLDER,
       path.basename(service.package.artifact)
     );

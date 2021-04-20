@@ -162,11 +162,7 @@ export async function pack(this: EsbuildPlugin) {
       );
 
       // defined present zip as output artifact
-      setFunctionArtifactPath.call(
-        this,
-        func,
-        path.relative(this.serverless.config.servicePath, artifactPath)
-      );
+      setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
     })
   );
 }
