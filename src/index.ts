@@ -32,6 +32,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   exclude: string[];
   watch: WatchConfiguration;
   plugins?: string;
+  packExternals?: boolean;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -40,6 +41,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   external: [],
   exclude: ['aws-sdk'],
   packager: 'npm',
+  packExternals: true,
   watch: {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
@@ -179,7 +181,7 @@ export class EsbuildPlugin implements Plugin {
           ...(this.serverless.service.package?.patterns || []),
           '!node_modules/serverless-esbuild',
         ]),
-      ]
+      ],
     };
 
     for (const fnName in this.functions) {
@@ -192,7 +194,7 @@ export class EsbuildPlugin implements Plugin {
             ...(fn.package?.exclude || []).map(concat('!')),
             ...(fn.package?.patterns || []),
           ]),
-        ]
+        ],
       };
     }
   }
@@ -221,6 +223,7 @@ export class EsbuildPlugin implements Plugin {
         delete config['packagePath'];
         delete config['watch'];
         delete config['pugins'];
+        delete config['packExternals'];
 
         const result = await build(config);
 
@@ -264,7 +267,9 @@ export class EsbuildPlugin implements Plugin {
       }
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
-        const destFileName = path.resolve(path.join(this.buildDirPath, `__only_${fn.name}`, filename));
+        const destFileName = path.resolve(
+          path.join(this.buildDirPath, `__only_${fn.name}`, filename)
+        );
         const dirname = path.dirname(destFileName);
 
         if (!fs.existsSync(dirname)) {

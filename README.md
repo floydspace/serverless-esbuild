@@ -66,9 +66,17 @@ custom:
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
 ```
 
+This behavior can be disabled via `packExternals`:
+
+```yml
+custom:
+  esbuild:
+    packExternals: false
+```
+
 ### Usign esbuild plugins
 
-*Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)*
+_Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)_
 
 You can configure esbuild plugins by passing a plugins' configuration file:
 
