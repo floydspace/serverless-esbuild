@@ -73,6 +73,7 @@ export class EsbuildPlugin implements Plugin {
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore old verions use servicePath, new versions serviceDir. Types will use only one of them
     this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
     this.workDirPath = path.join(this.serviceDirPath, WORK_FOLDER);
