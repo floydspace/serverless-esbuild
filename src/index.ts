@@ -229,9 +229,9 @@ export class EsbuildPlugin implements Plugin {
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
         if (this.buildResults) {
-          const { result: oldResult } = this.buildResults.find(({func: fn}) => fn.name === func.name);
-          await oldResult.rebuild();
-          return { result: oldResult, bundlePath, func };
+          const { result } = this.buildResults.find(({func: fn}) => fn.name === func.name);
+          await result.rebuild();
+          return { result, bundlePath, func };
         }
 
         const result = await build(config);
