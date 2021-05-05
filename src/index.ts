@@ -201,7 +201,7 @@ export class EsbuildPlugin implements Plugin {
     }
   }
 
-  async bundle(incremental = false): Promise<BuildResult[]> {
+  async bundle(incremental = true): Promise<BuildResult[]> {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
@@ -226,9 +226,16 @@ export class EsbuildPlugin implements Plugin {
         delete config['watch'];
         delete config['pugins'];
 
+        const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
+
+        if (this.buildResults) {
+          const { result } = this.buildResults.find(({func: fn}) => fn.name === func.name);
+          await result.rebuild();
+          return { result, bundlePath, func };
+        }
+
         const result = await build(config);
 
-        const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
         return { result, bundlePath, func };
       })
     ).then(results => {
