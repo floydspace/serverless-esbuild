@@ -91,14 +91,14 @@ export class EsbuildPlugin implements Plugin {
         await this.copyExtras();
       },
       'before:offline:start': async () => {
-        await this.bundle();
+        await this.bundle(true);
         await this.packExternalModules();
         await this.copyExtras();
         await this.preOffline();
         this.watch();
       },
       'before:offline:start:init': async () => {
-        await this.bundle();
+        await this.bundle(true);
         await this.packExternalModules();
         await this.copyExtras();
         await this.preOffline();
@@ -201,7 +201,7 @@ export class EsbuildPlugin implements Plugin {
     }
   }
 
-  async bundle(incremental = true): Promise<BuildResult[]> {
+  async bundle(incremental = false): Promise<BuildResult[]> {
     this.prepare();
     this.serverless.cli.log('Compiling with esbuild...');
 
@@ -229,7 +229,7 @@ export class EsbuildPlugin implements Plugin {
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
         if (this.buildResults) {
-          const { result } = this.buildResults.find(({func: fn}) => fn.name === func.name);
+          const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
           await result.rebuild();
           return { result, bundlePath, func };
         }
