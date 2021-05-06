@@ -32,6 +32,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   exclude: string[];
   watch: WatchConfiguration;
   plugins?: string;
+  packExternals?: boolean;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -40,6 +41,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   external: [],
   exclude: ['aws-sdk'],
   packager: 'npm',
+  packExternals: true,
   watch: {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
@@ -225,6 +227,7 @@ export class EsbuildPlugin implements Plugin {
         delete config['packagePath'];
         delete config['watch'];
         delete config['pugins'];
+        delete config['packExternals'];
 
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 

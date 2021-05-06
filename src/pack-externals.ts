@@ -190,7 +190,7 @@ function getProdModules(
 export async function packExternalModules(this: EsbuildPlugin) {
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
 
-  if (!externals || !externals.length) {
+  if (!externals || !externals.length || !this.buildOptions.packExternals) {
     return;
   }
 
@@ -294,7 +294,6 @@ export async function packExternalModules(this: EsbuildPlugin) {
   this.serverless.cli.log('Packing external modules: ' + compositeModules.join(', '));
   await packager.install(compositeModulePath, exists);
   this.options.verbose && this.serverless.cli.log(`Package took [${Date.now() - start} ms]`);
-
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
   await packager.prune(compositeModulePath);
