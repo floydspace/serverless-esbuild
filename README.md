@@ -66,7 +66,7 @@ custom:
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
 ```
 
-### Usign esbuild plugins
+### Using esbuild plugins
 
 *Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)*
 
