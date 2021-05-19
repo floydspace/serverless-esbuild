@@ -237,6 +237,10 @@ export class EsbuildPlugin implements Plugin {
 
         const result = await build(config);
 
+        if (config.metafile) {
+          fs.writeFileSync(`${WORK_FOLDER}/meta-${func.name}.json`, JSON.stringify(result.metafile));
+        }
+
         return { result, bundlePath, func, functionAlias };
       })
     ).then(results => {
