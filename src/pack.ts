@@ -106,8 +106,8 @@ export async function pack(this: EsbuildPlugin) {
 
   // package each function
   await Promise.all(
-    buildResults.map(async ({ func, bundlePath }) => {
-      const name = func.name;
+    buildResults.map(async ({ func, functionAlias, bundlePath }) => {
+      const name = `${this.serverless.service.getServiceName()}-${this.serverless.service.provider.stage}-${functionAlias}`;
 
       const excludedFiles = bundlePathList.filter(p => !bundlePath.startsWith(p));
 
