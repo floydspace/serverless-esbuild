@@ -59,6 +59,7 @@ export class EsbuildPlugin implements Plugin {
     result: BuildResult;
     bundlePath: string;
     func: any;
+    functionAlias: string;
   }[];
   packExternalModules: () => Promise<void>;
   pack: () => Promise<void>;
@@ -206,7 +207,7 @@ export class EsbuildPlugin implements Plugin {
     this.serverless.cli.log('Compiling with esbuild...');
 
     return Promise.all(
-      this.rootFileNames.map(async ({ entry, func }) => {
+      this.rootFileNames.map(async ({ entry, func, functionAlias }) => {
         const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
           external: [...this.buildOptions.external, ...this.buildOptions.exclude],
@@ -231,12 +232,12 @@ export class EsbuildPlugin implements Plugin {
         if (this.buildResults) {
           const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
           await result.rebuild();
-          return { result, bundlePath, func };
+          return { result, bundlePath, func, functionAlias };
         }
 
         const result = await build(config);
 
-        return { result, bundlePath, func };
+        return { result, bundlePath, func, functionAlias };
       })
     ).then(results => {
       this.serverless.cli.log('Compiling completed.');
