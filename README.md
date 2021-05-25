@@ -47,7 +47,7 @@ custom:
 Check [esbuild](https://github.com/evanw/esbuild#command-line-usage) documentation for the full list of available options. Note that some options like `entryPoints` or `outdir` cannot be overwritten.
 The package specified in the `exclude` option is passed to esbuild as `external`, but it is not included in the function bundle either. The default value for this option is `['aws-sdk']`.
 
-See [example folder](example) for a minimal example.
+See [example folder](examples) for a minimal example.
 
 ### Including extra files
 
