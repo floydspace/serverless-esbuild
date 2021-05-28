@@ -18,7 +18,7 @@ import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 import { IFiles } from './types';
-import { humanSize, zip } from './utils';
+import { humanSize, zip, trimExtension } from './utils';
 
 function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
   const version = this.serverless.getVersion();
@@ -109,7 +109,7 @@ export async function pack(this: EsbuildPlugin) {
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
       const name = `${this.serverless.service.getServiceName()}-${this.serverless.service.provider.stage}-${functionAlias}`;
 
-      const excludedFiles = bundlePathList.filter(p => !bundlePath.startsWith(p));
+      const excludedFiles = bundlePathList.filter(p => !bundlePath.startsWith(p)).map(trimExtension);
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];

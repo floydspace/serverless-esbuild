@@ -12,6 +12,7 @@ import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
+import { trimExtension } from './utils';
 
 export const SERVERLESS_FOLDER = '.serverless';
 export const BUILD_FOLDER = '.build';
@@ -238,7 +239,7 @@ export class EsbuildPlugin implements Plugin {
         const result = await build(config);
 
         if (config.metafile) {
-          fs.writeFileSync(`${WORK_FOLDER}/meta-${func.name}.json`, JSON.stringify(result.metafile));
+          fs.writeFileSync(path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`), JSON.stringify(result.metafile, null, 2));
         }
 
         return { result, bundlePath, func, functionAlias };
