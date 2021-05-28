@@ -54,7 +54,6 @@ export class EsbuildPlugin implements Plugin {
   serverless: Serverless;
   options: OptionsExtended;
   hooks: Plugin.Hooks;
-  buildOptions: Configuration;
   buildResults: {
     result: BuildResult;
     bundlePath: string;
@@ -75,15 +74,10 @@ export class EsbuildPlugin implements Plugin {
     this.preLocal = preLocal.bind(this);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore old verions use servicePath, new versions serviceDir. Types will use only one of them
+    // @ts-ignore old versions use servicePath, new versions serviceDir. Types will use only one of them
     this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
     this.workDirPath = path.join(this.serviceDirPath, WORK_FOLDER);
     this.buildDirPath = path.join(this.workDirPath, BUILD_FOLDER);
-
-    const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
-    this.buildOptions = withDefaultOptions<Configuration>(
-      this.serverless.service.custom?.esbuild ?? {}
-    );
 
     this.hooks = {
       'before:run:run': async () => {
@@ -145,6 +139,11 @@ export class EsbuildPlugin implements Plugin {
       string,
       Serverless.FunctionDefinitionHandler
     >;
+  }
+
+  get buildOptions() {
+    const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
+    return withDefaultOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
   }
 
   get rootFileNames() {
