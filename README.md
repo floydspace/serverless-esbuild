@@ -16,7 +16,7 @@ Serverless plugin for zero-config JavaScript and TypeScript code bundling using 
 - Supports `sls invoke local`
 - Integrates nicely with [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
-_Note_: The default JavaScript syntax target is set to [`ES2017`](https://node.green/#ES2017), so the final bundle will be supported by all [AWS Lambda Node.js runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). If you still using an old lambda runtime and have to respect it you can play with esbuild `target` option, see [JavaScript syntax support](https://github.com/evanw/esbuild#javascript-syntax-support) for more details about syntax transform limitations.
+_Note_: The default JavaScript syntax target is determined from serverless provider configuration otherwise set to [`node10`], so the final bundle will be supported by all [AWS Lambda Node.js runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). If you still using an old lambda runtime and have to respect it you can play with esbuild `target` option, see [JavaScript syntax support](https://github.com/evanw/esbuild#javascript-syntax-support) for more details about syntax transform limitations.
 
 ## Install
 
