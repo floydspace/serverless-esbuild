@@ -97,3 +97,11 @@ export const doSharePath = (child, parent) => {
   const childToken = child.split('/');
   return parentTokens.every((t, i) => childToken[i] === t);
 };
+
+export const providerRuntimeMatcher = Object.freeze({
+  'aws': {
+    'nodejs14.x': 'node14',
+    'nodejs12.x': 'node12',
+    'nodejs10.x': 'node10',
+  }
+});
