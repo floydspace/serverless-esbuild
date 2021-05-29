@@ -2,12 +2,12 @@ import { build, BuildResult, BuildOptions } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
-import { concat, mergeRight } from 'ramda';
+import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as Plugin from 'serverless/classes/Plugin';
 import * as chokidar from 'chokidar';
 
-import { extractFileNames } from './helper';
+import { extractFileNames, providerRuntimeMatcher } from './helper';
 import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
@@ -37,7 +37,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
-  target: 'es2017',
+  target: 'node10',
   external: [],
   exclude: ['aws-sdk'],
   packager: 'npm',
@@ -142,9 +142,19 @@ export class EsbuildPlugin implements Plugin {
     >;
   }
 
-  get buildOptions() {
+  private getCachedOptions = memoizeWith(always('cache'), () => {
+    const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
+    const target = runtimeMatcher?.[this.serverless.service.provider.runtime];
+    const resolvedOptions = {
+      ...(target ? {target} : {})
+    };
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
-    return withDefaultOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
+    const withResolvedOptions = mergeRight(withDefaultOptions(resolvedOptions));
+    return withResolvedOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
+  });
+
+  get buildOptions() {
+    return this.getCachedOptions();
   }
 
   get rootFileNames() {
@@ -204,7 +214,7 @@ export class EsbuildPlugin implements Plugin {
 
   async bundle(incremental = false): Promise<BuildResult[]> {
     this.prepare();
-    this.serverless.cli.log('Compiling with esbuild...');
+    this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
 
     return Promise.all(
       this.rootFileNames.map(async ({ entry, func, functionAlias }) => {
