@@ -188,6 +188,20 @@ function getProdModules(
  * and performance.
  */
 export async function packExternalModules(this: EsbuildPlugin) {
+  if (this.buildOptions.plugins) {
+      const plugins = require(path.join(this.serviceDirPath, this.buildOptions.plugins || this.buildOptions.plugins.path));
+      if (plugins 
+          && plugins.map(plugin => plugin.name).includes('node-externals') 
+          && fse.existsSync('esbuild-node-externals/dist/utils')) {
+          const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
+          this.buildOptions.external = findDependencies({ 
+              dependencies: true,
+              packagePaths: findPackagePaths(),
+              allowList: []
+          });
+      }
+  }
+  
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
 
   if (!externals || !externals.length) {
