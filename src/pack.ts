@@ -60,7 +60,7 @@ export async function pack(this: EsbuildPlugin) {
     .map(localPath => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
-    console.log(`Packaging: No files found. Skipping esbuild.`);
+    console.log('Packaging: No files found. Skipping esbuild.');
     return;
   }
 

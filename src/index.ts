@@ -143,20 +143,20 @@ export class EsbuildPlugin implements Plugin {
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
     if (this.options.function) {
       //only return the function if it's a node function:
-      const func = this.serverless.service.getFunction(this.options.function)
-      return this.isNodeFunction(func) ? { [this.options.function]: func } : {}
+      const func = this.serverless.service.getFunction(this.options.function);
+      return this.isNodeFunction(func) ? { [this.options.function]: func } : {};
     }
 
     // ignore all functions with a different runtime than nodejs:
-    const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {}
-    const functions = this.serverless.service.functions
+    const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
+    const functions = this.serverless.service.functions;
     for(const funcName in functions) {
-      const func = functions[funcName]
+      const func = functions[funcName];
       if (this.isNodeFunction(func)) {
-        nodeFunctions[funcName] = func
+        nodeFunctions[funcName] = func;
       }
     }
-    return nodeFunctions
+    return nodeFunctions;
   }
 
   private getCachedOptions = memoizeWith(always('cache'), () => {
