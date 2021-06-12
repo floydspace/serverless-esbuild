@@ -33,6 +33,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   exclude: string[];
   watch: WatchConfiguration;
   plugins?: string;
+  keepOutputDirectory?: boolean;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -45,6 +46,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
   },
+  keepOutputDirectory: false
 };
 
 export class EsbuildPlugin implements Plugin {
@@ -235,7 +237,8 @@ export class EsbuildPlugin implements Plugin {
         delete config['packager'];
         delete config['packagePath'];
         delete config['watch'];
-        delete config['pugins'];
+        delete config['plugins'];
+        delete config['keepOutputDirectory'];
 
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
@@ -350,7 +353,9 @@ export class EsbuildPlugin implements Plugin {
   async cleanup(): Promise<void> {
     await this.moveArtifacts();
     // Remove temp build folder
-    fs.removeSync(path.join(this.workDirPath));
+    if (!this.buildOptions.keepOutputDirectory) {
+      fs.removeSync(path.join(this.workDirPath));
+    }
   }
 }
 
