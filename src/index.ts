@@ -143,7 +143,7 @@ export class EsbuildPlugin implements Plugin {
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
     if (this.options.function) {
       //only return the function if it's a node function:
-      const func = this.serverless.service.getFunction(this.options.function);
+      const func = this.serverless.service.getFunction(this.options.function) as Serverless.FunctionDefinitionHandler;
       return this.isNodeFunction(func) ? { [this.options.function]: func } : {};
     }
 
@@ -151,7 +151,7 @@ export class EsbuildPlugin implements Plugin {
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
     const functions = this.serverless.service.functions;
     for(const funcName in functions) {
-      const func = functions[funcName];
+      const func = functions[funcName] as Serverless.FunctionDefinitionHandler;
       if (this.isNodeFunction(func)) {
         nodeFunctions[funcName] = func;
       }
