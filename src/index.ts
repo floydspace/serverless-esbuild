@@ -127,19 +127,36 @@ export class EsbuildPlugin implements Plugin {
     };
   }
 
+  /**
+   * Checks if the runtime for the given function is nodejs.
+   * If the runtime is not set , checks the global runtime.
+   * @param {Serverless.FunctionDefinitionHandler} func the function to be checked
+   * @returns {boolean} true if the function/global runtime is nodejs; false, otherwise
+   */
+  private isNodeFunction(func: Serverless.FunctionDefinitionHandler): boolean {
+    const runtime = func.runtime || this.serverless.service.provider.runtime;
+    const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
+    const target = runtimeMatcher === null || runtimeMatcher === void 0 ? void 0 : runtimeMatcher[runtime];
+    return !!target;
+  }
+
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
     if (this.options.function) {
-      return {
-        [this.options.function]: this.serverless.service.getFunction(
-          this.options.function
-        ) as Serverless.FunctionDefinitionHandler,
-      };
+      //only return the function if it's a node function:
+      const func = this.serverless.service.getFunction(this.options.function)
+      return this.isNodeFunction(func) ? { [this.options.function]: func } : {}
     }
 
-    return this.serverless.service.functions as Record<
-      string,
-      Serverless.FunctionDefinitionHandler
-    >;
+    // ignore all functions with a different runtime than nodejs:
+    const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {}
+    const functions = this.serverless.service.functions
+    for(const funcName in functions) {
+      const func = functions[funcName]
+      if (this.isNodeFunction(func)) {
+        nodeFunctions[funcName] = func
+      }
+    }
+    return nodeFunctions
   }
 
   private getCachedOptions = memoizeWith(always('cache'), () => {
