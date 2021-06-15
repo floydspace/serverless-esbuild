@@ -66,6 +66,8 @@ custom:
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
 ```
 
+To easily mark all the `dependencies` in `package.json` as `external`, you can utilize `esbuild-node-externals` [plugin](https://www.npmjs.com/package/esbuild-node-externals).
+
 ### Using esbuild plugins
 
 *Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)*
