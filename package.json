@@ -58,7 +58,7 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "archiver": "^5.2.0",
+    "bestzip": "^2.2.0",
     "chokidar": "^3.4.3",
     "esbuild": ">=0.8",
     "fs-extra": "^9.0.1",

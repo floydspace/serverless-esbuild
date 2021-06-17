@@ -153,7 +153,7 @@ export async function pack(this: EsbuildPlugin) {
         }));
 
       const startZip = Date.now();
-      await zip(artifactPath, filesPathList);
+      await zip(artifactPath, filesPathList, this.buildDirPath);
 
       const { size } = fs.statSync(artifactPath);
 
