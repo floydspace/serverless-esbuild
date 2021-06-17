@@ -1,9 +1,9 @@
-import * as archiver from 'archiver';
+import { bestzip } from 'bestzip';
 import * as childProcess from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { join } from 'ramda';
-import { IFiles } from './types';
+import { IFiles, IFile } from './types';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -92,35 +92,13 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = (zipPath: string, filesPathList: IFiles) => {
+export const zip = (zipPath: string, filesPathList: IFiles, workingDir?: string) => {
   fs.mkdirpSync(path.dirname(zipPath));
 
-  const zip = archiver.create('zip');
-  const output = fs.createWriteStream(zipPath);
-
-  // write zip
-  output.on('open', () => {
-    zip.pipe(output);
-
-    filesPathList.forEach(file => {
-      const stats = fs.statSync(file.rootPath);
-      if (stats.isDirectory()) return;
-
-      zip.append(fs.readFileSync(file.rootPath), {
-        name: file.localPath,
-        mode: stats.mode,
-        date: new Date(0), // necessary to get the same hash when zipping the same content
-      });
-    });
-
-    zip.finalize();
-  });
-
-  return new Promise((resolve, reject) => {
-    output.on('close', () => {
-      resolve(zipPath);
-    });
-    zip.on('error', err => reject(err));
+  return bestzip({
+    source: filesPathList.map((file: IFile) => file.localPath),
+    destination: zipPath,
+    cwd: workingDir || process.cwd()
   });
 };
 
