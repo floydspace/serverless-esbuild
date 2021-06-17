@@ -127,7 +127,7 @@ export async function pack(this: EsbuildPlugin) {
       const filesPathList = files
         .filter(({ localPath }) => {
           // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
-          if (excludedFiles.find(p => localPath.startsWith(p))) return false;
+          if (excludedFiles.find(p => localPath.startsWith(`${p}.`))) return false;
 
           // exclude files that belong to individual functions
           if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${name}/`))
