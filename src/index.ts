@@ -237,7 +237,6 @@ export class EsbuildPlugin implements Plugin {
         delete config['packager'];
         delete config['packagePath'];
         delete config['watch'];
-        delete config['plugins'];
         delete config['keepOutputDirectory'];
 
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
