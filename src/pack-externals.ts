@@ -224,6 +224,15 @@ export async function packExternalModules(this: EsbuildPlugin) {
   // Fetch needed original package.json sections
   const sectionNames = packager.copyPackageSectionNames;
 
+  // Get scripts from packager options
+  const packagerScripts = this.buildOptions.packagerOptions
+    ? ([].concat(this.buildOptions.packagerOptions.scripts || []))
+      .reduce((scripts, script, index) => {
+        scripts[`script${index}`] = script;
+        return scripts;
+      }, {})
+    : {};
+
   const rootPackageJson: Record<string, any> = this.serverless.utils.readFileSync(
     rootPackageJsonPath
   );
@@ -267,6 +276,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
       version: '1.0.0',
       description: `Packaged externals for ${this.serverless.service.service}`,
       private: true,
+      scripts: packagerScripts,
     },
     packageSections
   );
@@ -314,4 +324,12 @@ export async function packExternalModules(this: EsbuildPlugin) {
   await packager.prune(compositeModulePath);
   this.options.verbose &&
     this.serverless.cli.log(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
+
+  // Run packager scripts
+  if (Object.keys(packagerScripts).length > 0) {
+    const startScripts = Date.now();
+    await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
+    this.options.verbose &&
+          this.serverless.cli.log(`Packager scripts took [${Date.now() - startScripts} ms].\nExecuted scripts: ${Object.values(packagerScripts).map(script => `\n  ${script}`)}`);  
+  } 
 }

@@ -64,6 +64,10 @@ custom:
   esbuild:
     packager: yarn # optional - npm or yarn, default is npm
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
+    packagerOptions: # optional - packager related options, currently supports only 'scripts' for both npm and yarn
+      scripts: # scripts to be executed, can be a string or array of strings
+        - echo 'Hello World!'
+        - rm -rf node_modules
 ```
 
 To easily mark all the `dependencies` in `package.json` as `external`, you can utilize `esbuild-node-externals` [plugin](https://www.npmjs.com/package/esbuild-node-externals).

@@ -27,6 +27,10 @@ export interface WatchConfiguration {
   ignore?: string[] | string;
 }
 
+export interface PackagerOptions {
+  scripts?: string[] | string;
+}
+
 export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
@@ -34,6 +38,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   watch: WatchConfiguration;
   plugins?: string;
   keepOutputDirectory?: boolean;
+  packagerOptions?: PackagerOptions;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -46,7 +51,8 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
   },
-  keepOutputDirectory: false
+  keepOutputDirectory: false,
+  packagerOptions: {},
 };
 
 export class EsbuildPlugin implements Plugin {
@@ -238,6 +244,7 @@ export class EsbuildPlugin implements Plugin {
         delete config['packagePath'];
         delete config['watch'];
         delete config['keepOutputDirectory'];
+        delete config['packagerOptions'];
 
         const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
