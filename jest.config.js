@@ -1,5 +1,7 @@
 const config = {
-    verbose: true
+    preset: 'ts-jest',
+    verbose: true,
+    transform: {}
 };
 
 module.exports = config;
