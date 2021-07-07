@@ -72,10 +72,6 @@ export function findUp(name: string | string[], directory: string = process.cwd(
       return directory;
     }
   } else {
-    if (!name.length) {
-      return findUp(name, path.dirname(absoluteDirectory));
-    }
-
     /* For vs. .forEach so it can exit when we get a hit. */
     for (let x = 0; x < name.length; x++) {
       if (fs.existsSync(path.join(directory, name[x]))) {
