@@ -2,6 +2,7 @@ import { bestzip } from 'bestzip';
 import * as childProcess from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import { join } from 'ramda';
 import { IFiles, IFile } from './types';
 
@@ -101,14 +102,38 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = (zipPath: string, filesPathList: IFiles, workingDir?: string) => {
+export const zip = async (zipPath: string, filesPathList: IFiles) => {
+  // create a temporary directory to hold the final zip structure
+  const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
+  const tempDirPath = path.join(os.tmpdir(), tempDirName);
+  fs.mkdirpSync(tempDirPath);
+
+  // copy all required files from origin path to (sometimes modified) target path
+  await Promise.all(
+    filesPathList.map(
+      file =>
+        new Promise(resolve => {
+          const destPath = path.join(tempDirPath, file.localPath);
+          fs.copySync(file.rootPath, destPath);
+          resolve(true);
+        })
+    )
+  );
+
+  // prepare zip folder
   fs.mkdirpSync(path.dirname(zipPath));
 
-  return bestzip({
-    source: filesPathList.map((file: IFile) => file.localPath),
+  // zip the temporary directory
+  const result = await bestzip({
+    source: '*',
     destination: zipPath,
-    cwd: workingDir || process.cwd()
+    cwd: tempDirPath,
   });
+
+  // delete the temporary folder
+  fs.rmdirSync(tempDirPath, { recursive: true });
+
+  return result;
 };
 
 export function trimExtension(entry: string) {
