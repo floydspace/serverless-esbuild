@@ -64,11 +64,20 @@ export function spawnProcess(
 /**
  * Find a file by walking up parent directories
  */
-export function findUp(name: string, directory: string = process.cwd()): string | undefined {
+export function findUp(name: string | string[], directory: string = process.cwd()): string | undefined {
   const absoluteDirectory = path.resolve(directory);
 
-  if (fs.existsSync(path.join(directory, name))) {
-    return directory;
+  if (typeof name === 'string') {
+    if (fs.existsSync(path.join(directory, name))) {
+      return directory;
+    }
+  } else {
+    /* For vs. .forEach so it can exit when we get a hit. */
+    for (let x = 0; x < name.length; x++) {
+      if (fs.existsSync(path.join(directory, name[x]))) {
+        return directory;
+      }
+    }
   }
 
   const { root } = path.parse(absoluteDirectory);
@@ -83,7 +92,7 @@ export function findUp(name: string, directory: string = process.cwd()): string 
  * Forwards `rootDir` or finds project root folder.
  */
 export function findProjectRoot(rootDir?: string): string | undefined {
-  return rootDir ?? findUp('yarn.lock') ?? findUp('package-lock.json') ?? findUp('package.json');
+  return rootDir ?? findUp(['yarn.lock', 'package-lock.json', 'package.json']);
 }
 
 export const humanSize = (size: number) => {
