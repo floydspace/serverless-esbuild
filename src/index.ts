@@ -36,6 +36,7 @@ export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   packagePath: string;
   exclude: string[];
   watch: WatchConfiguration;
+  installExtraArgs: string[];
   plugins?: string;
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
@@ -47,6 +48,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   external: [],
   exclude: ['aws-sdk'],
   packager: 'npm',
+  installExtraArgs: [],
   watch: {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
