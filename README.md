@@ -163,6 +163,16 @@ Options are:
 - `--path` or `-p` (optional) path to JSON or YAML file holding input data
 - `--data` or `-d` (optional) input data
 
+## Plugin-Specific Options in Serverless Config
+
+These options belong under `custom.esbuild` in your `serverless.yml` or `serverless.ts` file, and are specific to this plugin (these are not esbuild API options):
+
+- `packager`: Package to use (npm or yarn - npm is default)
+- `packagePath`: Path to the `package.json` file (`./package.json` is default)
+- `packagerOptions`:
+  - `scripts`: A string or array of scripts to be executed, currently only supports 'scripts' for npm and yarn
+- `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
+
 ## Author
 
 [Victor Korzunin](https://floydspace.github.io/)
