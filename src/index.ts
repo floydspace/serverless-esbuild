@@ -37,7 +37,7 @@ export interface PackagerOptions {
 export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
-  exclude: string[];
+  exclude: '*' | string[];
   watch: WatchConfiguration;
   plugins?: string;
   keepOutputDirectory?: boolean;
@@ -246,7 +246,10 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       this.rootFileNames.map(async ({ entry, func, functionAlias }) => {
         const config: Omit<BuildOptions, 'watch'> = {
           ...this.buildOptions,
-          external: [...this.buildOptions.external, ...this.buildOptions.exclude],
+          external: [
+            ...this.buildOptions.external, 
+            ...(this.buildOptions.exclude === '*' || this.buildOptions.exclude.includes('*') ? [] : this.buildOptions.exclude)
+          ],
           entryPoints: [entry],
           outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',

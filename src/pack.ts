@@ -95,8 +95,13 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const buildResults = this.buildResults;
   const bundlePathList = buildResults.map((b) => b.bundlePath);
 
-  // get a list of externals
-  const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
+  let externals = [];
+
+  // get the list of externals to include only if exclude is not set to *
+  if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
+    externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
+  } 
+
   const hasExternals = !!externals?.length;
 
   // get a tree of all production dependencies
