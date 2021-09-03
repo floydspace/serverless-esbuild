@@ -85,35 +85,62 @@ function getProdModules(
 
   // Get versions of all transient modules
   forEach(externalModule => {
-    const moduleVersion = packageJson.dependencies[externalModule.external];
+    // (1) If present in Dev Dependencies
+    if (
+      !packageJson.dependencies[externalModule.external] &&
+      packageJson.devDependencies[externalModule.external]
+    ) {
+      // To minimize the chance of breaking setups we whitelist packages available on AWS here. These are due to the previously missing check
+      // most likely set in devDependencies and should not lead to an error now.
+      const ignoredDevDependencies = ['aws-sdk'];
 
-    if (moduleVersion) {
-      prodModules.push(`${externalModule.external}@${moduleVersion}`);
+      if (!includes(externalModule.external, ignoredDevDependencies)) {
+        // Runtime dependency found in devDependencies but not forcefully excluded
+        this.serverless.cli.log(
+          `ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`
+        );
+        throw new this.serverless.classes.Error(
+          `Serverless-webpack dependency error: ${externalModule.external}.`
+        );
+      }
+
+      this.options.verbose &&
+        this.serverless.cli.log(
+          `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
+        );
+    } else {
+      // (2) otherwise let's get the version
+
+      // get module package - either from root or local node_modules - will be used for version and peer deps
+      const rootModulePackagePath = path.join(
+        path.dirname(rootPackageJsonPath),
+        'node_modules',
+        externalModule.external,
+        'package.json'
+      );
+      const localModulePackagePath = path.join(
+        path.dirname(packageJsonPath),
+        'node_modules',
+        externalModule.external,
+        'package.json'
+      );
+      const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
+        ? localModulePackagePath
+        : fse.pathExistsSync(rootModulePackagePath)
+        ? rootModulePackagePath
+        : null;
+      const modulePackage = modulePackagePath ? require(modulePackagePath) : {};
+
+      // Get version
+      let moduleVersion =
+        packageJson.dependencies[externalModule.external] || modulePackage.version;
+
+      // add dep with version if we have it - versionless otherwise
+      if (moduleVersion) prodModules.push(`${externalModule.external}@${moduleVersion}`);
+      else prodModules.push(externalModule.external);
 
       // Check if the module has any peer dependencies and include them too
       try {
-        const rootModulePackagePath = path.join(
-          path.dirname(rootPackageJsonPath),
-          'node_modules',
-          externalModule.external,
-          'package.json'
-        );
-        const localModulePackagePath = path.join(
-          path.dirname(packageJsonPath),
-          'node_modules',
-          externalModule.external,
-          'package.json'
-        );
-
-        // check if module exists in local node_modules or root node_modules
-        const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
-          ? localModulePackagePath
-          : fse.pathExistsSync(rootModulePackagePath)
-          ? rootModulePackagePath
-          : null;
-
-        const modulePackage = require(modulePackagePath);
-
         // find peer dependencies but remove optional ones and excluded ones
         const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
         const optionalPeerDependencies = Object.keys(
@@ -145,29 +172,6 @@ function getProdModules(
           `WARNING: Could not check for peer dependencies of ${externalModule.external}`
         );
       }
-    } else {
-      if (!packageJson.devDependencies || !packageJson.devDependencies[externalModule.external]) {
-        prodModules.push(externalModule.external);
-      } else {
-        // To minimize the chance of breaking setups we whitelist packages available on AWS here. These are due to the previously missing check
-        // most likely set in devDependencies and should not lead to an error now.
-        const ignoredDevDependencies = ['aws-sdk'];
-
-        if (!includes(externalModule.external, ignoredDevDependencies)) {
-          // Runtime dependency found in devDependencies but not forcefully excluded
-          this.serverless.cli.log(
-            `ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`
-          );
-          throw new this.serverless.classes.Error(
-            `Serverless-webpack dependency error: ${externalModule.external}.`
-          );
-        }
-
-        this.options.verbose &&
-          this.serverless.cli.log(
-            `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
-          );
-      }
     }
   }, externalModules);
 
@@ -189,19 +193,21 @@ function getProdModules(
  */
 export async function packExternalModules(this: EsbuildPlugin) {
   if (this.buildOptions.plugins) {
-      const plugins = require(path.join(this.serviceDirPath, this.buildOptions.plugins));
-      if (plugins 
-          && plugins.map(plugin => plugin.name).includes('node-externals') 
-          && fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))) {
-          const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
-          this.buildOptions.external = findDependencies({ 
-              dependencies: true,
-              packagePaths: findPackagePaths(),
-              allowList: []
-          });
-      }
+    const plugins = require(path.join(this.serviceDirPath, this.buildOptions.plugins));
+    if (
+      plugins &&
+      plugins.map(plugin => plugin.name).includes('node-externals') &&
+      fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))
+    ) {
+      const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
+      this.buildOptions.external = findDependencies({
+        dependencies: true,
+        packagePaths: findPackagePaths(),
+        allowList: [],
+      });
+    }
   }
-  
+
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
 
   if (!externals || !externals.length) {
@@ -211,7 +217,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   // Read plugin configuration
   // get the root package.json by looking up until we hit a lockfile
   // if this is a yarn workspace, it will be the monorepo package.json
-  const rootPackageJsonPath = path.join(findProjectRoot(), './package.json');
+  const rootPackageJsonPath = path.join(findProjectRoot() || '', './package.json');
 
   // get the local package.json by looking up until we hit a package.json file
   // if this is *not* a yarn workspace, it will be the same as rootPackageJsonPath
@@ -226,16 +232,16 @@ export async function packExternalModules(this: EsbuildPlugin) {
 
   // Get scripts from packager options
   const packagerScripts = this.buildOptions.packagerOptions
-    ? ([].concat(this.buildOptions.packagerOptions.scripts || []))
-      .reduce((scripts, script, index) => {
-        scripts[`script${index}`] = script;
-        return scripts;
-      }, {})
+    ? []
+        .concat(this.buildOptions.packagerOptions.scripts || [])
+        .reduce((scripts, script, index) => {
+          scripts[`script${index}`] = script;
+          return scripts;
+        }, {})
     : {};
 
-  const rootPackageJson: Record<string, any> = this.serverless.utils.readFileSync(
-    rootPackageJsonPath
-  );
+  const rootPackageJson: Record<string, any> =
+    this.serverless.utils.readFileSync(rootPackageJsonPath);
 
   const isWorkspace = !!rootPackageJson.workspaces;
 
@@ -330,6 +336,10 @@ export async function packExternalModules(this: EsbuildPlugin) {
     const startScripts = Date.now();
     await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
     this.options.verbose &&
-          this.serverless.cli.log(`Packager scripts took [${Date.now() - startScripts} ms].\nExecuted scripts: ${Object.values(packagerScripts).map(script => `\n  ${script}`)}`);  
-  } 
+      this.serverless.cli.log(
+        `Packager scripts took [${
+          Date.now() - startScripts
+        } ms].\nExecuted scripts: ${Object.values(packagerScripts).map(script => `\n  ${script}`)}`
+      );
+  }
 }
