@@ -132,7 +132,7 @@ function getProdModules(
       const modulePackage = modulePackagePath ? require(modulePackagePath) : {};
 
       // Get version
-      let moduleVersion =
+      const moduleVersion =
         packageJson.dependencies[externalModule.external] || modulePackage.version;
 
       // add dep with version if we have it - versionless otherwise
