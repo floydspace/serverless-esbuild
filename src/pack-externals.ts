@@ -28,7 +28,7 @@ import * as Packagers from './packagers';
 import { JSONObject } from './types';
 import { findProjectRoot, findUp } from './utils';
 
-import type { EsbuildPlugin } from './index';
+import type { EsbuildServerlessPlugin } from './index';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
@@ -51,7 +51,7 @@ function addModulesToPackageJson(
   packageJson: JSONObject,
   pathToPackageRoot: string
 ) {
-  forEach(externalModule => {
+  forEach((externalModule) => {
     const splitModule = split('@', externalModule);
     // If we have a scoped module we have to re-add the @
     if (startsWith('@', externalModule)) {
@@ -84,7 +84,7 @@ function getProdModules(
   }
 
   // Get versions of all transient modules
-  forEach(externalModule => {
+  forEach((externalModule) => {
     // (1) If present in Dev Dependencies
     if (
       !packageJson.dependencies[externalModule.external] &&
@@ -144,7 +144,7 @@ function getProdModules(
         // find peer dependencies but remove optional ones and excluded ones
         const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
         const optionalPeerDependencies = Object.keys(
-          pickBy(val => val.optional, modulePackage.peerDependenciesMeta || {})
+          pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
         );
         const peerDependenciesWithoutOptionals = omit(
           [...optionalPeerDependencies, ...this.buildOptions.exclude],
@@ -191,21 +191,20 @@ function getProdModules(
  * This will utilize the npm cache at its best and give us the needed results
  * and performance.
  */
-export async function packExternalModules(this: EsbuildPlugin) {
-  if (this.buildOptions.plugins) {
-    const plugins = require(path.join(this.serviceDirPath, this.buildOptions.plugins));
-    if (
-      plugins &&
-      plugins.map(plugin => plugin.name).includes('node-externals') &&
-      fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))
-    ) {
-      const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
-      this.buildOptions.external = findDependencies({
-        dependencies: true,
-        packagePaths: findPackagePaths(),
-        allowList: [],
-      });
-    }
+export async function packExternalModules(this: EsbuildServerlessPlugin) {
+  const plugins = this.plugins;
+
+  if (
+    plugins &&
+    plugins.map((plugin) => plugin.name).includes('node-externals') &&
+    fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))
+  ) {
+    const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
+    this.buildOptions.external = findDependencies({
+      dependencies: true,
+      packagePaths: findPackagePaths(),
+      allowList: [],
+    });
   }
 
   const externals = without(this.buildOptions.exclude, this.buildOptions.external);
@@ -260,7 +259,7 @@ export async function packExternalModules(this: EsbuildPlugin) {
   this.options.verbose && this.serverless.cli.log(`Fetch dependency graph from ${packageJson}`);
 
   // (1) Generate dependency composition
-  const externalModules = map(external => ({ external }), externals);
+  const externalModules = map((external) => ({ external }), externals);
   const compositeModules: JSONObject = uniq(
     getProdModules.call(this, externalModules, packageJsonPath, rootPackageJsonPath)
   );
@@ -339,7 +338,9 @@ export async function packExternalModules(this: EsbuildPlugin) {
       this.serverless.cli.log(
         `Packager scripts took [${
           Date.now() - startScripts
-        } ms].\nExecuted scripts: ${Object.values(packagerScripts).map(script => `\n  ${script}`)}`
+        } ms].\nExecuted scripts: ${Object.values(packagerScripts).map(
+          (script) => `\n  ${script}`
+        )}`
       );
   }
 }

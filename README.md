@@ -74,7 +74,7 @@ To easily mark all the `dependencies` in `package.json` as `external`, you can u
 
 ### Using esbuild plugins
 
-*Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)*
+_Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)_
 
 You can configure esbuild plugins by passing a plugins' configuration file:
 
@@ -84,7 +84,36 @@ custom:
     plugins: plugins.js
 ```
 
-The plugins' configuration file must be a javascript file exporting an array of plugins (see `examples/individually/plugins.js` for a dummy plugin example)
+The plugins' configuration file must be a javascript file exporting an array of plugins (see `examples/individually/plugins.js` for a dummy plugin example):
+
+```javascript
+let myPlugin = {
+  name: 'my-plugin',
+  setup(build) {
+    // plugin implementation
+  },
+};
+
+// default export should be an array of plugins
+module.exports = [myPlugin];
+```
+
+or a function that accepts `serverless` instance and returns an array of plugins (see [issue #168](https://github.com/floydspace/serverless-esbuild/issues/168) for an example):
+
+```javascript
+module.exports = (serverless) => {
+  const myPlugin = {
+    name: 'my-plugin',
+    setup(build) {
+      // plugin implementation with `serverless` instance access
+      console.log('sls custom options', serverless.service.custom);
+    },
+  };
+
+  // an array of plugins must be returned
+  return [myPlugin];
+};
+```
 
 ## Usage
 

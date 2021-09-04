@@ -1,10 +1,10 @@
-import { build, BuildResult, BuildOptions } from 'esbuild';
+import { build, BuildResult, BuildOptions, Plugin } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
-import * as Plugin from 'serverless/classes/Plugin';
+import * as ServerlessPlugin from 'serverless/classes/Plugin';
 import * as chokidar from 'chokidar';
 
 import { extractFileNames, providerRuntimeMatcher } from './helper';
@@ -17,6 +17,9 @@ import { trimExtension } from './utils';
 export const SERVERLESS_FOLDER = '.serverless';
 export const BUILD_FOLDER = '.build';
 export const WORK_FOLDER = '.esbuild';
+
+type Plugins = Plugin[];
+type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
 interface OptionsExtended extends Serverless.Options {
   verbose?: boolean;
@@ -55,14 +58,14 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   packagerOptions: {},
 };
 
-export class EsbuildPlugin implements Plugin {
+export class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
   workDirPath: string;
   buildDirPath: string;
 
   serverless: Serverless;
   options: OptionsExtended;
-  hooks: Plugin.Hooks;
+  hooks: ServerlessPlugin.Hooks;
   buildResults: {
     result: BuildResult;
     bundlePath: string;
@@ -150,11 +153,26 @@ export class EsbuildPlugin implements Plugin {
     >;
   }
 
+  get plugins(): Plugins {
+    if (!this.buildOptions.plugins) return;
+
+    const plugins: Plugins | ReturnPluginsFn = require(path.join(
+      this.serviceDirPath,
+      this.buildOptions.plugins
+    ));
+
+    if (typeof plugins === 'function') {
+      return plugins(this.serverless);
+    }
+
+    return plugins;
+  }
+
   private getCachedOptions = memoizeWith(always('cache'), () => {
     const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
     const target = runtimeMatcher?.[this.serverless.service.provider.runtime];
     const resolvedOptions = {
-      ...(target ? {target} : {})
+      ...(target ? { target } : {}),
     };
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
     const withResolvedOptions = mergeRight(withDefaultOptions(resolvedOptions));
@@ -233,9 +251,7 @@ export class EsbuildPlugin implements Plugin {
           outdir: path.join(this.buildDirPath, path.dirname(entry)),
           platform: 'node',
           incremental,
-          plugins:
-            this.buildOptions.plugins &&
-            require(path.join(this.serviceDirPath, this.buildOptions.plugins)),
+          plugins: this.plugins,
         };
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
@@ -257,15 +273,18 @@ export class EsbuildPlugin implements Plugin {
         const result = await build(config);
 
         if (config.metafile) {
-          fs.writeFileSync(path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`), JSON.stringify(result.metafile, null, 2));
+          fs.writeFileSync(
+            path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`),
+            JSON.stringify(result.metafile, null, 2)
+          );
         }
 
         return { result, bundlePath, func, functionAlias };
       })
-    ).then(results => {
+    ).then((results) => {
       this.serverless.cli.log('Compiling completed.');
       this.buildResults = results;
-      return results.map(r => r.result);
+      return results.map((r) => r.result);
     });
   }
 
@@ -339,7 +358,7 @@ export class EsbuildPlugin implements Plugin {
 
     if (service.package.individually) {
       const functionNames = service.getAllFunctions();
-      functionNames.forEach(name => {
+      functionNames.forEach((name) => {
         service.getFunction(name).package.artifact = path.join(
           this.serviceDirPath,
           SERVERLESS_FOLDER,
@@ -365,4 +384,4 @@ export class EsbuildPlugin implements Plugin {
   }
 }
 
-module.exports = EsbuildPlugin;
+module.exports = EsbuildServerlessPlugin;

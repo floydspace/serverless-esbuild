@@ -14,13 +14,13 @@ import {
   without,
 } from 'ramda';
 import * as semver from 'semver';
-import { EsbuildPlugin, SERVERLESS_FOLDER } from '.';
+import { EsbuildServerlessPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 import { IFiles } from './types';
 import { humanSize, zip, trimExtension } from './utils';
 
-function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
+function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPath) {
   const version = this.serverless.getVersion();
   // Serverless changed the artifact path location in version 1.18
   if (semver.lt(version, '1.18.0')) {
@@ -38,7 +38,7 @@ function setFunctionArtifactPath(this: EsbuildPlugin, func, artifactPath) {
 
 const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
 
-export async function pack(this: EsbuildPlugin) {
+export async function pack(this: EsbuildServerlessPlugin) {
   // GOOGLE Provider requires a package.json and NO node_modules
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
   const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
@@ -56,8 +56,8 @@ export async function pack(this: EsbuildPlugin) {
       dot: true,
       onlyFiles: true,
     })
-    .filter(p => !excludedFiles.includes(p))
-    .map(localPath => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
+    .filter((p) => !excludedFiles.includes(p))
+    .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
     throw new Error('Packaging: No files found');
@@ -93,7 +93,7 @@ export async function pack(this: EsbuildPlugin) {
 
   // get a list of every function bundle
   const buildResults = this.buildResults;
-  const bundlePathList = buildResults.map(b => b.bundlePath);
+  const bundlePathList = buildResults.map((b) => b.bundlePath);
 
   // get a list of externals
   const externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
@@ -107,9 +107,13 @@ export async function pack(this: EsbuildPlugin) {
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
-      const name = `${this.serverless.service.getServiceName()}-${this.serverless.service.provider.stage}-${functionAlias}`;
+      const name = `${this.serverless.service.getServiceName()}-${
+        this.serverless.service.provider.stage
+      }-${functionAlias}`;
 
-      const excludedFiles = bundlePathList.filter(p => !bundlePath.startsWith(p)).map(trimExtension);
+      const excludedFiles = bundlePathList
+        .filter((p) => !bundlePath.startsWith(p))
+        .map(trimExtension);
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];
@@ -127,7 +131,7 @@ export async function pack(this: EsbuildPlugin) {
       const filesPathList = files
         .filter(({ localPath }) => {
           // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
-          if (excludedFiles.find(p => localPath.startsWith(`${p}.`))) return false;
+          if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
           // exclude files that belong to individual functions
           if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${name}/`))
@@ -139,7 +143,7 @@ export async function pack(this: EsbuildPlugin) {
             if (!hasExternals || isGoogleProvider) return false;
             if (
               // this is needed for dependencies that maps to a path (like scoped ones)
-              !depWhiteList.find(dep => doSharePath(localPath, 'node_modules/' + dep))
+              !depWhiteList.find((dep) => doSharePath(localPath, 'node_modules/' + dep))
             )
               return false;
           }
