@@ -111,14 +111,7 @@ export const zip = async (zipPath: string, filesPathList: IFiles) => {
 
   // copy all required files from origin path to (sometimes modified) target path
   await Promise.all(
-    filesPathList.map(
-      (file) =>
-        new Promise((resolve) => {
-          const destPath = path.join(tempDirPath, file.localPath);
-          fs.copySync(file.rootPath, destPath);
-          resolve(true);
-        })
-    )
+    filesPathList.map((file) => fs.copy(file.rootPath, path.join(tempDirPath, file.localPath)))
   );
 
   // prepare zip folder
