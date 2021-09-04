@@ -41,7 +41,7 @@
   ],
   "devDependencies": {
     "@commitlint/cli": "^9.1.1",
-    "@commitlint/config-conventional": "^9.1.1",
+    "@commitlint/config-conventional": "^13.1.0",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.14",
     "@types/node": "^12.12.38",
