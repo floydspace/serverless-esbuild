@@ -75,7 +75,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     )(files);
 
     const startZip = Date.now();
-    await zip(artifactPath, filesPathList, this.buildDirPath);
+    await zip(artifactPath, filesPathList);
     const { size } = fs.statSync(artifactPath);
 
     this.serverless.cli.log(
@@ -157,7 +157,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
         }));
 
       const startZip = Date.now();
-      await zip(artifactPath, filesPathList, this.buildDirPath);
+      await zip(artifactPath, filesPathList);
 
       const { size } = fs.statSync(artifactPath);
 
