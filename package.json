@@ -44,7 +44,7 @@
     "@commitlint/config-conventional": "^9.1.1",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.14",
-    "@types/node": "^12.12.38",
+    "@types/node": "^16.9.0",
     "@types/ramda": "^0.27.6",
     "@types/serverless": "^1.78.25",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
