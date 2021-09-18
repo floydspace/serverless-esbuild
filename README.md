@@ -115,6 +115,18 @@ module.exports = (serverless) => {
 };
 ```
 
+### Native Zip
+
+If you wish to use your system's `zip` executable to create archives (can be significantly faster when working with many large archives), set the `nativeZip` option:
+
+```yml
+custom:
+  esbuild:
+    nativeZip: true
+```
+
+**NOTE:*** This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
+
 ## Usage
 
 ### Automatic compilation
