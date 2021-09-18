@@ -1,10 +1,11 @@
 import { bestzip } from 'bestzip';
+import * as archiver from 'archiver';
 import * as childProcess from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { join } from 'ramda';
-import { IFiles, IFile } from './types';
+import { IFiles } from './types';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -103,7 +104,11 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = async (zipPath: string, filesPathList: IFiles) => {
+export const zip = async (
+  zipPath: string,
+  filesPathList: IFiles,
+  useNativeZip = false
+): Promise<void> => {
   // create a temporary directory to hold the final zip structure
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
   const tempDirPath = path.join(os.tmpdir(), tempDirName);
@@ -117,17 +122,48 @@ export const zip = async (zipPath: string, filesPathList: IFiles) => {
   // prepare zip folder
   fs.mkdirpSync(path.dirname(zipPath));
 
-  // zip the temporary directory
-  const result = await bestzip({
-    source: '*',
-    destination: zipPath,
-    cwd: tempDirPath,
-  });
+  if (useNativeZip) {
+    // zip the temporary directory
+    await bestzip({
+      source: '*',
+      destination: zipPath,
+      cwd: tempDirPath,
+    });
 
-  // delete the temporary folder
-  fs.rmdirSync(tempDirPath, { recursive: true });
+    // delete the temporary folder
+    fs.rmdirSync(tempDirPath, { recursive: true });
+  } else {
+    const zip = archiver.create('zip');
+    const output = fs.createWriteStream(zipPath);
 
-  return result;
+    // write zip
+    output.on('open', () => {
+      zip.pipe(output);
+
+      filesPathList.forEach((file) => {
+        const stats = fs.statSync(file.rootPath);
+        if (stats.isDirectory()) return;
+
+        zip.append(fs.readFileSync(file.rootPath), {
+          name: file.localPath,
+          mode: stats.mode,
+          date: new Date(0), // necessary to get the same hash when zipping the same content
+        });
+      });
+
+      zip.finalize();
+    });
+
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        // delete the temporary folder
+        fs.rmdirSync(tempDirPath, { recursive: true });
+
+        resolve();
+      });
+      zip.on('error', (err) => reject(err));
+    });
+  }
 };
 
 export function trimExtension(entry: string) {

@@ -34,10 +34,11 @@ export interface PackagerOptions {
   scripts?: string[] | string;
 }
 
-export interface Configuration extends Omit<BuildOptions, 'watch' | 'plugins'> {
+export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'> {
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: string[];
+  nativeZip: boolean;
   watch: WatchConfiguration;
   plugins?: string;
   keepOutputDirectory?: boolean;
@@ -49,6 +50,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   target: 'node10',
   external: [],
   exclude: ['aws-sdk'],
+  nativeZip: false,
   packager: 'npm',
   watch: {
     pattern: './**/*.(js|ts)',
@@ -256,6 +258,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
 
         // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
         delete config['exclude'];
+        delete config['nativeZip'];
         delete config['packager'];
         delete config['packagePath'];
         delete config['watch'];
