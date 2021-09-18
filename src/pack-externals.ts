@@ -205,9 +205,14 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
       packagePaths: findPackagePaths(),
       allowList: [],
     });
-  }
+  }  
 
-  const externals = without(this.buildOptions.exclude, this.buildOptions.external);
+  let externals = [];
+
+  // get the list of externals only if exclude is not set to *
+  if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
+    externals = without(this.buildOptions.exclude, this.buildOptions.external);
+  } 
 
   if (!externals || !externals.length) {
     return;
