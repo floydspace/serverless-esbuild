@@ -205,14 +205,14 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
       packagePaths: findPackagePaths(),
       allowList: [],
     });
-  }  
+  }
 
   let externals = [];
 
   // get the list of externals only if exclude is not set to *
   if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
     externals = without(this.buildOptions.exclude, this.buildOptions.external);
-  } 
+  }
 
   if (!externals || !externals.length) {
     return;
@@ -298,7 +298,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   );
 
   // (1.a.2) Copy package-lock.json if it exists, to prevent unwanted upgrades
-  const packageLockPath = path.join(path.dirname(rootPackageJsonPath), packager.lockfileName);
+  const packageLockPath = path.join(path.dirname(packageJsonPath), packager.lockfileName);
   const exists = await fse.pathExists(packageLockPath);
   if (exists) {
     this.serverless.cli.log('Package lock found - Using locked versions');
