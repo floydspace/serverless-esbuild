@@ -85,7 +85,20 @@ function getProdModules(
 
   // Get versions of all transient modules
   forEach((externalModule) => {
-    // (1) If present in Dev Dependencies
+    // (1) If not present in Dev Dependencies or Dependencies
+    if (
+      !packageJson.dependencies[externalModule.external] &&
+      !packageJson.devDependencies[externalModule.external]
+    ){
+      this.options.verbose &&
+        this.serverless.cli.log(
+          `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
+        );
+        
+      return;
+    }
+    
+    // (2) If present in Dev Dependencies
     if (
       !packageJson.dependencies[externalModule.external] &&
       packageJson.devDependencies[externalModule.external]
@@ -108,8 +121,10 @@ function getProdModules(
         this.serverless.cli.log(
           `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
         );
-    } else {
-      // (2) otherwise let's get the version
+
+      return;
+    }
+      // (3) otherwise let's get the version
 
       // get module package - either from root or local node_modules - will be used for version and peer deps
       const rootModulePackagePath = path.join(
@@ -172,7 +187,6 @@ function getProdModules(
           `WARNING: Could not check for peer dependencies of ${externalModule.external}`
         );
       }
-    }
   }, externalModules);
 
   return prodModules;
