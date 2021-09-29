@@ -2,6 +2,7 @@ import { build, BuildResult, BuildOptions, Plugin } from 'esbuild';
 import * as fs from 'fs-extra';
 import * as globby from 'globby';
 import * as path from 'path';
+import * as pMap from 'p-map';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as ServerlessPlugin from 'serverless/classes/Plugin';
@@ -35,6 +36,7 @@ export interface PackagerOptions {
 }
 
 export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'> {
+  concurrency: number;
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: '*' | string[];
@@ -244,54 +246,65 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.prepare();
     this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
 
-    return Promise.all(
-      this.rootFileNames.map(async ({ entry, func, functionAlias }) => {
-        const config: Omit<BuildOptions, 'watch'> = {
-          ...this.buildOptions,
-          external: [
-            ...this.buildOptions.external, 
-            ...(this.buildOptions.exclude === '*' || this.buildOptions.exclude.includes('*') ? [] : this.buildOptions.exclude)
-          ],
-          entryPoints: [entry],
-          outdir: path.join(this.buildDirPath, path.dirname(entry)),
-          platform: 'node',
-          incremental,
-          plugins: this.plugins,
-        };
+    const bundlePromise = async (bundleInfo) => {
+      const { entry, func, functionAlias } = bundleInfo;
+      const config: Omit<BuildOptions, 'watch'> = {
+        ...this.buildOptions,
+        external: [
+          ...this.buildOptions.external,
+          ...(this.buildOptions.exclude === '*' || this.buildOptions.exclude.includes('*')
+            ? []
+            : this.buildOptions.exclude),
+        ],
+        entryPoints: [entry],
+        outdir: path.join(this.buildDirPath, path.dirname(entry)),
+        platform: 'node',
+        incremental,
+        plugins: this.plugins,
+      };
 
-        // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
-        delete config['exclude'];
-        delete config['nativeZip'];
-        delete config['packager'];
-        delete config['packagePath'];
-        delete config['watch'];
-        delete config['keepOutputDirectory'];
-        delete config['packagerOptions'];
+      // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
+      delete config['concurrency'];
+      delete config['exclude'];
+      delete config['nativeZip'];
+      delete config['packager'];
+      delete config['packagePath'];
+      delete config['watch'];
+      delete config['keepOutputDirectory'];
+      delete config['packagerOptions'];
 
-        const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
+      const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
-        if (this.buildResults) {
-          const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
-          await result.rebuild();
-          return { result, bundlePath, func, functionAlias };
-        }
-
-        const result = await build(config);
-
-        if (config.metafile) {
-          fs.writeFileSync(
-            path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`),
-            JSON.stringify(result.metafile, null, 2)
-          );
-        }
-
+      if (this.buildResults) {
+        const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
+        await result.rebuild();
         return { result, bundlePath, func, functionAlias };
-      })
-    ).then((results) => {
-      this.serverless.cli.log('Compiling completed.');
-      this.buildResults = results;
-      return results.map((r) => r.result);
-    });
+      }
+
+      const result = await build(config);
+
+      if (config.metafile) {
+        fs.writeFileSync(
+          path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`),
+          JSON.stringify(result.metafile, null, 2)
+        );
+      }
+
+      return { result, bundlePath, func, functionAlias };
+    };
+    // If concurrency is enabled, limit it, otherwise run all in parallel
+    if (this.buildOptions.concurrency) {
+      this.serverless.cli.log(`Bundling with concurrency: ${this.buildOptions.concurrency}`);
+      this.buildResults = await pMap(this.rootFileNames, bundlePromise, {
+        concurrency: this.buildOptions.concurrency,
+      });
+    } else {
+      this.buildResults = await Promise.all(
+        this.rootFileNames.map(async (bundleInfo) => bundlePromise(bundleInfo))
+      );
+    }
+    this.serverless.cli.log('Compiling completed.');
+    return this.buildResults.map((r) => r.result);
   }
 
   /** Link or copy extras such as node_modules or package.patterns definitions */
