@@ -36,7 +36,7 @@ export interface PackagerOptions {
 }
 
 export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'> {
-  concurrency: number;
+  concurrency?: number;
   packager: 'npm' | 'yarn';
   packagePath: string;
   exclude: '*' | string[];
@@ -246,7 +246,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.prepare();
     this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
 
-    const bundlePromise = async (bundleInfo) => {
+    const bundleMapper = async (bundleInfo) => {
       const { entry, func, functionAlias } = bundleInfo;
       const config: Omit<BuildOptions, 'watch'> = {
         ...this.buildOptions,
@@ -292,17 +292,12 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
 
       return { result, bundlePath, func, functionAlias };
     };
-    // If concurrency is enabled, limit it, otherwise run all in parallel
-    if (this.buildOptions.concurrency) {
-      this.serverless.cli.log(`Bundling with concurrency: ${this.buildOptions.concurrency}`);
-      this.buildResults = await pMap(this.rootFileNames, bundlePromise, {
-        concurrency: this.buildOptions.concurrency,
-      });
-    } else {
-      this.buildResults = await Promise.all(
-        this.rootFileNames.map(async (bundleInfo) => bundlePromise(bundleInfo))
-      );
-    }
+    this.serverless.cli.log(
+      `Compiling with concurrency: ${this.buildOptions.concurrency ?? 'Infinity'}`
+    );
+    this.buildResults = await pMap(this.rootFileNames, bundleMapper, {
+      concurrency: this.buildOptions.concurrency,
+    });
     this.serverless.cli.log('Compiling completed.');
     return this.buildResults.map((r) => r.result);
   }
