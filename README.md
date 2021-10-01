@@ -129,6 +129,18 @@ custom:
 
 **NOTE:*** This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
 
+### Concurrency
+
+If you wish to limit the concurrency of the bundling process (can be very expensive on memory), set the `concurrency` option:
+
+```yml
+custom:
+  esbuild:
+    concurrency: 10
+```
+
+**NOTE:*** This will produce slower builds.
+
 ## Usage
 
 ### Automatic compilation
