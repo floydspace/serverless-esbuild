@@ -36,7 +36,7 @@ function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPa
   }
 }
 
-const excludedFilesDefault = ['package-lock.json', 'yarn.lock', 'package.json'];
+const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'package.json'];
 
 export async function pack(this: EsbuildServerlessPlugin) {
   // GOOGLE Provider requires a package.json and NO node_modules
@@ -100,7 +100,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   // get the list of externals to include only if exclude is not set to *
   if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
     externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
-  } 
+  }
 
   const hasExternals = !!externals?.length;
 

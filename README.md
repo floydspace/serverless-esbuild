@@ -24,6 +24,8 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
 yarn add --dev serverless-esbuild
 # or
 npm install -D serverless-esbuild
+# or
+pnpm install -D serverless-esbuild
 ```
 
 Add the following plugin to your `serverless.yml`:
@@ -62,9 +64,9 @@ Packages that are marked as `external` and exist in the package.json's `dependen
 ```yml
 custom:
   esbuild:
-    packager: yarn # optional - npm or yarn, default is npm
+    packager: yarn # optional - npm, pnpm or yarn, default is npm
     packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
-    packagerOptions: # optional - packager related options, currently supports only 'scripts' for both npm and yarn
+    packagerOptions: # optional - packager related options, currently supports only 'scripts' for both npm, pnpm and yarn
       scripts: # scripts to be executed, can be a string or array of strings
         - echo 'Hello World!'
         - rm -rf node_modules
@@ -208,10 +210,10 @@ Options are:
 
 These options belong under `custom.esbuild` in your `serverless.yml` or `serverless.ts` file, and are specific to this plugin (these are not esbuild API options):
 
-- `packager`: Package to use (npm or yarn - npm is default)
+- `packager`: Package to use (npm, pnpm or yarn - npm is default)
 - `packagePath`: Path to the `package.json` file (`./package.json` is default)
 - `packagerOptions`:
-  - `scripts`: A string or array of scripts to be executed, currently only supports 'scripts' for npm and yarn
+  - `scripts`: A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn
 - `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
 
 ## Author

@@ -19,11 +19,13 @@
 
 import { Packager } from './packager';
 import { NPM } from './npm';
+import { Pnpm } from './pnpm';
 import { Yarn } from './yarn';
 
 const registeredPackagers = {
   npm: new NPM(),
-  yarn: new Yarn()
+  pnpm: new Pnpm(),
+  yarn: new Yarn(),
 };
 
 /**
