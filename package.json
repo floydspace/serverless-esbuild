@@ -17,7 +17,8 @@
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
     "test": "jest --passWithNoTests",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -40,8 +41,8 @@
     "typescript"
   ],
   "devDependencies": {
-    "@commitlint/cli": "^9.1.1",
-    "@commitlint/config-conventional": "^9.1.1",
+    "@commitlint/cli": "^13.2.0",
+    "@commitlint/config-conventional": "^13.2.0",
     "@types/archiver": "^5.1.1",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.14",
@@ -51,7 +52,7 @@
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "eslint": "^7.9.0",
-    "husky": "^4.2.5",
+    "husky": "^7.0.2",
     "jest": "^26.4.2",
     "lint-staged": "^11.1.2",
     "mock-fs": "^4.12.0",
