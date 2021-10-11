@@ -136,8 +136,7 @@ export class EsbuildPlugin implements Plugin {
   private isNodeFunction(func: Serverless.FunctionDefinitionHandler): boolean {
     const runtime = func.runtime || this.serverless.service.provider.runtime;
     const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
-    const target = runtimeMatcher === null || runtimeMatcher === void 0 ? void 0 : runtimeMatcher[runtime];
-    return !!target;
+    return Boolean(runtimeMatcher?.[runtime]);
   }
 
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
