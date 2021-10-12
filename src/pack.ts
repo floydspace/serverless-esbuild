@@ -109,6 +109,10 @@ export async function pack(this: EsbuildServerlessPlugin) {
     ? await packager.getProdDependencies(this.buildDirPath)
     : {};
 
+  const packageFiles = await globby(
+    this.serverless.service.package.patterns
+  );
+
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
@@ -117,8 +121,12 @@ export async function pack(this: EsbuildServerlessPlugin) {
       }-${functionAlias}`;
 
       const excludedFiles = bundlePathList
-        .filter((p) => !bundlePath.startsWith(p))
-        .map(trimExtension);
+      .filter((p) => !bundlePath.startsWith(p))
+      .map(trimExtension);
+
+      const functionFiles = await globby(func.package.patterns);
+
+      const includedFiles = [...packageFiles, ...functionFiles];
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];
@@ -135,6 +143,11 @@ export async function pack(this: EsbuildServerlessPlugin) {
       // filter files
       const filesPathList = files
         .filter(({ localPath }) => {
+          // if file is present in patterns it must be included
+          if (includedFiles.find(file => file === localPath)) {
+            return true;
+          }
+
           // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
           if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
