@@ -60,7 +60,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
     .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
-    throw new Error('Packaging: No files found');
+    console.log('Packaging: No files found. Skipping esbuild.');
+    return;
   }
 
   // 1) If individually is not set, just zip the all build dir and return
