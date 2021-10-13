@@ -74,6 +74,18 @@ custom:
 
 To easily mark all the `dependencies` in `package.json` as `external`, you can utilize `esbuild-node-externals` [plugin](https://www.npmjs.com/package/esbuild-node-externals).
 
+### Passing Extra Arguments to Packager
+
+This might be required to resolve some issues on package installation.
+One example is to pass `--legacy-peer-deps` to npm v7+, to use legacy `peerDependency` resolution behavior.
+
+```yml
+custom:
+  esbuild:
+    installExtraArgs: # optional. Default is empty (no arguments)
+      - "--legacy-peer-deps" 
+```
+
 ### Using esbuild plugins
 
 _Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)_
@@ -227,6 +239,7 @@ These options belong under `custom.esbuild` in your `serverless.yml` or `serverl
 - `packagerOptions`:
   - `scripts`: A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn
 - `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
+- `installExtraArgs`: Optional arguments passed to npm or yarn (empty is default)
 
 ## Author
 

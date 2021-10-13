@@ -42,6 +42,7 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   exclude: '*' | string[];
   nativeZip: boolean;
   watch: WatchConfiguration;
+  installExtraArgs: string[];
   plugins?: string;
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
@@ -54,6 +55,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   exclude: ['aws-sdk'],
   nativeZip: false,
   packager: 'npm',
+  installExtraArgs: [],
   watch: {
     pattern: './**/*.(js|ts)',
     ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],

@@ -340,7 +340,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   const start = Date.now();
   this.serverless.cli.log('Packing external modules: ' + compositeModules.join(', '));
-  await packager.install(compositeModulePath, exists);
+  const installExtraArgs = this.buildOptions.installExtraArgs;
+  await packager.install(compositeModulePath, installExtraArgs, exists);
   this.options.verbose && this.serverless.cli.log(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
