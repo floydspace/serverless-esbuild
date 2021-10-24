@@ -95,10 +95,12 @@ export class Pnpm implements Packager {
     return lockfile;
   }
 
-  async install(cwd, useLockfile = true) {
+  async install(cwd, extraArgs: Array<string>, useLockfile = true) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
 
-    const args = useLockfile ? ['install', '--frozen-lockfile'] : ['install'];
+    const args = useLockfile
+      ? ['install', '--frozen-lockfile', ...extraArgs]
+      : ['install', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }
