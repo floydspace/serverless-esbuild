@@ -179,7 +179,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
     for (const funcName in functions) {
       const func = functions[funcName] as Serverless.FunctionDefinitionHandler;
-      if (this.isNodeFunction(func) && this.isFunctionDefinitionHandler(func)) {
+      if (this.isFunctionDefinitionHandler(func) && this.isNodeFunction(func)) {
         nodeFunctions[funcName] = func;
       }
     }
