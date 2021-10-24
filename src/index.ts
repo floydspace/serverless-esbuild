@@ -6,6 +6,7 @@ import * as pMap from 'p-map';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as ServerlessPlugin from 'serverless/classes/Plugin';
+import * as Service from 'serverless/classes/Service';
 import * as chokidar from 'chokidar';
 
 import { extractFileNames, providerRuntimeMatcher } from './helper';
@@ -168,7 +169,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
-    let functions: typeof this.serverless.service.functions;
+    let functions: Service['functions'];
     if (this.options.function) {
       functions = {
         [this.options.function]: this.serverless.service.getFunction(this.options.function),
