@@ -159,24 +159,25 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
    * @param {Serverless.FunctionDefinitionHandler | Serverless.FunctionDefinitionImage} func the function to be checked
    * @returns {boolean} true if the function has a handler
    */
-  private isFunctionDefinitionHandler(func: Serverless.FunctionDefinitionHandler | Serverless.FunctionDefinitionImage): func is Serverless.FunctionDefinitionHandler {
+  private isFunctionDefinitionHandler(
+    func: Serverless.FunctionDefinitionHandler | Serverless.FunctionDefinitionImage
+  ): func is Serverless.FunctionDefinitionHandler {
     return Boolean((func as Serverless.FunctionDefinitionHandler)?.handler);
   }
 
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
-
-    let functions: typeof this.serverless.service.functions = {};
+    let functions: typeof this.serverless.service.functions;
     if (this.options.function) {
       //only return the function if it's a node function:
       const func = this.serverless.service.getFunction(this.options.function);
-      functions[this.options.function] = func;
+      functions = { [this.options.function]: func };
     } else {
       functions = this.serverless.service.functions;
     }
 
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
-    for(const funcName in functions) {
+    for (const funcName in functions) {
       const func = functions[funcName] as Serverless.FunctionDefinitionHandler;
       if (this.isNodeFunction(func) && this.isFunctionDefinitionHandler(func)) {
         nodeFunctions[funcName] = func;
