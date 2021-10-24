@@ -168,9 +168,9 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
     let functions: typeof this.serverless.service.functions;
     if (this.options.function) {
-      //only return the function if it's a node function:
-      const func = this.serverless.service.getFunction(this.options.function);
-      functions = { [this.options.function]: func };
+      functions = {
+        [this.options.function]: this.serverless.service.getFunction(this.options.function),
+      };
     } else {
       functions = this.serverless.service.functions;
     }
