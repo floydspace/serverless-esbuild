@@ -304,6 +304,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       delete config['watch'];
       delete config['keepOutputDirectory'];
       delete config['packagerOptions'];
+      delete config['installExtraArgs'];
 
       const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
