@@ -250,3 +250,8 @@ These options belong under `custom.esbuild` in your `serverless.yml` or `serverl
 [Loup Topalian](https://github.com/olup)
 
 Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)
+
+
+## External tools
+
+- [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
