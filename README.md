@@ -74,6 +74,16 @@ custom:
 
 To easily mark all the `dependencies` in `package.json` as `external`, you can utilize `esbuild-node-externals` [plugin](https://www.npmjs.com/package/esbuild-node-externals).
 
+To mark one or more individual packages as external, use the following configuration:
+
+```yml
+custom:
+  esbuild:
+    external:
+      - 'my-package-name'
+      - 'another-package-name'
+```
+
 ### Passing Extra Arguments to Packager
 
 This might be required to resolve some issues on package installation.
