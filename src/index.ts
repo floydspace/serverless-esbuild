@@ -393,33 +393,18 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       path.join(this.serviceDirPath, SERVERLESS_FOLDER)
     );
 
-    if (this.options.function) {
-      const fn = service.getFunction(this.options.function);
-      fn.package.artifact = path.join(
+    const functionNames = this.options.function
+      ? [this.options.function]
+      : service.getAllFunctions();
+
+    functionNames.forEach((name) => {
+      const func = service.getFunction(name);
+      func.package.artifact = path.join(
         this.serviceDirPath,
         SERVERLESS_FOLDER,
-        path.basename(fn.package.artifact)
+        path.basename(func.package.artifact)
       );
-      return;
-    }
-
-    if (service.package.individually) {
-      const functionNames = service.getAllFunctions();
-      functionNames.forEach((name) => {
-        service.getFunction(name).package.artifact = path.join(
-          this.serviceDirPath,
-          SERVERLESS_FOLDER,
-          path.basename(service.getFunction(name).package.artifact)
-        );
-      });
-      return;
-    }
-
-    service.package.artifact = path.join(
-      this.serviceDirPath,
-      SERVERLESS_FOLDER,
-      path.basename(service.package.artifact)
-    );
+    });
   }
 
   async cleanup(): Promise<void> {

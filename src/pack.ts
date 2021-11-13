@@ -129,8 +129,12 @@ export async function pack(this: EsbuildServerlessPlugin) {
         Date.now() - startZip
       } ms]`
     );
-    // defined present zip as output artifact
-    this.serverless.service.package.artifact = artifactPath;
+
+    this.serverless.service.getAllFunctions().forEach((fnName) => {
+      const func = this.serverless.service.getFunction(fnName);
+      setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
+    });
+
     return;
   }
 
