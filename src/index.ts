@@ -310,8 +310,10 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
 
       if (this.buildResults) {
         const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
-        await result.rebuild();
-        return { result, bundlePath, func, functionAlias };
+        if (result.rebuild) {
+          await result.rebuild();
+          return { result, bundlePath, func, functionAlias };
+        }
       }
 
       const result = await build(config);
