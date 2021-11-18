@@ -47,6 +47,7 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   plugins?: string;
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
+  disableIncremental?: boolean;
 }
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -277,6 +278,9 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   async bundle(incremental = false): Promise<BuildResult[]> {
     this.prepare();
     this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
+    if (this.buildOptions.disableIncremental === true) {
+      incremental = false;
+    }
 
     const bundleMapper = async (bundleInfo) => {
       const { entry, func, functionAlias } = bundleInfo;
@@ -305,6 +309,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       delete config['keepOutputDirectory'];
       delete config['packagerOptions'];
       delete config['installExtraArgs'];
+      delete config['disableIncremental'];
 
       const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
 
