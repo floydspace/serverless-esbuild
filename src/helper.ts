@@ -9,7 +9,7 @@ export function extractFileNames(
   cwd: string,
   provider: string,
   functions?: Record<string, Serverless.FunctionDefinitionHandler>
-): { entry: string; func: any, functionAlias?: string }[] {
+): { entry: string; func: any; functionAlias?: string }[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way
@@ -36,7 +36,7 @@ export function extractFileNames(
     }
   }
 
-  return Object.keys(functions).map(functionAlias => {
+  return Object.keys(functions).map((functionAlias) => {
     const func = functions[functionAlias];
     const h = func.handler;
     const fnName = path.extname(h);
@@ -46,12 +46,12 @@ export function extractFileNames(
 
     // Check if the .ts files exists. If so return that to watch
     if (fs.existsSync(path.join(cwd, fileName + '.ts'))) {
-      return { entry: fileName + '.ts', func, functionAlias };
+      return { entry: path.relative(cwd, fileName) + '.ts', func, functionAlias };
     }
 
     // Check if the .js files exists. If so return that to watch
     if (fs.existsSync(path.join(cwd, fileName + '.js'))) {
-      return { entry: fileName + '.js', func, functionAlias };
+      return { entry: path.relative(cwd, fileName) + '.js', func, functionAlias };
     }
 
     // Can't find the files. Watch will have an exception anyway. So throw one with error.
@@ -88,7 +88,7 @@ export const flatDep = (deps: JSONObject, filter?: string[], originalObject?: JS
 export const getDepsFromBundle = (bundlePath: string) => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
   const requireMatch = matchAll(bundleContent, /require\("(.*?)"\)/gim);
-  return uniq(Array.from(requireMatch).map(match => match[1]));
+  return uniq(Array.from(requireMatch).map((match) => match[1]));
 };
 
 export const doSharePath = (child, parent) => {
@@ -99,9 +99,9 @@ export const doSharePath = (child, parent) => {
 };
 
 export const providerRuntimeMatcher = Object.freeze({
-  'aws': {
+  aws: {
     'nodejs14.x': 'node14',
     'nodejs12.x': 'node12',
     'nodejs10.x': 'node10',
-  }
+  },
 });
