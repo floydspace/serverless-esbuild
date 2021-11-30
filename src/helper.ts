@@ -44,14 +44,12 @@ export function extractFileNames(
     // replace only last instance to allow the same name for file and handler
     const fileName = h.substring(0, fnNameLastAppearanceIndex);
 
-    // Check if the .ts files exists. If so return that to watch
-    if (fs.existsSync(path.join(cwd, fileName + '.ts'))) {
-      return { entry: path.relative(cwd, fileName) + '.ts', func, functionAlias };
-    }
-
-    // Check if the .js files exists. If so return that to watch
-    if (fs.existsSync(path.join(cwd, fileName + '.js'))) {
-      return { entry: path.relative(cwd, fileName) + '.js', func, functionAlias };
+    const extensions = ['.ts', '.js'];
+    for (const extension of extensions) {
+      // Check if the .{extension} files exists. If so return that to watch
+      if (fs.existsSync(path.join(cwd, fileName + extension))) {
+        return { entry: path.relative(cwd, fileName + extension), func, functionAlias };
+      }
     }
 
     // Can't find the files. Watch will have an exception anyway. So throw one with error.
