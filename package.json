@@ -47,7 +47,7 @@
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.14",
     "@types/node": "^12.12.38",
-    "@types/ramda": "^0.27.6",
+    "@types/ramda": "0.27.40",
     "@types/semver": "^7.3.8",
     "@types/serverless": "^1.78.25",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
