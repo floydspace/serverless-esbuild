@@ -89,15 +89,15 @@ function getProdModules(
     if (
       !packageJson.dependencies[externalModule.external] &&
       !packageJson.devDependencies[externalModule.external]
-    ){
+    ) {
       this.options.verbose &&
         this.serverless.cli.log(
           `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
         );
-        
+
       return;
     }
-    
+
     // (2) If present in Dev Dependencies
     if (
       !packageJson.dependencies[externalModule.external] &&
@@ -124,69 +124,69 @@ function getProdModules(
 
       return;
     }
-      // (3) otherwise let's get the version
+    // (3) otherwise let's get the version
 
-      // get module package - either from root or local node_modules - will be used for version and peer deps
-      const rootModulePackagePath = path.join(
-        path.dirname(rootPackageJsonPath),
-        'node_modules',
-        externalModule.external,
-        'package.json'
+    // get module package - either from root or local node_modules - will be used for version and peer deps
+    const rootModulePackagePath = path.join(
+      path.dirname(rootPackageJsonPath),
+      'node_modules',
+      externalModule.external,
+      'package.json'
+    );
+    const localModulePackagePath = path.join(
+      path.dirname(packageJsonPath),
+      'node_modules',
+      externalModule.external,
+      'package.json'
+    );
+    const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
+      ? localModulePackagePath
+      : fse.pathExistsSync(rootModulePackagePath)
+      ? rootModulePackagePath
+      : null;
+    const modulePackage = modulePackagePath ? require(modulePackagePath) : {};
+
+    // Get version
+    const moduleVersion =
+      packageJson.dependencies[externalModule.external] || modulePackage.version;
+
+    // add dep with version if we have it - versionless otherwise
+    if (moduleVersion) prodModules.push(`${externalModule.external}@${moduleVersion}`);
+    else prodModules.push(externalModule.external);
+
+    // Check if the module has any peer dependencies and include them too
+    try {
+      // find peer dependencies but remove optional ones and excluded ones
+      const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
+      const optionalPeerDependencies = Object.keys(
+        pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
       );
-      const localModulePackagePath = path.join(
-        path.dirname(packageJsonPath),
-        'node_modules',
-        externalModule.external,
-        'package.json'
+      const peerDependenciesWithoutOptionals = omit(
+        [...optionalPeerDependencies, ...this.buildOptions.exclude],
+        peerDependencies
       );
-      const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
-        ? localModulePackagePath
-        : fse.pathExistsSync(rootModulePackagePath)
-        ? rootModulePackagePath
-        : null;
-      const modulePackage = modulePackagePath ? require(modulePackagePath) : {};
 
-      // Get version
-      const moduleVersion =
-        packageJson.dependencies[externalModule.external] || modulePackage.version;
-
-      // add dep with version if we have it - versionless otherwise
-      if (moduleVersion) prodModules.push(`${externalModule.external}@${moduleVersion}`);
-      else prodModules.push(externalModule.external);
-
-      // Check if the module has any peer dependencies and include them too
-      try {
-        // find peer dependencies but remove optional ones and excluded ones
-        const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
-        const optionalPeerDependencies = Object.keys(
-          pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
-        );
-        const peerDependenciesWithoutOptionals = omit(
-          [...optionalPeerDependencies, ...this.buildOptions.exclude],
-          peerDependencies
-        );
-
-        if (!isEmpty(peerDependenciesWithoutOptionals)) {
-          this.options.verbose &&
-            this.serverless.cli.log(
-              `Adding explicit non-optionals peers for dependency ${externalModule.external}`
-            );
-          const peerModules = getProdModules.call(
-            this,
-            compose(
-              map(([external]) => ({ external })),
-              toPairs
-            )(peerDependenciesWithoutOptionals),
-            packageJsonPath,
-            rootPackageJsonPath
+      if (!isEmpty(peerDependenciesWithoutOptionals)) {
+        this.options.verbose &&
+          this.serverless.cli.log(
+            `Adding explicit non-optionals peers for dependency ${externalModule.external}`
           );
-          Array.prototype.push.apply(prodModules, peerModules);
-        }
-      } catch (e) {
-        this.serverless.cli.log(
-          `WARNING: Could not check for peer dependencies of ${externalModule.external}`
+        const peerModules = getProdModules.call(
+          this,
+          compose(
+            map(([external]) => ({ external })),
+            toPairs
+          )(peerDependenciesWithoutOptionals),
+          packageJsonPath,
+          rootPackageJsonPath
         );
+        Array.prototype.push.apply(prodModules, peerModules);
       }
+    } catch (e) {
+      this.serverless.cli.log(
+        `WARNING: Could not check for peer dependencies of ${externalModule.external}`
+      );
+    }
   }, externalModules);
 
   return prodModules;
@@ -258,12 +258,12 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
         }, {})
     : {};
 
-  const rootPackageJson: Record<string, any> =
+  const rootPackageJson: Record<string, unknown> =
     this.serverless.utils.readFileSync(rootPackageJsonPath);
 
   const isWorkspace = !!rootPackageJson.workspaces;
 
-  const packageJson: Record<string, any> = isWorkspace
+  const packageJson: Record<string, unknown> = isWorkspace
     ? this.serverless.utils.readFileSync(packageJsonPath)
     : rootPackageJson;
 

@@ -17,7 +17,7 @@ import * as semver from 'semver';
 import { EsbuildServerlessPlugin, SERVERLESS_FOLDER } from '.';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
-import { IFile, IFiles } from './types';
+import { IFiles } from './types';
 import { humanSize, zip, trimExtension } from './utils';
 
 function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPath) {
