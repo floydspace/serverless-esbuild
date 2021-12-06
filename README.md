@@ -21,11 +21,12 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
 ## Install
 
 ```sh
-yarn add --dev serverless-esbuild
+# install `serverless-esbuild` and `esbuild`
+yarn add --dev serverless-esbuild esbuild
 # or
-npm install -D serverless-esbuild
+npm install -D serverless-esbuild esbuild
 # or
-pnpm install -D serverless-esbuild
+pnpm install -D serverless-esbuild esbuild
 ```
 
 Add the following plugin to your `serverless.yml`:
@@ -93,7 +94,7 @@ One example is to pass `--legacy-peer-deps` to npm v7+, to use legacy `peerDepen
 custom:
   esbuild:
     installExtraArgs: # optional. Default is empty (no arguments)
-      - "--legacy-peer-deps" 
+      - '--legacy-peer-deps'
 ```
 
 ### Using esbuild plugins
@@ -149,7 +150,7 @@ custom:
     nativeZip: true
 ```
 
-**NOTE:*** This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
+_NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
 
 ### Concurrency
 
@@ -161,7 +162,7 @@ custom:
     concurrency: 10
 ```
 
-**NOTE:*** This will produce slower builds.
+_NOTE_: This will produce slower builds.
 
 ## Usage
 
@@ -260,7 +261,6 @@ These options belong under `custom.esbuild` in your `serverless.yml` or `serverl
 [Loup Topalian](https://github.com/olup)
 
 Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)
-
 
 ## External tools
 
