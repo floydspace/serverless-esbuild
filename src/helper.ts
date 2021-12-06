@@ -9,7 +9,7 @@ export function extractFileNames(
   cwd: string,
   provider: string,
   functions?: Record<string, Serverless.FunctionDefinitionHandler>
-): { entry: string; func: any; functionAlias?: string }[] {
+): { entry: string; func: Serverless.FunctionDefinitionHandler; functionAlias?: string }[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way

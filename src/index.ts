@@ -77,7 +77,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   buildResults: {
     result: BuildResult;
     bundlePath: string;
-    func: any;
+    func: Serverless.FunctionDefinitionHandler;
     functionAlias: string;
   }[];
   packExternalModules: () => Promise<void>;
