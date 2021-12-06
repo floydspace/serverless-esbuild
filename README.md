@@ -21,19 +21,12 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
 ## Install
 
 ```sh
-# install esbuild
-yarn add --D esbuild
+# install `serverless-esbuild` and `esbuild`
+yarn add --dev serverless-esbuild esbuild
 # or
-npm install -D esbuild
+npm install -D serverless-esbuild esbuild
 # or
-pnpm install -D esbuild
-
-# install serverless-esbuild
-yarn add -D serverless-esbuild
-# or
-npm install -D serverless-esbuild
-# or
-pnpm install -D serverless-esbuild
+pnpm install -D serverless-esbuild esbuild
 ```
 
 Add the following plugin to your `serverless.yml`:
@@ -157,7 +150,7 @@ custom:
     nativeZip: true
 ```
 
-**NOTE:\*** This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
+_NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
 
 ### Concurrency
 
@@ -169,7 +162,7 @@ custom:
     concurrency: 10
 ```
 
-**NOTE:\*** This will produce slower builds.
+_NOTE_: This will produce slower builds.
 
 ## Usage
 
