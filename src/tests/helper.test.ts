@@ -1,4 +1,6 @@
 import * as fs from 'fs-extra';
+import * as path from 'path';
+import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
 import { extractFileNames } from '../helper';
@@ -98,6 +100,28 @@ describe('extractFileNames', () => {
           entry: 'file2.ts',
           func: functionDefinitions['function2'],
           functionAlias: 'function2',
+        },
+      ]);
+    });
+
+    it('should return entries for handlers on a Windows platform', () => {
+      mocked(fs.existsSync).mockReturnValue(true);
+      jest.spyOn(path, 'relative').mockReturnValueOnce('src\\file1.ts');
+      jest.spyOn(os, 'platform').mockReturnValueOnce('win32');
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: 'file1.handler',
+        },
+      };
+
+      const fileNames = extractFileNames(cwd, 'aws', functionDefinitions);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'src/file1.ts',
+          func: functionDefinitions['function1'],
+          functionAlias: 'function1',
         },
       ]);
     });

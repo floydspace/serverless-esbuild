@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import { uniq } from 'ramda';
 import * as Serverless from 'serverless';
 import * as matchAll from 'string.prototype.matchall';
@@ -48,7 +49,12 @@ export function extractFileNames(
     for (const extension of extensions) {
       // Check if the .{extension} files exists. If so return that to watch
       if (fs.existsSync(path.join(cwd, fileName + extension))) {
-        return { entry: path.relative(cwd, fileName + extension), func, functionAlias };
+        const entry = path.relative(cwd, fileName + extension);
+        return {
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          func,
+          functionAlias,
+        };
       }
     }
 
