@@ -20,14 +20,23 @@ export class NPM implements Packager {
     return true;
   }
 
+  private async getNpmMajorVersion(cwd: string): Promise<number> {
+    const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
+    const args = ['--version'];
+
+    const processOutput = await spawnProcess(command, args, { cwd });
+    const version = processOutput.stdout.trim();
+    return parseInt(version.split('.')[0]);
+  }
+
   async getProdDependencies(cwd: string, depth?: number) {
     // Get first level dependency graph
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = [
       'ls',
-      '-prod', // Only prod dependencies
       '-json',
-      depth ? `-depth=${depth}` : null,
+      '-prod', // Only prod dependencies
+      depth ? `-depth=${depth}` : ((await this.getNpmMajorVersion(cwd)) >= 7) ? '-all' : null,
     ].filter(Boolean);
 
     const ignoredNpmErrors = [

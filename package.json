@@ -58,6 +58,7 @@
     "jest": "^26.4.2",
     "lint-staged": "^11.1.2",
     "mock-fs": "^4.12.0",
+    "mock-spawn": "^0.2.6",
     "prettier": "^2.3.2",
     "semantic-release": "^17.0.8",
     "ts-jest": "^26.4.0",
