@@ -19,7 +19,7 @@ describe('filterFilesForZipPackage', () => {
           },
         ],
         depWhiteList: [],
-        fnNameWithoutStage: 'service-fnName',
+        fnName: 'service-fnName',
         isGoogleProvider: false,
         hasExternals: false,
         includedFiles: [],

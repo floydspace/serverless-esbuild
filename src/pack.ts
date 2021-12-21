@@ -40,7 +40,7 @@ const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'
 
 export const filterFilesForZipPackage = ({
   files,
-  fnNameWithoutStage,
+  fnName,
   includedFiles,
   excludedFiles,
   hasExternals,
@@ -48,7 +48,7 @@ export const filterFilesForZipPackage = ({
   depWhiteList,
 }: {
   files: IFiles;
-  fnNameWithoutStage: string;
+  fnName: string;
   includedFiles: string[];
   excludedFiles: string[];
   hasExternals: boolean;
@@ -65,8 +65,7 @@ export const filterFilesForZipPackage = ({
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
     // exclude files that belong to individual functions
-    if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${fnNameWithoutStage}/`))
-      return false;
+    if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${fnName}/`)) return false;
 
     // exclude non whitelisted dependencies
     if (localPath.startsWith('node_modules')) {
@@ -159,11 +158,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   // package each function
   await Promise.all(
-    buildResults.map(async ({ func, functionAlias, bundlePath }) => {
-      const name = `${this.serverless.service.getServiceName()}-${
-        this.serverless.service.provider.stage
-      }-${functionAlias}`;
-
+    buildResults.map(async ({ func, bundlePath }) => {
+      const fnName = func.name;
       const excludedFiles = bundlePathList
         .filter((p) => !bundlePath.startsWith(p))
         .map(trimExtension);
@@ -181,15 +177,13 @@ export async function pack(this: EsbuildServerlessPlugin) {
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }
 
-      const zipName = `${name}.zip`;
+      const zipName = `${fnName}.zip`;
       const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
-
-      const fnNameWithoutStage = `${this.serverless.service.getServiceName()}-${functionAlias}`; // this needs to match the directory name created in copyExtras function from index.ts
 
       // filter files
       const filesPathList = filterFilesForZipPackage({
         files,
-        fnNameWithoutStage,
+        fnName,
         includedFiles,
         excludedFiles,
         hasExternals,
@@ -198,7 +192,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       })
         // remove prefix from individual function extra files
         .map(({ localPath, ...rest }) => ({
-          localPath: localPath.replace(`__only_${fnNameWithoutStage}/`, ''),
+          localPath: localPath.replace(`__only_${fnName}/`, ''),
           ...rest,
         }));
 
@@ -208,7 +202,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       const { size } = fs.statSync(artifactPath);
 
       this.serverless.cli.log(
-        `Zip function: ${func.name} - ${humanSize(size)} [${Date.now() - startZip} ms]`
+        `Zip function: ${fnName} - ${humanSize(size)} [${Date.now() - startZip} ms]`
       );
 
       // defined present zip as output artifact
