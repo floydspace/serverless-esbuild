@@ -252,16 +252,27 @@ These options belong under `custom.esbuild` in your `serverless.yml` or `serverl
 - `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
 - `installExtraArgs`: Optional arguments passed to npm or yarn (empty is default)
 
-## Author
-
-[Victor Korzunin](https://floydspace.github.io/)
-
-## Contributors
-
-[Loup Topalian](https://github.com/olup)
-
-Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)
 
 ## External tools
 
 - [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
+
+
+## Contributors
+Most active, having `Collaborator` role:
+
+<a href="https://floydspace.github.io">
+  <img title="@floydspace" src="https://avatars.githubusercontent.com/u/5180700?s=70&v=4" width="70" height="70" alt="@floydspace">
+</a>
+<a href="https://github.com/olup">
+  <img title="@olup" src="https://avatars.githubusercontent.com/u/13785588?s=70&v=4" width="70" height="70" alt="@olup">
+</a>
+<a href="https://github.com/samchungy">
+  <img title="@samchungy" src="https://avatars.githubusercontent.com/u/18017094?s=70&v=4" width="70" height="70" alt="@samchungy">
+</a>
+<a href="https://github.com/vamche">
+  <img title="@vamche" src="https://avatars.githubusercontent.com/u/9653338?s=70&v=4" width="70" height="70" alt="@vamche">
+</a>
+
+
+Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)
