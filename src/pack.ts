@@ -14,7 +14,8 @@ import {
   without,
 } from 'ramda';
 import * as semver from 'semver';
-import { EsbuildServerlessPlugin, SERVERLESS_FOLDER } from '.';
+import { EsbuildServerlessPlugin } from '.';
+import { SERVERLESS_FOLDER } from './folders';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 import { IFiles } from './types';

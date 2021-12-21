@@ -15,10 +15,7 @@ import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
-
-export const SERVERLESS_FOLDER = '.serverless';
-export const BUILD_FOLDER = '.build';
-export const WORK_FOLDER = '.esbuild';
+import { BUILD_FOLDER, SERVERLESS_FOLDER, WORK_FOLDER } from './folders';
 
 type Plugins = Plugin[];
 type ReturnPluginsFn = (sls: Serverless) => Plugins;
@@ -50,6 +47,13 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   disableIncremental?: boolean;
 }
 
+export interface FunctionBuildResult {
+  result: BuildResult;
+  bundlePath: string;
+  func: Serverless.FunctionDefinitionHandler;
+  functionAlias: string;
+}
+
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
   target: 'node10',
@@ -74,12 +78,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   serverless: Serverless;
   options: OptionsExtended;
   hooks: ServerlessPlugin.Hooks;
-  buildResults: {
-    result: BuildResult;
-    bundlePath: string;
-    func: Serverless.FunctionDefinitionHandler;
-    functionAlias: string;
-  }[];
+  buildResults: FunctionBuildResult[];
   packExternalModules: () => Promise<void>;
   pack: () => Promise<void>;
   preOffline: () => Promise<void>;
