@@ -15,7 +15,7 @@ import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
-import { BUILD_FOLDER, SERVERLESS_FOLDER, WORK_FOLDER } from './folders';
+import { BUILD_FOLDER, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
 
 type Plugins = Plugin[];
 type ReturnPluginsFn = (sls: Serverless) => Plugins;
