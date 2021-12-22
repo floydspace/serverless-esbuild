@@ -15,7 +15,7 @@ import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
-import { BUILD_FOLDER, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
+import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
 
 type Plugins = Plugin[];
 type ReturnPluginsFn = (sls: Serverless) => Plugins;
@@ -372,7 +372,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
         const destFileName = path.resolve(
-          path.join(this.buildDirPath, `__only_${fn.name}`, filename)
+          path.join(this.buildDirPath, `${ONLY_PREFIX}${fn.name}`, filename)
         );
         const dirname = path.dirname(destFileName);
 

@@ -15,7 +15,7 @@ import {
 } from 'ramda';
 import * as semver from 'semver';
 import { EsbuildServerlessPlugin } from '.';
-import { SERVERLESS_FOLDER } from './constants';
+import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
 import { IFiles } from './types';
@@ -66,7 +66,8 @@ export const filterFilesForZipPackage = ({
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
     // exclude files that belong to individual functions
-    if (localPath.startsWith('__only_') && !localPath.startsWith(`__only_${fnName}/`)) return false;
+    if (localPath.startsWith(ONLY_PREFIX) && !localPath.startsWith(`${ONLY_PREFIX}${fnName}/`))
+      return false;
 
     // exclude non whitelisted dependencies
     if (localPath.startsWith('node_modules')) {
@@ -193,7 +194,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       })
         // remove prefix from individual function extra files
         .map(({ localPath, ...rest }) => ({
-          localPath: localPath.replace(`__only_${fnName}/`, ''),
+          localPath: localPath.replace(`${ONLY_PREFIX}${fnName}/`, ''),
           ...rest,
         }));
 
