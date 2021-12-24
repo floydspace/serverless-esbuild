@@ -161,6 +161,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, bundlePath }) => {
+      // fnName must match index.ts copyExtras function name
       const fnName = func.name;
       const excludedFiles = bundlePathList
         .filter((p) => !bundlePath.startsWith(p))
