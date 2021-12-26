@@ -169,21 +169,17 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
-    let functions: Service['functions'];
-    if (this.options.function) {
-      functions = {
-        [this.options.function]: this.serverless.service.getFunction(this.options.function),
-      };
-    } else {
-      functions = this.serverless.service.functions;
-    }
+    const functions = this.options.function
+      ? {
+          [this.options.function]: this.serverless.service.getFunction(this.options.function),
+        }
+      : this.serverless.service.functions;
 
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
-    for (const funcName in functions) {
-      const func = functions[funcName] as Serverless.FunctionDefinitionHandler;
-      if (this.isFunctionDefinitionHandler(func) && this.isNodeFunction(func)) {
-        nodeFunctions[funcName] = func;
+    for (const [functionAlias, fn] of Object.entries(functions)) {
+      if (this.isFunctionDefinitionHandler(fn) && this.isNodeFunction(fn)) {
+        nodeFunctions[functionAlias] = fn;
       }
     }
     return nodeFunctions;
@@ -259,8 +255,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       ],
     };
 
-    for (const fnName in this.functions) {
-      const fn = this.serverless.service.getFunction(fnName);
+    for (const [, fn] of Object.entries(this.functions)) {
       fn.package = {
         ...(fn.package || {}),
         patterns: [
@@ -364,15 +359,14 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     }
 
     // include any "extras" from the individual function "patterns" section
-    for (const fnName in this.functions) {
-      const fn = this.serverless.service.getFunction(fnName);
+    for (const [functionAlias, fn] of Object.entries(this.functions)) {
       if (fn.package.patterns.length === 0) {
         continue;
       }
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
         const destFileName = path.resolve(
-          path.join(this.buildDirPath, `${ONLY_PREFIX}${fn.name}`, filename)
+          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
         );
         const dirname = path.dirname(destFileName);
 

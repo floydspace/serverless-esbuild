@@ -41,7 +41,7 @@ const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'
 
 export const filterFilesForZipPackage = ({
   files,
-  fnName,
+  functionAlias,
   includedFiles,
   excludedFiles,
   hasExternals,
@@ -49,7 +49,7 @@ export const filterFilesForZipPackage = ({
   depWhiteList,
 }: {
   files: IFiles;
-  fnName: string;
+  functionAlias: string;
   includedFiles: string[];
   excludedFiles: string[];
   hasExternals: boolean;
@@ -66,7 +66,10 @@ export const filterFilesForZipPackage = ({
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
     // exclude files that belong to individual functions
-    if (localPath.startsWith(ONLY_PREFIX) && !localPath.startsWith(`${ONLY_PREFIX}${fnName}/`))
+    if (
+      localPath.startsWith(ONLY_PREFIX) &&
+      !localPath.startsWith(`${ONLY_PREFIX}${functionAlias}/`)
+    )
       return false;
 
     // exclude non whitelisted dependencies
@@ -160,9 +163,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   // package each function
   await Promise.all(
-    buildResults.map(async ({ func, bundlePath }) => {
-      // fnName must match index.ts copyExtras function name
-      const fnName = func.name;
+    buildResults.map(async ({ func, bundlePath, functionAlias }) => {
       const excludedFiles = bundlePathList
         .filter((p) => !bundlePath.startsWith(p))
         .map(trimExtension);
@@ -180,13 +181,13 @@ export async function pack(this: EsbuildServerlessPlugin) {
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }
 
-      const zipName = `${fnName}.zip`;
+      const zipName = `${functionAlias}.zip`;
       const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
       // filter files
       const filesPathList = filterFilesForZipPackage({
         files,
-        fnName,
+        functionAlias,
         includedFiles,
         excludedFiles,
         hasExternals,
@@ -195,7 +196,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       })
         // remove prefix from individual function extra files
         .map(({ localPath, ...rest }) => ({
-          localPath: localPath.replace(`${ONLY_PREFIX}${fnName}/`, ''),
+          localPath: localPath.replace(`${ONLY_PREFIX}${functionAlias}/`, ''),
           ...rest,
         }));
 
@@ -205,7 +206,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       const { size } = fs.statSync(artifactPath);
 
       this.serverless.cli.log(
-        `Zip function: ${fnName} - ${humanSize(size)} [${Date.now() - startZip} ms]`
+        `Zip function: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`
       );
 
       // defined present zip as output artifact

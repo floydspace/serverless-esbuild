@@ -26,13 +26,13 @@ describe('filterFilesForZipPackage', () => {
           },
           {
             localPath:
-              '__only_service-fnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+              '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
-              '/home/capaj/repos/google/search/.esbuild/.build/__only_service-fnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+              '/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
         ],
         depWhiteList: [],
-        fnName: 'service-fnName',
+        functionAlias: 'fnAlias',
         isGoogleProvider: false,
         hasExternals: false,
         includedFiles: [],
@@ -41,8 +41,8 @@ describe('filterFilesForZipPackage', () => {
     ).toMatchInlineSnapshot(`
       Array [
         Object {
-          "localPath": "__only_service-fnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
-          "rootPath": "/home/capaj/repos/google/search/.esbuild/.build/__only_service-fnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
+          "localPath": "__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
+          "rootPath": "/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
         },
       ]
     `);
@@ -55,7 +55,7 @@ describe('pack', () => {
   });
 
   describe('individually', () => {
-    it('should create zips with the same name as the function', async () => {
+    it('should create zips with with the functionAlias as the name', async () => {
       const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
       mocked(globby, true).sync.mockReturnValue(['hello1.js', 'hello2.js']);
       mocked(globby).mockResolvedValue([]);
@@ -111,12 +111,12 @@ describe('pack', () => {
       await pack.call(esbuildPlugin);
 
       expect(zipSpy).toBeCalledWith(
-        '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/serverless-example-dev-hello1.zip',
+        '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/hello1.zip',
         expect.any(Array),
         expect.any(Boolean)
       );
       expect(zipSpy).toBeCalledWith(
-        '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/serverless-example-dev-hello2.zip',
+        '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/hello2.zip',
         expect.any(Array),
         expect.any(Boolean)
       );
