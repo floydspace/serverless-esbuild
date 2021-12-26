@@ -254,7 +254,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       ],
     };
 
-    for (const [, fn] of Object.entries(this.functions)) {
+    for (const fn of Object.values(this.functions)) {
       fn.package = {
         ...(fn.package || {}),
         patterns: [
