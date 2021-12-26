@@ -55,7 +55,7 @@ describe('pack', () => {
   });
 
   describe('individually', () => {
-    it('should create zips with with the functionAlias as the name', async () => {
+    it('should create zips with the functionAlias as the name', async () => {
       const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
       mocked(globby, true).sync.mockReturnValue(['hello1.js', 'hello2.js']);
       mocked(globby).mockResolvedValue([]);
