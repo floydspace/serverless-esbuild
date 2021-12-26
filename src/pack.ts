@@ -163,7 +163,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   // package each function
   await Promise.all(
-    buildResults.map(async ({ func, bundlePath, functionAlias }) => {
+    buildResults.map(async ({ func, functionAlias, bundlePath }) => {
       const excludedFiles = bundlePathList
         .filter((p) => !bundlePath.startsWith(p))
         .map(trimExtension);
