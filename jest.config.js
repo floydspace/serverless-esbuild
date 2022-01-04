@@ -1,7 +1,8 @@
 const config = {
     preset: 'ts-jest',
     verbose: true,
-    transform: {}
+    transform: {},
+    testPathIgnorePatterns: ['dist'],
 };
 
 module.exports = config;

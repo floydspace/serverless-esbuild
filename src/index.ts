@@ -6,7 +6,6 @@ import * as pMap from 'p-map';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import * as Serverless from 'serverless';
 import * as ServerlessPlugin from 'serverless/classes/Plugin';
-import * as Service from 'serverless/classes/Service';
 import * as chokidar from 'chokidar';
 
 import { extractFileNames, providerRuntimeMatcher } from './helper';
@@ -15,10 +14,7 @@ import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
-
-export const SERVERLESS_FOLDER = '.serverless';
-export const BUILD_FOLDER = '.build';
-export const WORK_FOLDER = '.esbuild';
+import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
 
 type Plugins = Plugin[];
 type ReturnPluginsFn = (sls: Serverless) => Plugins;
@@ -50,6 +46,13 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   disableIncremental?: boolean;
 }
 
+export interface FunctionBuildResult {
+  result: BuildResult;
+  bundlePath: string;
+  func: Serverless.FunctionDefinitionHandler;
+  functionAlias: string;
+}
+
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
   target: 'node10',
@@ -74,12 +77,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   serverless: Serverless;
   options: OptionsExtended;
   hooks: ServerlessPlugin.Hooks;
-  buildResults: {
-    result: BuildResult;
-    bundlePath: string;
-    func: Serverless.FunctionDefinitionHandler;
-    functionAlias: string;
-  }[];
+  buildResults: FunctionBuildResult[];
   packExternalModules: () => Promise<void>;
   pack: () => Promise<void>;
   preOffline: () => Promise<void>;
@@ -170,21 +168,17 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   get functions(): Record<string, Serverless.FunctionDefinitionHandler> {
-    let functions: Service['functions'];
-    if (this.options.function) {
-      functions = {
-        [this.options.function]: this.serverless.service.getFunction(this.options.function),
-      };
-    } else {
-      functions = this.serverless.service.functions;
-    }
+    const functions = this.options.function
+      ? {
+          [this.options.function]: this.serverless.service.getFunction(this.options.function),
+        }
+      : this.serverless.service.functions;
 
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
-    for (const funcName in functions) {
-      const func = functions[funcName] as Serverless.FunctionDefinitionHandler;
-      if (this.isFunctionDefinitionHandler(func) && this.isNodeFunction(func)) {
-        nodeFunctions[funcName] = func;
+    for (const [functionAlias, fn] of Object.entries(functions)) {
+      if (this.isFunctionDefinitionHandler(fn) && this.isNodeFunction(fn)) {
+        nodeFunctions[functionAlias] = fn;
       }
     }
     return nodeFunctions;
@@ -260,8 +254,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       ],
     };
 
-    for (const fnName in this.functions) {
-      const fn = this.serverless.service.getFunction(fnName);
+    for (const fn of Object.values(this.functions)) {
       fn.package = {
         ...(fn.package || {}),
         patterns: [
@@ -365,15 +358,14 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     }
 
     // include any "extras" from the individual function "patterns" section
-    for (const fnName in this.functions) {
-      const fn = this.serverless.service.getFunction(fnName);
+    for (const [functionAlias, fn] of Object.entries(this.functions)) {
       if (fn.package.patterns.length === 0) {
         continue;
       }
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
         const destFileName = path.resolve(
-          path.join(this.buildDirPath, `__only_${fn.name}`, filename)
+          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
         );
         const dirname = path.dirname(destFileName);
 
