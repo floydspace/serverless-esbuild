@@ -94,7 +94,8 @@ const buildAllDeps = (deps?: JSONObject) => {
       Object.entries(dependencies).forEach((dep) => dependenciesLeft.push(dep));
     }
 
-    allDeps[depName] = details;
+    allDeps[depName] = allDeps[depName] || {};
+    allDeps[depName][(details as JSONObject).version] = details;
   }
 
   return allDeps;
@@ -110,11 +111,13 @@ export const flatDep = (deps: JSONObject, filter?: string[], allDeps?: JSONObjec
   if (!deps) return [];
 
   // keep tracks of all the dependencies for all the packages
-  if (!allDeps) allDeps = buildAllDeps(allDeps);
+  if (!allDeps) allDeps = buildAllDeps(deps);
 
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
-    const detailsDeps = allDeps[depName]?.dependencies || (details as JSONObject).dependencies;
+    const detailsDeps =
+      allDeps[depName]?.[(details as JSONObject).version]?.dependencies ||
+      (details as JSONObject).dependencies;
     return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, allDeps)]);
   }, []);
 };
