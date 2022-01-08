@@ -4,7 +4,7 @@ import * as os from 'os';
 import { uniq } from 'ramda';
 import * as Serverless from 'serverless';
 import * as matchAll from 'string.prototype.matchall';
-import { JSONObject } from './types';
+import { FlatPackageDetails, PackageDetails } from './types';
 
 export function extractFileNames(
   cwd: string,
@@ -66,22 +66,52 @@ export function extractFileNames(
   });
 }
 
+const nameVersion = (name: string, version: string): string => `${name}@${version}`;
+
+export const flattenDependencyTree = (
+  deps: Record<string, PackageDetails>,
+  finalTree: FlatPackageDetails = {}
+): FlatPackageDetails => {
+  if (!deps) {
+    return finalTree;
+  }
+
+  return Object.entries(deps).reduce((acc, [depName, details]) => {
+    if (details.resolved) {
+      acc[nameVersion(depName, details.version)] = details;
+    }
+    flattenDependencyTree(details.dependencies, acc);
+
+    return acc;
+  }, finalTree);
+};
+
 /**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
  * @param deps A nested object as given by the `npm list --json` command
  * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
  */
-export const flatDep = (deps: JSONObject, filter?: string[], originalObject?: JSONObject) => {
+export const flatDep = (
+  deps: Record<string, PackageDetails>,
+  filter: string[] | undefined,
+  flatDetails: FlatPackageDetails
+): string[] => {
   if (!deps) return [];
 
-  // keep tracks of the original list when nested
-  if (!originalObject) originalObject = deps;
+  return Object.entries(deps).reduce((acc, [depName, details]): string[] => {
+    if (filter && !filter.includes(depName)) {
+      return acc;
+    }
 
-  return Object.entries(deps).reduce((acc, [depName, details]) => {
-    if (filter && !filter.includes(depName)) return acc;
-    const detailsDeps =
-      originalObject[depName]?.dependencies || (details as JSONObject).dependencies;
-    return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, originalObject)]);
+    return uniq([
+      ...acc,
+      depName,
+      ...flatDep(
+        flatDetails[nameVersion(depName, details.version)].dependencies,
+        undefined,
+        flatDetails
+      ),
+    ]);
   }, []);
 };
 
