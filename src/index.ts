@@ -315,14 +315,6 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       }
 
       const result = await build(config);
-
-      if (config.metafile) {
-        fs.writeFileSync(
-          path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`),
-          JSON.stringify(result.metafile, null, 2)
-        );
-      }
-
       return { result, bundlePath, func, functionAlias };
     };
     this.serverless.cli.log(
