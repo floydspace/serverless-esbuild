@@ -403,7 +403,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     }
 
     if (service.package.individually) {
-      const functionNames = service.getAllFunctions();
+      const functionNames = Object.keys(this.functions);
       functionNames.forEach((name) => {
         service.getFunction(name).package.artifact = path.join(
           this.serviceDirPath,
