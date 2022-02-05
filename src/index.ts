@@ -278,6 +278,7 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
     const bundleMapper = async (bundleInfo) => {
       const { entry, func, functionAlias } = bundleInfo;
       const config: Omit<BuildOptions, 'watch'> = {
+        platform: 'node',
         ...this.buildOptions,
         external: [
           ...this.buildOptions.external,
@@ -287,7 +288,6 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
         ],
         entryPoints: [entry],
         outdir: path.join(this.buildDirPath, path.dirname(entry)),
-        platform: 'node',
         incremental,
         plugins: this.plugins,
       };
