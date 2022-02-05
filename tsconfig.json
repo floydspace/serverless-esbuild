@@ -3,12 +3,14 @@
     "module": "commonjs",
     "target": "es6",
     "skipLibCheck": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "esModuleInterop": true
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/tests"
   ]
 }

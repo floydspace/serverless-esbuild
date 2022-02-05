@@ -1,9 +1,9 @@
 import { bestzip } from 'bestzip';
-import * as archiver from 'archiver';
-import * as childProcess from 'child_process';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
+import archiver from 'archiver';
+import childProcess from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { join } from 'ramda';
 import { IFiles } from './types';
 

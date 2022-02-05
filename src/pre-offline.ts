@@ -1,6 +1,6 @@
 import { relative } from 'path';
 import { assocPath } from 'ramda';
-import { EsbuildServerlessPlugin } from '.';
+import EsbuildServerlessPlugin from '.';
 
 export function preOffline(this: EsbuildServerlessPlugin) {
   // Set offline location automatically if not set manually

@@ -1,12 +1,12 @@
-import { build, BuildResult, BuildOptions, Plugin } from 'esbuild';
-import * as fs from 'fs-extra';
-import * as globby from 'globby';
-import * as path from 'path';
-import * as pMap from 'p-map';
+import { build, BuildResult, BuildOptions } from 'esbuild';
+import fs from 'fs-extra';
+import globby from 'globby';
+import path from 'path';
+import pMap from 'p-map';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
-import * as Serverless from 'serverless';
-import * as ServerlessPlugin from 'serverless/classes/Plugin';
-import * as chokidar from 'chokidar';
+import Serverless from 'serverless';
+import ServerlessPlugin from 'serverless/classes/Plugin';
+import chokidar from 'chokidar';
 
 import { extractFileNames, providerRuntimeMatcher } from './helper';
 import { packExternalModules } from './pack-externals';
@@ -15,43 +15,13 @@ import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-
-type Plugins = Plugin[];
-type ReturnPluginsFn = (sls: Serverless) => Plugins;
-
-interface OptionsExtended extends Serverless.Options {
-  verbose?: boolean;
-}
-
-export interface WatchConfiguration {
-  pattern?: string[] | string;
-  ignore?: string[] | string;
-}
-
-export interface PackagerOptions {
-  scripts?: string[] | string;
-}
-
-export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'> {
-  concurrency?: number;
-  packager: 'npm' | 'yarn';
-  packagePath: string;
-  exclude: '*' | string[];
-  nativeZip: boolean;
-  watch: WatchConfiguration;
-  installExtraArgs: string[];
-  plugins?: string;
-  keepOutputDirectory?: boolean;
-  packagerOptions?: PackagerOptions;
-  disableIncremental?: boolean;
-}
-
-export interface FunctionBuildResult {
-  result: BuildResult;
-  bundlePath: string;
-  func: Serverless.FunctionDefinitionHandler;
-  functionAlias: string;
-}
+import {
+  Configuration,
+  FunctionBuildResult,
+  OptionsExtended,
+  Plugins,
+  ReturnPluginsFn,
+} from './types';
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
@@ -69,7 +39,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   packagerOptions: {},
 };
 
-export class EsbuildServerlessPlugin implements ServerlessPlugin {
+class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
   workDirPath: string;
   buildDirPath: string;
@@ -419,4 +389,4 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 }
 
-module.exports = EsbuildServerlessPlugin;
+export = EsbuildServerlessPlugin;
