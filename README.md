@@ -176,7 +176,7 @@ The normal Serverless deploy procedure will automatically compile with `esbuild`
 
 ### ESM Support
 
-If you wish to enable ESM support you may set the esbuild [platform](https://esbuild.github.io/api/#platform) option to `neutral`. By default this will value default to `node`.
+If you wish to enable ESM support you may set the esbuild [platform](https://esbuild.github.io/api/#platform) option to `neutral`. This is set to `node` by default.
 
 ### Usage with non Node functions
 
