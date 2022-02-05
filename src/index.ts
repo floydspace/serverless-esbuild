@@ -392,23 +392,12 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
       path.join(this.serviceDirPath, SERVERLESS_FOLDER)
     );
 
-    if (this.options.function) {
-      const fn = service.getFunction(this.options.function);
-      fn.package.artifact = path.join(
-        this.serviceDirPath,
-        SERVERLESS_FOLDER,
-        path.basename(fn.package.artifact)
-      );
-      return;
-    }
-
-    if (service.package.individually) {
-      const functionNames = Object.keys(this.functions);
-      functionNames.forEach((name) => {
-        service.getFunction(name).package.artifact = path.join(
+    if (service.package.individually || this.options.function) {
+      Object.values(this.functions).forEach((func) => {
+        func.package.artifact = path.join(
           this.serviceDirPath,
           SERVERLESS_FOLDER,
-          path.basename(service.getFunction(name).package.artifact)
+          path.basename(func.package.artifact)
         );
       });
       return;
