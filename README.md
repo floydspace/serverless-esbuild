@@ -47,7 +47,7 @@ custom:
     minify: false
 ```
 
-Check [esbuild](https://github.com/evanw/esbuild#command-line-usage) documentation for the full list of available options. Note that some options like `entryPoints` or `outdir` cannot be overwritten.
+Check [esbuild](https://github.com/evanw/esbuild#command-line-usage) documentation for the full list of available options. Note that some options like `entryPoints` or `outdir` cannot be overwritten. We rely on the Javascript API so make sure you provide the JavaScript options as they can be different to the CLI options.
 The package specified in the `exclude` option is passed to esbuild as `external`, but it is not included in the function bundle either. The default value for this option is `['aws-sdk']`. You can set `exclude` to `*` to disable packaging `node_modules`.
 
 See [example folder](examples) for a minimal example.
@@ -174,6 +174,21 @@ The normal Serverless deploy procedure will automatically compile with `esbuild`
 - Install Serverless esbuild plugin as above
 - Deploy with `serverless deploy`
 
+### ESM Support
+
+If you wish to enable ESM support you may set the esbuild [platform](https://esbuild.github.io/api/#platform) option to `neutral`. This is set to `node` by default.
+
+### Usage with non Node functions
+
+If you wish to use this plugin alongside non Node functions like Python, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
+
+Current supported runtimes:
+
+- AWS
+  - nodejs14.x
+  - nodejs12.x
+  - nodejs10.x
+
 ### Usage with serverless-offline
 
 The plugin integrates very well with [serverless-offline](https://github.com/dherault/serverless-offline) to
@@ -252,13 +267,12 @@ These options belong under `custom.esbuild` in your `serverless.yml` or `serverl
 - `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
 - `installExtraArgs`: Optional arguments passed to npm or yarn (empty is default)
 
-
 ## External tools
 
 - [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
 
-
 ## Contributors
+
 Most active, having `Collaborator` role:
 
 <a href="https://floydspace.github.io">
@@ -273,6 +287,5 @@ Most active, having `Collaborator` role:
 <a href="https://github.com/vamche">
   <img title="@vamche" src="https://avatars.githubusercontent.com/u/9653338?s=70&v=4" width="70" height="70" alt="@vamche">
 </a>
-
 
 Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)

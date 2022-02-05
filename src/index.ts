@@ -67,6 +67,7 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   },
   keepOutputDirectory: false,
   packagerOptions: {},
+  platform: 'node',
 };
 
 export class EsbuildServerlessPlugin implements ServerlessPlugin {
@@ -287,7 +288,6 @@ export class EsbuildServerlessPlugin implements ServerlessPlugin {
         ],
         entryPoints: [entry],
         outdir: path.join(this.buildDirPath, path.dirname(entry)),
-        platform: 'node',
         incremental,
         plugins: this.plugins,
       };
