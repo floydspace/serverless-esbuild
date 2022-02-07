@@ -67,58 +67,21 @@ export function extractFileNames(
 }
 
 /**
- * Creates a "registry" of all the dependencies of the packages found in the tree described by deps.
- * @param deps
- */
-const buildAllDeps = (deps?: JSONObject) => {
-  if (!deps) {
-    return {};
-  }
-
-  const dependenciesLeft = Object.entries(deps);
-  const allDeps = {};
-
-  while (dependenciesLeft.length > 0) {
-    const [depName, details] = dependenciesLeft.shift();
-
-    if (
-      // we already have the dependencies for this package
-      depName in allDeps &&
-      'dependencies' in allDeps[depName]
-    ) {
-      continue;
-    }
-
-    const dependencies = (details as JSONObject).dependencies;
-    if (dependencies) {
-      Object.entries(dependencies).forEach((dep) => dependenciesLeft.push(dep));
-    }
-
-    allDeps[depName] = allDeps[depName] || {};
-    allDeps[depName][(details as JSONObject).version] = details;
-  }
-
-  return allDeps;
-};
-
-/**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
  * @param deps A nested object as given by the `npm list --json` command
  * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
- * @param allDeps an object containing the dependencies for each package, the keys being the package names
  */
-export const flatDep = (deps: JSONObject, filter?: string[], allDeps?: JSONObject) => {
+export const flatDep = (deps: JSONObject, filter?: string[], originalObject?: JSONObject) => {
   if (!deps) return [];
 
-  // keep tracks of all the dependencies for all the packages
-  if (!allDeps) allDeps = buildAllDeps(deps);
+  // keep tracks of the original list when nested
+  if (!originalObject) originalObject = deps;
 
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
     const detailsDeps =
-      allDeps[depName]?.[(details as JSONObject).version]?.dependencies ||
-      (details as JSONObject).dependencies;
-    return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, allDeps)]);
+      originalObject[depName]?.dependencies || (details as JSONObject).dependencies;
+    return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, originalObject)]);
   }, []);
 };
 
