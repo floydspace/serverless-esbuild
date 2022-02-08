@@ -112,17 +112,17 @@ export class Yarn implements Packager {
           if (satisfies(rootDependencies[name].version, version)) {
             // Package is at root level
             // {
-            //   "name": "samchungy-dep-a@1.0.0",
+            //   "name": "samchungy-dep-a@1.0.0", <- MATCH
             //   "children": [],
             //   "hint": null,
             //   "color": null,
             //   "depth": 0
             // },
             // {
-            //   "name": "samchungy-a@2.0.1",
+            //   "name": "samchungy-a@2.0.0",
             //   "children": [
             //     {
-            //       "name": "samchungy-dep-a@1.0.0",
+            //       "name": "samchungy-dep-a@1.0.0", <- THIS
             //       "color": "dim",
             //       "shadow": true
             //     }
@@ -137,12 +137,12 @@ export class Yarn implements Packager {
             };
           } else {
             // Package info is in anther child so we can just ignore
-            // dep samchungy-dep-a@1.0.0 is in the root
+            // samchungy-dep-a@1.0.0 is in the root (see above example)
             // {
             //   "name": "samchungy-b@2.0.0",
             //   "children": [
             //     {
-            //       "name": "samchungy-dep-a@2.0.0",
+            //       "name": "samchungy-dep-a@2.0.0", <- THIS
             //       "color": "dim",
             //       "shadow": true
             //     },
@@ -163,6 +163,13 @@ export class Yarn implements Packager {
         }
 
         // Package is not defined, store it and get the children
+        //     {
+        //       "name": "samchungy-dep-a@2.0.0",
+        //       "children": [],
+        //       "hint": null,
+        //       "color": "bold",
+        //       "depth": 0
+        //     }
         deps[name] = {
           version,
           ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
