@@ -4,7 +4,7 @@ import * as os from 'os';
 import { uniq } from 'ramda';
 import * as Serverless from 'serverless';
 import * as matchAll from 'string.prototype.matchall';
-import { JSONObject } from './types';
+import { DependencyMap } from './types';
 
 export function extractFileNames(
   cwd: string,
@@ -71,17 +71,20 @@ export function extractFileNames(
  * @param deps A nested object as given by the `npm list --json` command
  * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
  */
-export const flatDep = (deps: JSONObject, filter?: string[], originalObject?: JSONObject) => {
+export const flatDep = (
+  deps: DependencyMap | undefined,
+  filter?: string[],
+  rootDeps?: DependencyMap
+) => {
   if (!deps) return [];
 
-  // keep tracks of the original list when nested
-  if (!originalObject) originalObject = deps;
+  // keep tracks of the rootDeps when nested
+  if (!rootDeps) rootDeps = deps;
 
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
-    const detailsDeps =
-      originalObject[depName]?.dependencies || (details as JSONObject).dependencies;
-    return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, originalObject)]);
+    const dependencies = details.resolved ? rootDeps[depName].dependencies : details.dependencies;
+    return uniq([...acc, depName, ...flatDep(dependencies, undefined, rootDeps)]);
   }, []);
 };
 
