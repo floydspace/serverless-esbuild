@@ -83,7 +83,7 @@ export const flatDep = (
 
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
-    const dependencies = details.resolved ? rootDeps[depName].dependencies : details.dependencies;
+    const dependencies = details.isRootDep ? rootDeps[depName].dependencies : details.dependencies;
     return uniq([...acc, depName, ...flatDep(dependencies, undefined, rootDeps)]);
   }, []);
 };

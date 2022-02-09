@@ -131,7 +131,7 @@ export class Yarn implements Packager {
             // }
             deps[name] = {
               version,
-              resolved: true,
+              isRootDep: true,
             };
           } else {
             // Package info is in anther child so we can just ignore

@@ -119,7 +119,7 @@ export class NPM implements Packager {
             // Set it as resolved
             deps[name] = {
               version: tree.version,
-              resolved: true,
+              isRootDep: true,
             };
             if (Object.keys(tree._dependencies).length && !tree.dependencies) {
               // Edge case - When it is de-duped this record will not contain the dependency tree.
