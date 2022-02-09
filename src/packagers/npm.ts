@@ -158,7 +158,7 @@ export class NPM implements Packager {
           };
           return deps;
         },
-        !Object.keys(rootDeps).length ? rootDeps : {} // Only use rootDeps if it is empty
+        !Object.keys(rootDeps).length ? rootDeps : {} // Only use rootDeps if it is empty (first iteration only)
       );
     };
 
