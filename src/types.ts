@@ -1,11 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JSONObject = any;
 
-export type Dependencies = Record<string, Dependency>;
+export interface DependenciesResult {
+  stdout?: string;
+  dependencies?: DependencyMap;
+}
 
-export interface Dependency {
+export type DependencyMap = Record<string, DependencyTree>;
+
+export interface DependencyTree {
   version: string;
-  dependencies?: Dependencies;
+  dependencies?: DependencyMap;
   /** This means that the dependency is available from the root node_modules folder */
   resolved?: boolean;
 }

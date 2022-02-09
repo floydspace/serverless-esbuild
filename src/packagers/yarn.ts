@@ -1,17 +1,9 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 
-import { Dependencies } from '../types';
+import { DependenciesResult, DependencyMap } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import { Packager } from './packager';
 import { satisfies } from 'semver';
-
-/**
- * Yarn packager.
- *
- * Yarn specific packagerOptions (default):
- *   flat (false) - Use --flat with install
- *   ignoreScripts (false) - Do not execute scripts during install
- */
 
 interface YarnTree {
   name: string;
@@ -38,6 +30,13 @@ const getNameAndVersion = (name: string): { name: string; version: string } => {
   };
 };
 
+/**
+ * Yarn packager.
+ *
+ * Yarn specific packagerOptions (default):
+ *   flat (false) - Use --flat with install
+ *   ignoreScripts (false) - Do not execute scripts during install
+ */
 export class Yarn implements Packager {
   get lockfileName() {
     return 'yarn.lock';
@@ -51,7 +50,7 @@ export class Yarn implements Packager {
     return false;
   }
 
-  async getProdDependencies(cwd: string, depth?: number): Promise<Dependencies> {
+  async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(
       Boolean
@@ -60,9 +59,10 @@ export class Yarn implements Packager {
     // If we need to ignore some errors add them here
     const ignoredYarnErrors = [];
 
-    let processOutput;
+    let parsedDeps: YarnDeps;
     try {
-      processOutput = await spawnProcess(command, args, { cwd });
+      const processOutput = await spawnProcess(command, args, { cwd });
+      parsedDeps = JSON.parse(processOutput.stdout) as YarnDeps;
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
@@ -92,10 +92,8 @@ export class Yarn implements Packager {
       throw err;
     }
 
-    const depJson = processOutput.stdout;
-    const parsedDeps = JSON.parse(depJson) as YarnDeps;
-
-    const rootDependencies = parsedDeps.data.trees.reduce<Dependencies>((deps, tree) => {
+    // Produces a version map for the modules present in our root node_modules folder
+    const rootDependencies = parsedDeps.data.trees.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
       deps[name] = {
         version: version,
@@ -103,8 +101,8 @@ export class Yarn implements Packager {
       return deps;
     }, {});
 
-    const convertTrees = (trees: YarnTree[]): Dependencies => {
-      return trees.reduce<Dependencies>((deps, tree) => {
+    const convertTrees = (trees: YarnTree[]): DependencyMap => {
+      return trees.reduce<DependencyMap>((deps, tree) => {
         const { name, version } = getNameAndVersion(tree.name);
 
         if (tree.shadow) {
@@ -178,7 +176,9 @@ export class Yarn implements Packager {
       }, {});
     };
 
-    return convertTrees(parsedDeps.data.trees);
+    return {
+      dependencies: convertTrees(parsedDeps.data.trees),
+    };
   }
 
   rebaseLockfile(pathToPackageRoot, lockfile) {
