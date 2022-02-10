@@ -4,6 +4,7 @@ import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
 import { extractFileNames, flatDep } from '../helper';
+import { DependencyMap } from '../types';
 
 jest.mock('fs-extra');
 
@@ -148,7 +149,7 @@ describe('extractFileNames', () => {
 describe('flatDeps', () => {
   describe('basic', () => {
     it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
-      const DependencyMap = {
+      const depMap: DependencyMap = {
         'samchungy-a': {
           dependencies: {
             'samchungy-dep-a': {
@@ -173,13 +174,13 @@ describe('flatDeps', () => {
 
       const expectedResult: string[] = ['samchungy-a', 'samchungy-dep-a', 'samchungy-b'];
 
-      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
 
       expect(result).toStrictEqual(expectedResult);
     });
 
     it('should pull only the dependencies of samchungy-b', () => {
-      const DependencyMap = {
+      const depMap: DependencyMap = {
         'samchungy-a': {
           dependencies: {
             'samchungy-dep-a': {
@@ -204,7 +205,7 @@ describe('flatDeps', () => {
 
       const expectedResult: string[] = ['samchungy-b'];
 
-      const result = flatDep(DependencyMap, ['samchungy-b']);
+      const result = flatDep(depMap, ['samchungy-b']);
 
       expect(result).toStrictEqual(expectedResult);
     });
@@ -212,7 +213,7 @@ describe('flatDeps', () => {
 
   describe('deduped', () => {
     it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
-      const DependencyMap = {
+      const depMap: DependencyMap = {
         'samchungy-a': {
           version: '3.0.0',
           dependencies: {
@@ -256,13 +257,13 @@ describe('flatDeps', () => {
         'samchungy-b',
       ];
 
-      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
 
       expect(result).toStrictEqual(expectedResult);
     });
 
     it('should pull only the dependencies from samchungy-a', () => {
-      const DependencyMap = {
+      const depMap: DependencyMap = {
         'samchungy-a': {
           version: '3.0.0',
           dependencies: {
@@ -306,7 +307,7 @@ describe('flatDeps', () => {
         'samchungy-b',
       ];
 
-      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
 
       expect(result).toStrictEqual(expectedResult);
     });
