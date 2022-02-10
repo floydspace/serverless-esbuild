@@ -91,7 +91,7 @@ export const flatDep = (
       ]);
     }
 
-    // This is a nested dependency so we don't need to include it in the exclude
+    // This is a nested dependency so we don't need to include it in the bundle
     return uniq([...acc, ...flatDep(details.dependencies, undefined, rootDeps)]);
   }, []);
 };
