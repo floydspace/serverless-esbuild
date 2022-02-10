@@ -185,9 +185,9 @@ If you wish to use this plugin alongside non Node functions like Python, this pl
 Current supported runtimes:
 
 - AWS
+  - nodejs16.x
   - nodejs14.x
   - nodejs12.x
-  - nodejs10.x
 
 ### Usage with serverless-offline
 
