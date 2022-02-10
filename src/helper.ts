@@ -68,32 +68,42 @@ export function extractFileNames(
 
 /**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
- * @param deps A nested object as given by the `npm list --json` command
- * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
+ * @param root the root of the dependency tree
+ * @param rootDeps array of top level root dependencies to whitelist
  */
-export const flatDep = (
-  deps: DependencyMap | undefined,
-  filter?: string[],
-  rootDeps?: DependencyMap
-): string[] => {
-  if (!deps) return [];
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[] => {
+  const flattenedDependencies = new Set<string>();
 
-  // keep tracks of the rootDeps when nested
-  if (!rootDeps) rootDeps = deps;
-
-  return Object.entries(deps).reduce((acc, [depName, details]) => {
-    if (filter && !filter.includes(depName)) return acc;
-    if (details.isRootDep || filter?.includes(depName)) {
-      return uniq([
-        ...acc,
-        depName,
-        ...flatDep(rootDeps[depName].dependencies, undefined, rootDeps),
-      ]);
+  /**
+   *
+   * @param deps the current tree
+   * @param filter the dependencies to get from this tree
+   */
+  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[]) => {
+    if (!deps) {
+      return;
     }
 
-    // This is a nested dependency so we don't need to include it in the bundle
-    return uniq([...acc, ...flatDep(details.dependencies, undefined, rootDeps)]);
-  }, []);
+    Object.entries(deps).forEach(([depName, details]) => {
+      // only for root level dependencies
+      if (filter && !filter.includes(depName)) return;
+
+      if (details.isRootDep || filter) {
+        // We've already seen this dep and it's dependencies - skip this iteration
+        if (flattenedDependencies.has(depName)) return;
+
+        recursiveFind(root[depName].dependencies);
+        flattenedDependencies.add(depName);
+        return;
+      }
+
+      recursiveFind(details.dependencies);
+    });
+  };
+
+  recursiveFind(root, rootDepsFilter);
+
+  return Array.from(flattenedDependencies);
 };
 
 /**
