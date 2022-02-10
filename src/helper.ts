@@ -90,6 +90,8 @@ export const flatDep = (
         ...flatDep(rootDeps[depName].dependencies, undefined, rootDeps),
       ]);
     }
+
+    // This is a nested dependency so we don't need to include it in the exclude
     return uniq([...acc, ...flatDep(details.dependencies, undefined, rootDeps)]);
   }, []);
 };
