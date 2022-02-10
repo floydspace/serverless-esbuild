@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFileNames } from '../helper';
+import { extractFileNames, flatDep } from '../helper';
 
 jest.mock('fs-extra');
 
@@ -141,6 +141,174 @@ describe('extractFileNames', () => {
 
       expect(() => extractFileNames(cwd, 'aws', functionDefinitions)).toThrowError();
       expect(consoleSpy).toBeCalled();
+    });
+  });
+});
+
+describe('flatDeps', () => {
+  describe('basic', () => {
+    it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
+      const DependencyMap = {
+        'samchungy-a': {
+          dependencies: {
+            'samchungy-dep-a': {
+              isRootDep: true,
+              version: '1.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-b': {
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '2.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-dep-a': {
+          version: '1.0.0',
+        },
+      };
+
+      const expectedResult: string[] = ['samchungy-a', 'samchungy-dep-a', 'samchungy-b'];
+
+      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    it('should pull only the dependencies of samchungy-b', () => {
+      const DependencyMap = {
+        'samchungy-a': {
+          dependencies: {
+            'samchungy-dep-a': {
+              isRootDep: true,
+              version: '1.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-b': {
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '2.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-dep-a': {
+          version: '1.0.0',
+        },
+      };
+
+      const expectedResult: string[] = ['samchungy-b'];
+
+      const result = flatDep(DependencyMap, ['samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+  });
+
+  describe('deduped', () => {
+    it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
+      const DependencyMap = {
+        'samchungy-a': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-b': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-c': { version: '^1.0.0', isRootDep: true },
+            'samchungy-dep-d': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-c': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-d': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-e': { version: '1.0.0' },
+      };
+
+      const expectedResult: string[] = [
+        'samchungy-a',
+        'samchungy-dep-b',
+        'samchungy-dep-c',
+        'samchungy-dep-e',
+        'samchungy-dep-d',
+        'samchungy-b',
+      ];
+
+      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    it('should pull only the dependencies from samchungy-a', () => {
+      const DependencyMap = {
+        'samchungy-a': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-b': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-c': { version: '^1.0.0', isRootDep: true },
+            'samchungy-dep-d': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-c': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-d': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-e': { version: '1.0.0' },
+      };
+
+      const expectedResult: string[] = [
+        'samchungy-a',
+        'samchungy-dep-b',
+        'samchungy-dep-c',
+        'samchungy-dep-e',
+        'samchungy-dep-d',
+        'samchungy-b',
+      ];
+
+      const result = flatDep(DependencyMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
     });
   });
 });

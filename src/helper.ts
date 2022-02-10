@@ -75,7 +75,7 @@ export const flatDep = (
   deps: DependencyMap | undefined,
   filter?: string[],
   rootDeps?: DependencyMap
-) => {
+): string[] => {
   if (!deps) return [];
 
   // keep tracks of the rootDeps when nested
@@ -83,8 +83,14 @@ export const flatDep = (
 
   return Object.entries(deps).reduce((acc, [depName, details]) => {
     if (filter && !filter.includes(depName)) return acc;
-    const dependencies = details.isRootDep ? rootDeps[depName].dependencies : details.dependencies;
-    return uniq([...acc, depName, ...flatDep(dependencies, undefined, rootDeps)]);
+    if (details.isRootDep || filter?.includes(depName)) {
+      return uniq([
+        ...acc,
+        depName,
+        ...flatDep(rootDeps[depName].dependencies, undefined, rootDeps),
+      ]);
+    }
+    return uniq([...acc, ...flatDep(details.dependencies, undefined, rootDeps)]);
   }, []);
 };
 
