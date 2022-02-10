@@ -13,7 +13,7 @@ interface YarnTree {
   depth?: number;
   shadow?: boolean;
 }
-interface YarnDeps {
+export interface YarnDeps {
   type: 'tree';
   data: {
     type: 'list';
@@ -92,8 +92,10 @@ export class Yarn implements Packager {
       throw err;
     }
 
+    const rootTree = parsedDeps.data.trees;
+
     // Produces a version map for the modules present in our root node_modules folder
-    const rootDependencies = parsedDeps.data.trees.reduce<DependencyMap>((deps, tree) => {
+    const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
       deps[name] = {
         version: version,
@@ -177,7 +179,7 @@ export class Yarn implements Packager {
     };
 
     return {
-      dependencies: convertTrees(parsedDeps.data.trees),
+      dependencies: convertTrees(rootTree),
     };
   }
 
