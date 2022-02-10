@@ -7,30 +7,55 @@ import { Packager } from './packager';
 
 type NpmMap = Record<string, NpmTree>;
 
-interface NpmTree {
+export interface NpmTree {
   name: string;
   version: string;
   resolved?: string;
   peer?: boolean;
-  integrity: string;
+  integrity?: string;
   _id: string;
   extraneous: boolean;
   path: string;
   _dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
-  peerDependencies: Record<string, string>;
+  peerDependencies?: Record<string, string>;
   dependencies?: NpmMap;
+  _args?: string[][];
+  _from?: string;
+  _integrity?: string;
+  _location?: string;
+  _phantomChildren?: Record<string, unknown>;
+  _requested?: Record<string, unknown>;
+  _requiredBy?: string[];
+  _resolved?: string;
+  _spec?: string;
+  _where?: string;
+  author?: string;
+  license?: string;
+  main?: string;
+  scripts?: Record<string, string>;
+  readme?: string;
+  optionalDependencies?: Record<string, string>;
+  error?: string | Error;
 }
-interface NpmDeps {
+export interface NpmDeps {
   name: string;
+  version?: string;
+  description?: string;
+  private?: boolean;
   main?: string;
   scripts?: Record<string, string>;
   extraneous?: boolean;
   path: string;
   _dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
-  peerDependencies: Record<string, string>;
+  peerDependencies?: Record<string, string>;
   dependencies?: NpmMap;
+  readme?: string;
+  _id?: string;
+  _shrinkwrap?: Record<string, unknown>;
+  optionalDependencies?: Record<string, unknown>;
+  error?: string | Error;
 }
 
 /**
@@ -79,6 +104,7 @@ export class NPM implements Packager {
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
       parsedDeps = JSON.parse(processOutput.stdout) as NpmDeps;
+      console.log(processOutput.stdout);
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
@@ -143,9 +169,10 @@ export class NPM implements Packager {
               // This is a root node_modules dependency. When rootDeps = deps, this will just overwrite the resolved declaration above
               rootDeps[name] = {
                 version: tree.version,
-                ...(tree.dependencies && {
-                  dependencies: convertTrees(tree.dependencies, rootDeps),
-                }),
+                ...(tree.dependencies &&
+                  Object.keys(tree.dependencies).length && {
+                    dependencies: convertTrees(tree.dependencies, rootDeps),
+                  }),
               };
             }
             return deps;
@@ -154,7 +181,10 @@ export class NPM implements Packager {
           // Module is only installed within the node_modules of this dep. Iterate through it's dep tree
           deps[name] = {
             version: tree.version,
-            ...(tree.dependencies && { dependencies: convertTrees(tree.dependencies, rootDeps) }),
+            ...(tree.dependencies &&
+              Object.keys(tree.dependencies).length && {
+                dependencies: convertTrees(tree.dependencies, rootDeps),
+              }),
           };
           return deps;
         },
