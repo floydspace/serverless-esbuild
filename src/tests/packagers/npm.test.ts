@@ -1,4 +1,5 @@
 import { NPM, NpmDeps } from '../../packagers/npm';
+import { DependenciesResult } from '../../types';
 
 import * as utils from '../../utils';
 
@@ -64,8 +65,8 @@ describe('NPM Packager', () => {
     });
   });
 
-  it('should create a dependency tree from npm v6 output', async () => {
-    const depsList: NpmDeps = {
+  it('should create the same dependency tree from npm v6 and npm v7 output', async () => {
+    const v6depsList: NpmDeps = {
       name: 'serverless-example',
       version: '1.0.0',
       description: 'Packaged externals for serverless-example',
@@ -299,39 +300,8 @@ describe('NPM Packager', () => {
       error: '[Circular]',
       extraneous: false,
     };
-    spawnSpy
-      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
-      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(depsList) });
 
-    const dependencies = await npm.getProdDependencies(path);
-    expect(dependencies).toStrictEqual({
-      dependencies: {
-        'samchungy-a': {
-          dependencies: {
-            'samchungy-dep-a': {
-              isRootDep: true,
-              version: '1.0.0',
-            },
-          },
-          version: '2.0.0',
-        },
-        'samchungy-b': {
-          dependencies: {
-            'samchungy-dep-a': {
-              version: '2.0.0',
-            },
-          },
-          version: '2.0.0',
-        },
-        'samchungy-dep-a': {
-          version: '1.0.0',
-        },
-      },
-    });
-  });
-
-  it('should create a dependency tree from npm v7 output', async () => {
-    const depsList: NpmDeps = {
+    const v7depsList: NpmDeps = {
       version: '1.0.0',
       name: 'serverless-example',
       description: 'Packaged externals for serverless-example',
@@ -409,12 +379,7 @@ describe('NPM Packager', () => {
         },
       },
     };
-    spawnSpy
-      .mockResolvedValueOnce({ stderr: '', stdout: '7.0.0' })
-      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(depsList) });
-
-    const dependencies = await npm.getProdDependencies(path);
-    expect(dependencies).toStrictEqual({
+    const expectedResult: DependenciesResult = {
       dependencies: {
         'samchungy-a': {
           dependencies: {
@@ -437,6 +402,646 @@ describe('NPM Packager', () => {
           version: '1.0.0',
         },
       },
-    });
+    };
+
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v6depsList) });
+
+    const v6dependencies = await npm.getProdDependencies(path);
+
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '7.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v7depsList) });
+
+    const v7dependencies = await npm.getProdDependencies(path);
+
+    expect(v6dependencies).toStrictEqual(expectedResult);
+    expect(v7dependencies).toStrictEqual(expectedResult);
+  });
+
+  it('should create the same dependency tree which handles deduping for both npmv6 and npmv7', async () => {
+    const v6depsList: NpmDeps = {
+      name: 'serverless-example',
+      version: '1.0.0',
+      description: 'Packaged externals for serverless-example',
+      private: true,
+      scripts: {},
+      dependencies: {
+        'samchungy-a': {
+          _args: [
+            [
+              'samchungy-a@3.0.0',
+              '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+            ],
+            [
+              'samchungy-a@3.0.0',
+              '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+            ],
+          ],
+          _from: 'samchungy-a@3.0.0',
+          _id: 'samchungy-a@3.0.0',
+          _integrity:
+            'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
+          _location: '/samchungy-a',
+          _phantomChildren: {},
+          _requested: {
+            type: 'version',
+            registry: true,
+            raw: 'samchungy-a@3.0.0',
+            name: 'samchungy-a',
+            escapedName: 'samchungy-a',
+            rawSpec: '3.0.0',
+            saveSpec: null,
+            fetchSpec: '3.0.0',
+          },
+          _requiredBy: ['/'],
+          _resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-3.0.0.tgz',
+          _spec: '3.0.0',
+          _where: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+          author: '',
+          dependencies: {
+            'samchungy-dep-b': {
+              _args: [
+                [
+                  'samchungy-dep-b@3.0.0',
+                  '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                ],
+                [
+                  'samchungy-dep-b@3.0.0',
+                  '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                ],
+              ],
+              _from: 'samchungy-dep-b@3.0.0',
+              _id: 'samchungy-dep-b@3.0.0',
+              _integrity:
+                'sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==',
+              _location: '/samchungy-dep-b',
+              _phantomChildren: {},
+              _requested: {
+                type: 'version',
+                registry: true,
+                raw: 'samchungy-dep-b@3.0.0',
+                name: 'samchungy-dep-b',
+                escapedName: 'samchungy-dep-b',
+                rawSpec: '3.0.0',
+                saveSpec: '[Circular]',
+                fetchSpec: '3.0.0',
+              },
+              _requiredBy: ['/samchungy-a', '/samchungy-b'],
+              _resolved: 'https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz',
+              _spec: '3.0.0',
+              _where: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+              author: '',
+              dependencies: {
+                'samchungy-dep-c': {
+                  _args: [
+                    [
+                      'samchungy-dep-c@1.0.0',
+                      '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                    ],
+                    [
+                      'samchungy-dep-c@1.0.0',
+                      '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                    ],
+                  ],
+                  _from: 'samchungy-dep-c@1.0.0',
+                  _id: 'samchungy-dep-c@1.0.0',
+                  _integrity:
+                    'sha512-YMLl+vnxi7kNr59zq+FFVfBBKyPyxqc7LUU92ZYTkTJaEGHNlCyC2fVC+diIVaomhn4CNAqmOGIVqbr5sq8lQg==',
+                  _location: '/samchungy-dep-c',
+                  _phantomChildren: {},
+                  _requested: {
+                    type: 'version',
+                    registry: true,
+                    raw: 'samchungy-dep-c@1.0.0',
+                    name: 'samchungy-dep-c',
+                    escapedName: 'samchungy-dep-c',
+                    rawSpec: '1.0.0',
+                    saveSpec: '[Circular]',
+                    fetchSpec: '1.0.0',
+                  },
+                  _requiredBy: ['/samchungy-dep-b'],
+                  _resolved:
+                    'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
+                  _spec: '1.0.0',
+                  _where:
+                    '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                  author: '',
+                  dependencies: {
+                    'samchungy-dep-e': {
+                      _args: [
+                        [
+                          'samchungy-dep-e@1.0.0',
+                          '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                        ],
+                        [
+                          'samchungy-dep-e@1.0.0',
+                          '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                        ],
+                      ],
+                      _from: 'samchungy-dep-e@1.0.0',
+                      _id: 'samchungy-dep-e@1.0.0',
+                      _integrity:
+                        'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
+                      _location: '/samchungy-dep-e',
+                      _phantomChildren: {},
+                      _requested: {
+                        type: 'version',
+                        registry: true,
+                        raw: 'samchungy-dep-e@1.0.0',
+                        name: 'samchungy-dep-e',
+                        escapedName: 'samchungy-dep-e',
+                        rawSpec: '1.0.0',
+                        saveSpec: '[Circular]',
+                        fetchSpec: '1.0.0',
+                      },
+                      _requiredBy: ['/samchungy-dep-c', '/samchungy-dep-d'],
+                      _resolved:
+                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      _spec: '1.0.0',
+                      _where:
+                        '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                      author: '',
+                      license: 'ISC',
+                      main: 'index.js',
+                      name: 'samchungy-dep-e',
+                      scripts: { test: 'echo "Error: no test specified" && exit 1' },
+                      version: '1.0.0',
+                      readme: 'ERROR: No README data found!',
+                      dependencies: {},
+                      devDependencies: {},
+                      optionalDependencies: {},
+                      _dependencies: {},
+                      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-e',
+                      error: '[Circular]',
+                      extraneous: false,
+                    },
+                  },
+                  license: 'ISC',
+                  main: 'index.js',
+                  name: 'samchungy-dep-c',
+                  scripts: { test: 'echo "Error: no test specified" && exit 1' },
+                  version: '1.0.0',
+                  readme: 'ERROR: No README data found!',
+                  devDependencies: {},
+                  optionalDependencies: {},
+                  _dependencies: { 'samchungy-dep-e': '^1.0.0' },
+                  path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-c',
+                  error: '[Circular]',
+                  extraneous: false,
+                },
+                'samchungy-dep-d': {
+                  _args: [
+                    [
+                      'samchungy-dep-d@1.0.0',
+                      '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                    ],
+                    [
+                      'samchungy-dep-d@1.0.0',
+                      '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                    ],
+                  ],
+                  _from: 'samchungy-dep-d@1.0.0',
+                  _id: 'samchungy-dep-d@1.0.0',
+                  _integrity:
+                    'sha512-yxXY2+OVhx1e5QZWSWrCajs5b2FCD0CV2ztss+7x4IgQbM0u5gMfzva31kMZFzX2iLJ7iy+09DYpe34TSRrzsA==',
+                  _location: '/samchungy-dep-d',
+                  _phantomChildren: {},
+                  _requested: {
+                    type: 'version',
+                    registry: true,
+                    raw: 'samchungy-dep-d@1.0.0',
+                    name: 'samchungy-dep-d',
+                    escapedName: 'samchungy-dep-d',
+                    rawSpec: '1.0.0',
+                    saveSpec: '[Circular]',
+                    fetchSpec: '1.0.0',
+                  },
+                  _requiredBy: ['/samchungy-dep-b'],
+                  _resolved:
+                    'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
+                  _spec: '1.0.0',
+                  _where:
+                    '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                  author: '',
+                  dependencies: {
+                    'samchungy-dep-e': {
+                      _args: '[Circular]',
+                      _from: 'samchungy-dep-e@1.0.0',
+                      _id: 'samchungy-dep-e@1.0.0',
+                      _integrity:
+                        'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
+                      _location: '/samchungy-dep-e',
+                      _phantomChildren: '[Circular]',
+                      _requested: {
+                        type: 'version',
+                        registry: true,
+                        raw: 'samchungy-dep-e@1.0.0',
+                        name: 'samchungy-dep-e',
+                        escapedName: 'samchungy-dep-e',
+                        rawSpec: '1.0.0',
+                        saveSpec: '[Circular]',
+                        fetchSpec: '1.0.0',
+                      },
+                      _requiredBy: '[Circular]',
+                      _resolved:
+                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      _spec: '1.0.0',
+                      _where:
+                        '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+                      author: '',
+                      license: 'ISC',
+                      main: 'index.js',
+                      name: 'samchungy-dep-e',
+                      scripts: '[Circular]',
+                      version: '1.0.0',
+                      readme: 'ERROR: No README data found!',
+                      dependencies: {},
+                      devDependencies: '[Circular]',
+                      optionalDependencies: '[Circular]',
+                      _dependencies: '[Circular]',
+                      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-e',
+                      error: '[Circular]',
+                      extraneous: false,
+                      _deduped: 'samchungy-dep-e',
+                    },
+                  },
+                  license: 'ISC',
+                  main: 'index.js',
+                  name: 'samchungy-dep-d',
+                  scripts: { test: 'echo "Error: no test specified" && exit 1' },
+                  version: '1.0.0',
+                  readme: 'ERROR: No README data found!',
+                  devDependencies: {},
+                  optionalDependencies: {},
+                  _dependencies: { 'samchungy-dep-e': '^1.0.0' },
+                  path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-d',
+                  error: '[Circular]',
+                  extraneous: false,
+                },
+              },
+              license: 'ISC',
+              main: 'index.js',
+              name: 'samchungy-dep-b',
+              scripts: { test: 'echo "Error: no test specified" && exit 1' },
+              version: '3.0.0',
+              readme: 'ERROR: No README data found!',
+              devDependencies: {},
+              optionalDependencies: {},
+              _dependencies: { 'samchungy-dep-c': '^1.0.0', 'samchungy-dep-d': '^1.0.0' },
+              path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-b',
+              error: '[Circular]',
+              extraneous: false,
+            },
+          },
+          license: 'ISC',
+          main: 'index.js',
+          name: 'samchungy-a',
+          scripts: { test: 'echo "Error: no test specified" && exit 1' },
+          version: '3.0.0',
+          readme: 'ERROR: No README data found!',
+          devDependencies: {},
+          optionalDependencies: {},
+          _dependencies: { 'samchungy-dep-b': '3.0.0' },
+          path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-a',
+          error: '[Circular]',
+          extraneous: false,
+        },
+        'samchungy-b': {
+          _args: [
+            [
+              'samchungy-b@5.0.0',
+              '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+            ],
+            [
+              'samchungy-b@5.0.0',
+              '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+            ],
+          ],
+          _from: 'samchungy-b@5.0.0',
+          _id: 'samchungy-b@5.0.0',
+          _integrity:
+            'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
+          _location: '/samchungy-b',
+          _phantomChildren: {},
+          _requested: {
+            type: 'version',
+            registry: true,
+            raw: 'samchungy-b@5.0.0',
+            name: 'samchungy-b',
+            escapedName: 'samchungy-b',
+            rawSpec: '5.0.0',
+            saveSpec: '[Circular]',
+            fetchSpec: '5.0.0',
+          },
+          _requiredBy: ['/'],
+          _resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-5.0.0.tgz',
+          _spec: '5.0.0',
+          _where: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+          author: '',
+          dependencies: {
+            'samchungy-dep-b': {
+              _args: '[Circular]',
+              _from: 'samchungy-dep-b@3.0.0',
+              _id: 'samchungy-dep-b@3.0.0',
+              _integrity:
+                'sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==',
+              _location: '/samchungy-dep-b',
+              _phantomChildren: '[Circular]',
+              _requested: {
+                type: 'version',
+                registry: true,
+                raw: 'samchungy-dep-b@3.0.0',
+                name: 'samchungy-dep-b',
+                escapedName: 'samchungy-dep-b',
+                rawSpec: '3.0.0',
+                saveSpec: '[Circular]',
+                fetchSpec: '3.0.0',
+              },
+              _requiredBy: '[Circular]',
+              _resolved: 'https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz',
+              _spec: '3.0.0',
+              _where: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+              author: '',
+              dependencies: {},
+              license: 'ISC',
+              main: 'index.js',
+              name: 'samchungy-dep-b',
+              scripts: '[Circular]',
+              version: '3.0.0',
+              readme: 'ERROR: No README data found!',
+              devDependencies: '[Circular]',
+              optionalDependencies: '[Circular]',
+              _dependencies: '[Circular]',
+              path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-b',
+              error: '[Circular]',
+              extraneous: false,
+              _deduped: 'samchungy-dep-b',
+            },
+          },
+          license: 'ISC',
+          main: 'index.js',
+          name: 'samchungy-b',
+          scripts: { test: 'echo "Error: no test specified" && exit 1' },
+          version: '5.0.0',
+          readme: 'ERROR: No README data found!',
+          devDependencies: {},
+          optionalDependencies: {},
+          _dependencies: { 'samchungy-dep-b': '3.0.0' },
+          path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-b',
+          error: '[Circular]',
+          extraneous: false,
+        },
+      },
+      readme: 'ERROR: No README data found!',
+      _id: 'serverless-example@1.0.0',
+      _shrinkwrap: {
+        name: 'serverless-example',
+        version: '1.0.0',
+        lockfileVersion: 1,
+        requires: true,
+        dependencies: {
+          'samchungy-a': {
+            version: '3.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-3.0.0.tgz',
+            integrity:
+              'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
+            requires: { 'samchungy-dep-b': '3.0.0' },
+          },
+          'samchungy-b': {
+            version: '5.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-5.0.0.tgz',
+            integrity:
+              'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
+            requires: { 'samchungy-dep-b': '3.0.0' },
+          },
+          'samchungy-dep-b': {
+            version: '3.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz',
+            integrity:
+              'sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==',
+            requires: { 'samchungy-dep-c': '^1.0.0', 'samchungy-dep-d': '^1.0.0' },
+          },
+          'samchungy-dep-c': {
+            version: '1.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
+            integrity:
+              'sha512-YMLl+vnxi7kNr59zq+FFVfBBKyPyxqc7LUU92ZYTkTJaEGHNlCyC2fVC+diIVaomhn4CNAqmOGIVqbr5sq8lQg==',
+            requires: { 'samchungy-dep-e': '^1.0.0' },
+          },
+          'samchungy-dep-d': {
+            version: '1.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
+            integrity:
+              'sha512-yxXY2+OVhx1e5QZWSWrCajs5b2FCD0CV2ztss+7x4IgQbM0u5gMfzva31kMZFzX2iLJ7iy+09DYpe34TSRrzsA==',
+            requires: { 'samchungy-dep-e': '^1.0.0' },
+          },
+          'samchungy-dep-e': {
+            version: '1.0.0',
+            resolved: 'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+            integrity:
+              'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
+          },
+        },
+      },
+      devDependencies: {},
+      optionalDependencies: {},
+      _dependencies: { 'samchungy-a': '3.0.0', 'samchungy-b': '5.0.0' },
+      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+      error: '[Circular]',
+      extraneous: false,
+    };
+
+    const v7depsList: NpmDeps = {
+      version: '1.0.0',
+      name: 'serverless-example',
+      description: 'Packaged externals for serverless-example',
+      private: true,
+      scripts: {},
+      _id: 'serverless-example@1.0.0',
+      extraneous: false,
+      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build',
+      _dependencies: { 'samchungy-a': '3.0.0', 'samchungy-b': '5.0.0' },
+      devDependencies: {},
+      peerDependencies: {},
+      dependencies: {
+        'samchungy-a': {
+          version: '3.0.0',
+          resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-3.0.0.tgz',
+          name: 'samchungy-a',
+          integrity:
+            'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
+          _id: 'samchungy-a@3.0.0',
+          extraneous: false,
+          path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-a',
+          _dependencies: { 'samchungy-dep-b': '3.0.0' },
+          devDependencies: {},
+          peerDependencies: {},
+          dependencies: {
+            'samchungy-dep-b': {
+              version: '3.0.0',
+              resolved: 'https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz',
+              name: 'samchungy-dep-b',
+              integrity:
+                'sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==',
+              _id: 'samchungy-dep-b@3.0.0',
+              extraneous: false,
+              path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-b',
+              _dependencies: {
+                'samchungy-dep-c': '^1.0.0',
+                'samchungy-dep-d': '^1.0.0',
+              },
+              devDependencies: {},
+              peerDependencies: {},
+              dependencies: {
+                'samchungy-dep-c': {
+                  version: '1.0.0',
+                  resolved:
+                    'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
+                  name: 'samchungy-dep-c',
+                  integrity:
+                    'sha512-YMLl+vnxi7kNr59zq+FFVfBBKyPyxqc7LUU92ZYTkTJaEGHNlCyC2fVC+diIVaomhn4CNAqmOGIVqbr5sq8lQg==',
+                  _id: 'samchungy-dep-c@1.0.0',
+                  extraneous: false,
+                  path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-c',
+                  _dependencies: { 'samchungy-dep-e': '^1.0.0' },
+                  devDependencies: {},
+                  peerDependencies: {},
+                  dependencies: {
+                    'samchungy-dep-e': {
+                      version: '1.0.0',
+                      resolved:
+                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      name: 'samchungy-dep-e',
+                      integrity:
+                        'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
+                      _id: 'samchungy-dep-e@1.0.0',
+                      extraneous: false,
+                      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-e',
+                      _dependencies: {},
+                      devDependencies: {},
+                      peerDependencies: {},
+                    },
+                  },
+                },
+                'samchungy-dep-d': {
+                  version: '1.0.0',
+                  resolved:
+                    'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
+                  name: 'samchungy-dep-d',
+                  integrity:
+                    'sha512-yxXY2+OVhx1e5QZWSWrCajs5b2FCD0CV2ztss+7x4IgQbM0u5gMfzva31kMZFzX2iLJ7iy+09DYpe34TSRrzsA==',
+                  _id: 'samchungy-dep-d@1.0.0',
+                  extraneous: false,
+                  path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-d',
+                  _dependencies: { 'samchungy-dep-e': '^1.0.0' },
+                  devDependencies: {},
+                  peerDependencies: {},
+                  dependencies: {
+                    'samchungy-dep-e': {
+                      version: '1.0.0',
+                      name: 'samchungy-dep-e',
+                      resolved:
+                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      integrity:
+                        'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
+                      _id: 'samchungy-dep-e@1.0.0',
+                      extraneous: false,
+                      path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-e',
+                      _dependencies: {},
+                      devDependencies: {},
+                      peerDependencies: {},
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-5.0.0.tgz',
+          name: 'samchungy-b',
+          integrity:
+            'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
+          _id: 'samchungy-b@5.0.0',
+          extraneous: false,
+          path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-b',
+          _dependencies: { 'samchungy-dep-b': '3.0.0' },
+          devDependencies: {},
+          peerDependencies: {},
+          dependencies: {
+            'samchungy-dep-b': {
+              version: '3.0.0',
+              name: 'samchungy-dep-b',
+              resolved: 'https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz',
+              integrity:
+                'sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==',
+              _id: 'samchungy-dep-b@3.0.0',
+              extraneous: false,
+              path: '/Users/schung/me/serverless-esbuild/examples/individually/.esbuild/.build/node_modules/samchungy-dep-b',
+              _dependencies: {
+                'samchungy-dep-c': '^1.0.0',
+                'samchungy-dep-d': '^1.0.0',
+              },
+              devDependencies: {},
+              peerDependencies: {},
+            },
+          },
+        },
+      },
+    };
+
+    const expectedResult: DependenciesResult = {
+      dependencies: {
+        'samchungy-a': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-b': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-c': { version: '1.0.0', isRootDep: true },
+            'samchungy-dep-d': { version: '1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-c': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-d': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-e': { version: '1.0.0' },
+      },
+    };
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v6depsList) });
+
+    const v6dependencies = await npm.getProdDependencies(path);
+
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '7.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v7depsList) });
+
+    const v7dependencies = await npm.getProdDependencies(path);
+
+    expect(v6dependencies).toStrictEqual(expectedResult);
+    expect(v7dependencies).toStrictEqual(expectedResult);
   });
 });

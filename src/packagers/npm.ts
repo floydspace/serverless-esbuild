@@ -16,27 +16,28 @@ export interface NpmTree {
   _id: string;
   extraneous: boolean;
   path: string;
-  _dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
+  _dependencies: Record<string, string> | string;
+  devDependencies: Record<string, string> | string;
   peerDependencies?: Record<string, string>;
   dependencies?: NpmMap;
-  _args?: string[][];
+  _args?: string[][] | string;
   _from?: string;
   _integrity?: string;
   _location?: string;
-  _phantomChildren?: Record<string, unknown>;
+  _phantomChildren?: Record<string, unknown> | string;
   _requested?: Record<string, unknown>;
-  _requiredBy?: string[];
+  _requiredBy?: string[] | string;
   _resolved?: string;
   _spec?: string;
   _where?: string;
   author?: string;
   license?: string;
   main?: string;
-  scripts?: Record<string, string>;
+  scripts?: Record<string, string> | string;
   readme?: string;
-  optionalDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string> | string;
   error?: string | Error;
+  _deduped?: string;
 }
 export interface NpmDeps {
   name: string;
@@ -104,7 +105,6 @@ export class NPM implements Packager {
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
       parsedDeps = JSON.parse(processOutput.stdout) as NpmDeps;
-      console.log(processOutput.stdout);
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
@@ -147,8 +147,9 @@ export class NPM implements Packager {
               version: tree.version,
               isRootDep: true,
             };
-            if (Object.keys(tree._dependencies).length && !tree.dependencies) {
+            if (tree._deduped || (Object.keys(tree._dependencies).length && !tree.dependencies)) {
               // Edge case - When it is de-duped this record will not contain the dependency tree.
+              // _deduped is for v6 (Object.keys(tree._dependencies).length && !tree.dependencies) for v7
               // We can just ignore storing this at the root because it does not contain the tree we are after
               // "samchungy-dep-b": {
               //   "version": "3.0.0",
