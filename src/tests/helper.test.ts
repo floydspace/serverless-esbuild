@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFileNames } from '../helper';
+import { extractFileNames, getDepsFromBundle } from '../helper';
 
 jest.mock('fs-extra');
 
@@ -142,5 +142,32 @@ describe('extractFileNames', () => {
       expect(() => extractFileNames(cwd, 'aws', functionDefinitions)).toThrowError();
       expect(consoleSpy).toBeCalled();
     });
+  });
+});
+
+describe('getDepsFromBundle', () => {
+  const path = './';
+  it('should extract packages from a string', () => {
+    mocked(fs).readFileSync.mockReturnValue('require("@scope/package1");require("package2")');
+    expect(getDepsFromBundle(path)).toStrictEqual(['@scope/package1', 'package2']);
+  });
+
+  it('should extract the base package of requires from a string', () => {
+    mocked(fs).readFileSync.mockReturnValue(
+      'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath")require("package4/subpath/subpath")'
+    );
+    expect(getDepsFromBundle(path)).toStrictEqual([
+      '@scope/package1',
+      'package2',
+      '@scope/package3',
+      'package4',
+    ]);
+  });
+
+  it('should remove duplicate package requires', () => {
+    mocked(fs).readFileSync.mockReturnValue(
+      'require("package1/subpath");require("package1");require("package1")'
+    );
+    expect(getDepsFromBundle(path)).toStrictEqual(['package1']);
   });
 });
