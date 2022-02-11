@@ -87,12 +87,12 @@ export const flatDep = (deps: JSONObject, filter?: string[], originalObject?: JS
 
 /**
  * Extracts the base package from a package string taking scope into consideration
- * @example getBasePackage('@scope/package/register') returns '@scope/package'
- * @example getBasePackage('package/register') returns 'package'
- * @example getBasePackage('package') returns 'package'
+ * @example getBaseDep('@scope/package/register') returns '@scope/package'
+ * @example getBaseDep('package/register') returns 'package'
+ * @example getBaseDep('package') returns 'package'
  * @param path
  */
-const getBasePackage = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
+const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
 
 /**
  * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
@@ -102,7 +102,7 @@ export const getDepsFromBundle = (bundlePath: string): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
   const requireMatch = matchAll(bundleContent, /require\("(.*?)"\)/gim);
   const deps = Array.from<string>(requireMatch).map((match) => match[1]);
-  return uniq(deps.map((dep): string => getBasePackage(dep)));
+  return uniq(deps.map((dep): string => getBaseDep(dep)));
 };
 
 export const doSharePath = (child, parent) => {
