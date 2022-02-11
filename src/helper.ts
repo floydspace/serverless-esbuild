@@ -80,16 +80,14 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
    * @param filter the dependencies to get from this tree
    */
   const recursiveFind = (deps: DependencyMap | undefined, filter?: string[]) => {
-    if (!deps) {
-      return;
-    }
+    if (!deps) return;
 
     Object.entries(deps).forEach(([depName, details]) => {
       // only for root level dependencies
       if (filter && !filter.includes(depName)) return;
 
       if (details.isRootDep || filter) {
-        // We've already seen this dep and it's dependencies - skip this iteration
+        // We've already have this root dep and it's dependencies - skip this iteration
         if (flattenedDependencies.has(depName)) return;
 
         recursiveFind(root[depName].dependencies);
@@ -97,6 +95,8 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
         return;
       }
 
+      // This is a nested dependency and will be included by default when we include it's parent
+      // We just need to check if we fulfil all it's dependencies
       recursiveFind(details.dependencies);
     });
   };
