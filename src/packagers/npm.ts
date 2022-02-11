@@ -136,61 +136,64 @@ export class NPM implements Packager {
 
     const basePath = parsedDeps.path;
 
-    const convertTrees = (currentTree: NpmMap, rootDeps: DependencyMap): DependencyMap => {
-      return Object.entries(currentTree).reduce<DependencyMap>(
-        (deps, [name, tree]) => {
-          if (tree.path === path.join(basePath, 'node_modules', name)) {
-            // Module path is in the root folder
+    const convertTrees = (
+      currentTree: NpmMap,
+      rootDeps: DependencyMap,
+      currentDeps: DependencyMap = rootDeps
+    ): DependencyMap => {
+      return Object.entries(currentTree).reduce<DependencyMap>((deps, [name, tree]) => {
+        if (tree.path === path.join(basePath, 'node_modules', name)) {
+          // Module path is in the root folder
 
-            // Set it as resolved
-            deps[name] = {
+          // Set it as resolved
+          if (rootDeps !== deps) {
+            deps[name] ??= {
               version: tree.version,
               isRootDep: true,
             };
-            if (tree._deduped || (Object.keys(tree._dependencies).length && !tree.dependencies)) {
-              // Edge case - When it is de-duped this record will not contain the dependency tree.
-              // _deduped is for v6 (Object.keys(tree._dependencies).length && !tree.dependencies) for v7
-              // We can just ignore storing this at the root because it does not contain the tree we are after
-              // "samchungy-dep-b": {
-              //   "version": "3.0.0",
-              //   "name": "samchungy-dep-b",
-              //   "resolved": "https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz",
-              //   "integrity": "sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==",
-              //   "_id": "samchungy-dep-b@3.0.0",
-              //   "extraneous": false,
-              //   "path": "/Users/schung/me/serverless-esbuild/examples/individually/node_modules/samchungy-dep-b",
-              //   "_dependencies": {
-              //     "samchungy-dep-c": "^1.0.0",
-              //     "samchungy-dep-d": "^1.0.0"
-              //   },
-              //   "devDependencies": {},
-              //   "peerDependencies": {}
-              // }
-            } else {
-              // This is a root node_modules dependency. When rootDeps = deps, this will just overwrite the resolved declaration above
-              rootDeps[name] = {
-                version: tree.version,
-                ...(tree.dependencies &&
-                  Object.keys(tree.dependencies).length && {
-                    dependencies: convertTrees(tree.dependencies, rootDeps),
-                  }),
-              };
-            }
-            return deps;
           }
-
-          // Module is only installed within the node_modules of this dep. Iterate through it's dep tree
-          deps[name] = {
-            version: tree.version,
-            ...(tree.dependencies &&
-              Object.keys(tree.dependencies).length && {
-                dependencies: convertTrees(tree.dependencies, rootDeps),
-              }),
-          };
+          if (tree._deduped || (Object.keys(tree._dependencies).length && !tree.dependencies)) {
+            // Edge case - When it is de-duped this record will not contain the dependency tree.
+            // _deduped is for v6 (Object.keys(tree._dependencies).length && !tree.dependencies) for v7
+            // We can just ignore storing this at the root because it does not contain the tree we are after
+            // "samchungy-dep-b": {
+            //   "version": "3.0.0",
+            //   "name": "samchungy-dep-b",
+            //   "resolved": "https://registry.npmjs.org/samchungy-dep-b/-/samchungy-dep-b-3.0.0.tgz",
+            //   "integrity": "sha512-fy6RAnofLSnLHgOUmgsFz0ZFnJcJeNHT+qUfHJ7daIFlBaciRDR6v5sdWm7mAM2EzQ1KFf2hmKJVFZgthVeCAw==",
+            //   "_id": "samchungy-dep-b@3.0.0",
+            //   "extraneous": false,
+            //   "path": "/Users/schung/me/serverless-esbuild/examples/individually/node_modules/samchungy-dep-b",
+            //   "_dependencies": {
+            //     "samchungy-dep-c": "^1.0.0",
+            //     "samchungy-dep-d": "^1.0.0"
+            //   },
+            //   "devDependencies": {},
+            //   "peerDependencies": {}
+            // }
+          } else {
+            // This is a root node_modules dependency. When rootDeps = deps, this will just overwrite the resolved declaration above
+            rootDeps[name] ??= {
+              version: tree.version,
+              ...(tree.dependencies &&
+                Object.keys(tree.dependencies).length && {
+                  dependencies: convertTrees(tree.dependencies, rootDeps, {}),
+                }),
+            };
+          }
           return deps;
-        },
-        !Object.keys(rootDeps).length ? rootDeps : {} // Only use rootDeps if it is empty (first iteration only)
-      );
+        }
+
+        // Module is only installed within the node_modules of this dep. Iterate through it's dep tree
+        deps[name] ??= {
+          version: tree.version,
+          ...(tree.dependencies &&
+            Object.keys(tree.dependencies).length && {
+              dependencies: convertTrees(tree.dependencies, rootDeps, {}),
+            }),
+        };
+        return deps;
+      }, currentDeps);
     };
 
     return {

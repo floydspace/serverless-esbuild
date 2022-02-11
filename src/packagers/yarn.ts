@@ -97,7 +97,7 @@ export class Yarn implements Packager {
     // Produces a version map for the modules present in our root node_modules folder
     const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
-      deps[name] = {
+      deps[name] ??= {
         version: version,
       };
       return deps;
@@ -131,7 +131,7 @@ export class Yarn implements Packager {
             //   "color": "bold",
             //   "depth": 0
             // }
-            deps[name] = {
+            deps[name] ??= {
               version,
               isRootDep: true,
             };
@@ -170,7 +170,7 @@ export class Yarn implements Packager {
         //       "color": "bold",
         //       "depth": 0
         //     }
-        deps[name] = {
+        deps[name] ??= {
           version,
           ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
         };
