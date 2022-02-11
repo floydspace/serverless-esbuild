@@ -87,7 +87,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
       if (filter && !filter.includes(depName)) return;
 
       if (details.isRootDep || filter) {
-        // We've already have this root dep and it's dependencies - skip this iteration
+        // We already have this root dep and it's dependencies - skip this iteration
         if (flattenedDependencies.has(depName)) return;
 
         recursiveFind(root[depName].dependencies);
