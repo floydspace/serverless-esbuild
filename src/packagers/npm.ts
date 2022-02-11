@@ -152,7 +152,7 @@ export class NPM implements Packager {
               isRootDep: true,
             };
           }
-          if (tree._deduped || (Object.keys(tree._dependencies).length && !tree.dependencies)) {
+          if (tree._deduped || (!isEmpty(tree._dependencies) && !tree.dependencies)) {
             // Edge case - When it is de-duped this record will not contain the dependency tree.
             // _deduped is for v6 (Object.keys(tree._dependencies).length && !tree.dependencies) for v7
             // We can just ignore storing this at the root because it does not contain the tree we are after
@@ -176,7 +176,7 @@ export class NPM implements Packager {
             rootDeps[name] ??= {
               version: tree.version,
               ...(tree.dependencies &&
-                Object.keys(tree.dependencies).length && {
+                !isEmpty(tree.dependencies) && {
                   dependencies: convertTrees(tree.dependencies, rootDeps, {}),
                 }),
             };
@@ -188,7 +188,7 @@ export class NPM implements Packager {
         deps[name] ??= {
           version: tree.version,
           ...(tree.dependencies &&
-            Object.keys(tree.dependencies).length && {
+            !isEmpty(tree.dependencies) && {
               dependencies: convertTrees(tree.dependencies, rootDeps, {}),
             }),
         };
