@@ -145,8 +145,9 @@ export class NPM implements Packager {
         if (tree.path === path.join(basePath, 'node_modules', name)) {
           // Module path is in the root folder
 
-          // Set it as resolved
+          // If this isn't the root of the tree
           if (rootDeps !== deps) {
+            // Set it as resolved
             deps[name] ??= {
               version: tree.version,
               isRootDep: true,
@@ -172,7 +173,7 @@ export class NPM implements Packager {
             //   "peerDependencies": {}
             // }
           } else {
-            // This is a root node_modules dependency. When rootDeps = deps, this will just overwrite the resolved declaration above
+            // This is a root node_modules dependency
             rootDeps[name] ??= {
               version: tree.version,
               ...(tree.dependencies &&
