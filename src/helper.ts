@@ -98,10 +98,16 @@ const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(pa
  * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
  * @param bundlePath Absolute path to a bundled JS file
  */
-export const getDepsFromBundle = (bundlePath: string): string[] => {
+export const getDepsFromBundle = (bundlePath: string, platform: string): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  const requireMatch = matchAll(bundleContent, /require\("(.*?)"\)/gim);
-  const deps = Array.from<string>(requireMatch).map((match) => match[1]);
+  const deps =
+    platform === 'neutral'
+      ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
+          (match) => match[1] || match[2]
+        )
+      : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map(
+          (match) => match[1]
+        );
   return uniq(deps.map((dep): string => getBaseDep(dep)));
 };
 
