@@ -1,4 +1,4 @@
-import { NPM, NpmDeps } from '../../packagers/npm';
+import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
 import { DependenciesResult } from '../../types';
 
 import * as utils from '../../utils';
@@ -66,7 +66,7 @@ describe('NPM Packager', () => {
   });
 
   it('should create the same dependency tree from npm v6 and npm v7 output', async () => {
-    const v6depsList: NpmDeps = {
+    const v6depsList: NpmV6Deps = {
       name: 'serverless-example',
       version: '1.0.0',
       description: 'Packaged externals for serverless-example',
@@ -301,7 +301,7 @@ describe('NPM Packager', () => {
       extraneous: false,
     };
 
-    const v7depsList: NpmDeps = {
+    const v7depsList: NpmV7Deps = {
       version: '1.0.0',
       name: 'serverless-example',
       description: 'Packaged externals for serverless-example',
@@ -421,7 +421,7 @@ describe('NPM Packager', () => {
   });
 
   it('should create the same dependency tree which handles deduping for both npmv6 and npmv7', async () => {
-    const v6depsList: NpmDeps = {
+    const v6depsList: NpmV6Deps = {
       name: 'serverless-example',
       version: '1.0.0',
       description: 'Packaged externals for serverless-example',
@@ -813,7 +813,7 @@ describe('NPM Packager', () => {
       extraneous: false,
     };
 
-    const v7depsList: NpmDeps = {
+    const v7depsList: NpmV7Deps = {
       version: '1.0.0',
       name: 'serverless-example',
       description: 'Packaged externals for serverless-example',
