@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFileNames, flatDep } from '../helper';
+import { extractFileNames, flatDep, getDepsFromBundle } from '../helper';
 import { DependencyMap } from '../types';
 
 jest.mock('fs-extra');
@@ -142,6 +142,57 @@ describe('extractFileNames', () => {
 
       expect(() => extractFileNames(cwd, 'aws', functionDefinitions)).toThrowError();
       expect(consoleSpy).toBeCalled();
+    });
+  });
+});
+
+describe('getDepsFromBundle', () => {
+  const path = './';
+  describe('node platform', () => {
+    const platform = 'node';
+    it('should extract deps from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue('require("@scope/package1");require("package2")');
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['@scope/package1', 'package2']);
+    });
+
+    it('should extract the base dep from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath")require("package4/subpath/subpath")'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual([
+        '@scope/package1',
+        'package2',
+        '@scope/package3',
+        'package4',
+      ]);
+    });
+
+    it('should remove duplicate package requires', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'require("package1/subpath");require("package1");require("package1")'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1']);
+    });
+  });
+
+  describe('neutral platform', () => {
+    const platform = 'neutral';
+
+    it('should extract deps from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        `
+        import * as n from "package1";
+        import "package2";
+        import {hello as r} from "package3";
+        `
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
+    });
+    it('should extract deps from a minified string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'import*as n from"package1";import"package2";import{hello as r}from"package3";'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
     });
   });
 });
