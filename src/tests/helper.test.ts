@@ -3,7 +3,8 @@ import * as path from 'path';
 import * as os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFileNames } from '../helper';
+import { extractFileNames, flatDep, getDepsFromBundle } from '../helper';
+import { DependencyMap } from '../types';
 
 jest.mock('fs-extra');
 
@@ -141,6 +142,225 @@ describe('extractFileNames', () => {
 
       expect(() => extractFileNames(cwd, 'aws', functionDefinitions)).toThrowError();
       expect(consoleSpy).toBeCalled();
+    });
+  });
+});
+
+describe('getDepsFromBundle', () => {
+  const path = './';
+  describe('node platform', () => {
+    const platform = 'node';
+    it('should extract deps from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue('require("@scope/package1");require("package2")');
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['@scope/package1', 'package2']);
+    });
+
+    it('should extract the base dep from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath")require("package4/subpath/subpath")'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual([
+        '@scope/package1',
+        'package2',
+        '@scope/package3',
+        'package4',
+      ]);
+    });
+
+    it('should remove duplicate package requires', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'require("package1/subpath");require("package1");require("package1")'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1']);
+    });
+  });
+
+  describe('neutral platform', () => {
+    const platform = 'neutral';
+
+    it('should extract deps from a string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        `
+        import * as n from "package1";
+        import "package2";
+        import {hello as r} from "package3";
+        `
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
+    });
+    it('should extract deps from a minified string', () => {
+      mocked(fs).readFileSync.mockReturnValue(
+        'import*as n from"package1";import"package2";import{hello as r}from"package3";'
+      );
+      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
+    });
+  });
+});
+
+describe('flatDeps', () => {
+  describe('basic', () => {
+    it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
+      const depMap: DependencyMap = {
+        'samchungy-a': {
+          dependencies: {
+            'samchungy-dep-a': {
+              isRootDep: true,
+              version: '1.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-b': {
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '2.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-dep-a': {
+          version: '1.0.0',
+        },
+      };
+
+      const expectedResult: string[] = ['samchungy-dep-a', 'samchungy-a', 'samchungy-b'];
+
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    it('should pull only the dependencies of samchungy-b', () => {
+      const depMap: DependencyMap = {
+        'samchungy-a': {
+          dependencies: {
+            'samchungy-dep-a': {
+              isRootDep: true,
+              version: '1.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-b': {
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '2.0.0',
+            },
+          },
+          version: '2.0.0',
+        },
+        'samchungy-dep-a': {
+          version: '1.0.0',
+        },
+      };
+
+      const expectedResult: string[] = ['samchungy-b'];
+
+      const result = flatDep(depMap, ['samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+  });
+
+  describe('deduped', () => {
+    it('should pull all the dependencies from samchungy-a and samchungy-b', () => {
+      const depMap: DependencyMap = {
+        'samchungy-a': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-b': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-c': { version: '^1.0.0', isRootDep: true },
+            'samchungy-dep-d': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-c': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-d': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-e': { version: '1.0.0' },
+      };
+
+      const expectedResult: string[] = [
+        'samchungy-dep-e',
+        'samchungy-dep-c',
+        'samchungy-dep-d',
+        'samchungy-dep-b',
+        'samchungy-a',
+        'samchungy-b',
+      ];
+
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    it('should pull only the dependencies from samchungy-a', () => {
+      const depMap: DependencyMap = {
+        'samchungy-a': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-b': {
+          version: '5.0.0',
+          dependencies: {
+            'samchungy-dep-b': { version: '3.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-b': {
+          version: '3.0.0',
+          dependencies: {
+            'samchungy-dep-c': { version: '^1.0.0', isRootDep: true },
+            'samchungy-dep-d': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-c': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-d': {
+          version: '1.0.0',
+          dependencies: {
+            'samchungy-dep-e': { version: '^1.0.0', isRootDep: true },
+          },
+        },
+        'samchungy-dep-e': { version: '1.0.0' },
+      };
+
+      const expectedResult: string[] = [
+        'samchungy-dep-e',
+        'samchungy-dep-c',
+        'samchungy-dep-d',
+        'samchungy-dep-b',
+        'samchungy-a',
+        'samchungy-b',
+      ];
+
+      const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
+
+      expect(result).toStrictEqual(expectedResult);
     });
   });
 });
