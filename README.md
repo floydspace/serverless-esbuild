@@ -97,7 +97,7 @@ The following `esbuild` options are automatically set.
 | `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it             |
 | `outDir`      | N/A        | Cannot be overridden                                                     |
 | `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                                 |
-| `target`      | `'node10'` | We dynamically set this. See [Supported Run Times](#supported-run-times) |
+| `target`      | `'node12'` | We dynamically set this. See [Supported Run Times](#supported-run-times) |
 
 #### Packager Options
 
@@ -122,7 +122,6 @@ AWS:
 | ------------ | -------- |
 | `nodejs14.x` | `node14` |
 | `nodejs12.x` | `node12` |
-| `nodejs10.x` | `node10` |
 
 If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
 
