@@ -73,17 +73,17 @@ See [example folder](examples) for some example configurations.
 
 ### Options
 
-| Option             | Description                                                                                                                                                                        | default          |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| Esbuild Options    | This plugin can take any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). Note that some options like `entryPoints` or `outdir` cannot be overwritten. | N/A              |
-| `concurrency`      | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                               | `Infinity`       |
-| `exclude`          | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                               | `['aws-sdk']`    |
-| `installExtraArgs` | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior         | `[]`             |
-| `nativeZip`        | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.           | `false`          |
-| `packager`         | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                                 | `npm`            |
-| `packagePath`      | Path to the `package.json` file for `external` dependency resolution.                                                                                                              | `./package.json` |
-| `packagerOptions`  | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                        | N/A              |
-| `watch`            | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                        | N/A              |
+| Option             | Description                                                                                                                                                                        | default            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| Esbuild Options    | This plugin can take any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). Note that some options like `entryPoints` or `outdir` cannot be overwritten. | N/A                |
+| `concurrency`      | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                               | `'Infinity'`       |
+| `exclude`          | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                               | `['aws-sdk']`      |
+| `installExtraArgs` | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior         | `[]`               |
+| `nativeZip`        | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.           | `false`            |
+| `packager`         | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                                 | `'npm'`            |
+| `packagePath`      | Path to the `package.json` file for `external` dependency resolution.                                                                                                              | `'./package.json'` |
+| `packagerOptions`  | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                        | N/A                |
+| `watch`            | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                        | N/A                |
 
 #### Packager Options
 
@@ -137,7 +137,7 @@ custom:
 
 #### Esbuild Plugins
 
-_Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)_
+_Note: The [Esbuild plugins API](https://esbuild.github.io/plugins/) is still experimental_
 
 You can configure esbuild plugins by passing a plugins' configuration file:
 
