@@ -80,6 +80,7 @@ See [example folder](examples) for some example configurations.
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
 | Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). See [Default Esbuild Options](#default-esbuild-options)       | N/A                |
 | `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `'Infinity'`       |
+| `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`            |
 | `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`      |
 | `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`               |
 | `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`            |
@@ -98,7 +99,7 @@ The following `esbuild` options are automatically set.
 | `bundle`      | `true`     | You should not need to change this                                       |
 | `entryPoints` | N/A        | Cannot be overridden                                                     |
 | `outDir`      | N/A        | Cannot be overridden                                                     |
-| `incremental` | N/A        | Cannot be overridden                                                     |
+| `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it             |
 | `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                                 |
 | `target`      | `'node10'` | We dynamically set this. See [Supported Run Times](#supported-run-times) |
 
