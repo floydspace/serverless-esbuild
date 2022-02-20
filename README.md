@@ -117,9 +117,7 @@ The following `esbuild` options are automatically set.
 
 ### Supported Runtimes
 
-This plugin will automatically set the esbuild `target` to the optimized target.
-
-The following Serverless runtimes are supported and map to the following `target`
+This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes
 
 AWS:
 
