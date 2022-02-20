@@ -31,7 +31,6 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
     - [Including Extra Files](#including-extra-files)
     - [External Dependencies](#external-dependencies)
     - [Esbuild Plugins](#esbuild-plugins)
-    - [ESM Support](#esm-support)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
   - [Non Node Functions](#non-node-functions)
