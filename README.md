@@ -102,7 +102,7 @@ See [example folder](examples) for some example configurations.
 
 #### Including Extra Files
 
-[Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. Use can use `patterns`, `include` and `exclude` to include extra files into your bundles.
+[Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. You can use `patterns`, `include` and `exclude` to include extra files into your bundles.
 
 #### External Dependencies
 
