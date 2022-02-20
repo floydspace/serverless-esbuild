@@ -190,7 +190,7 @@ As long as the plugin is properly installed, all regular Serverless operations `
 
 ### Non Node functions
 
-If you wish to use this plugin alongside non Node functions like Python, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
+If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
 
 Current supported runtimes:
 
