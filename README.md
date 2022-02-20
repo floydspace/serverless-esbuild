@@ -113,7 +113,7 @@ The following `esbuild` options are automatically set.
 | Option    | Description                                                                                          | Default                                                |
 | --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
-| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `[.build, 'dist', 'node_modules', '.serverless']`      |
+| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.build', 'dist', 'node_modules', '.serverless']`    |
 
 ### Supported Runtimes
 
