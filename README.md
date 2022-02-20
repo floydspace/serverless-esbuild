@@ -96,8 +96,8 @@ The following `esbuild` options are automatically set.
 | ------------- | ---------- | ------------------------------------------------------------------------ |
 | `bundle`      | `true`     | You should not need to change this                                       |
 | `entryPoints` | N/A        | Cannot be overridden                                                     |
-| `outDir`      | N/A        | Cannot be overridden                                                     |
 | `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it             |
+| `outDir`      | N/A        | Cannot be overridden                                                     |
 | `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                                 |
 | `target`      | `'node10'` | We dynamically set this. See [Supported Run Times](#supported-run-times) |
 
