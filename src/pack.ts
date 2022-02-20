@@ -176,7 +176,10 @@ export async function pack(this: EsbuildServerlessPlugin) {
       let depWhiteList = [];
 
       if (hasExternals) {
-        const bundleDeps = getDepsFromBundle(path.join(this.buildDirPath, bundlePath));
+        const bundleDeps = getDepsFromBundle(
+          path.join(this.buildDirPath, bundlePath),
+          this.buildOptions.platform
+        );
         const bundleExternals = intersection(bundleDeps, externals);
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }

@@ -1,8 +1,34 @@
-import { any, head, isEmpty, join, pathOr, reduce, replace, split, startsWith, tail } from 'ramda';
+import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 
-import { JSONObject } from '../types';
+import { DependenciesResult, DependencyMap } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import { Packager } from './packager';
+import { satisfies } from 'semver';
+
+interface YarnTree {
+  name: string;
+  color: 'bold' | 'dim';
+  children?: YarnTree[];
+  hint?: null;
+  depth?: number;
+  shadow?: boolean;
+}
+export interface YarnDeps {
+  type: 'tree';
+  data: {
+    type: 'list';
+    trees: YarnTree[];
+  };
+}
+
+const getNameAndVersion = (name: string): { name: string; version: string } => {
+  const atIndex = name.lastIndexOf('@');
+
+  return {
+    name: name.slice(0, atIndex),
+    version: name.slice(atIndex + 1),
+  };
+};
 
 /**
  * Yarn packager.
@@ -24,7 +50,7 @@ export class Yarn implements Packager {
     return false;
   }
 
-  async getProdDependencies(cwd: string, depth?: number) {
+  async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(
       Boolean
@@ -33,9 +59,10 @@ export class Yarn implements Packager {
     // If we need to ignore some errors add them here
     const ignoredYarnErrors = [];
 
-    let processOutput;
+    let parsedDeps: YarnDeps;
     try {
-      processOutput = await spawnProcess(command, args, { cwd });
+      const processOutput = await spawnProcess(command, args, { cwd });
+      parsedDeps = JSON.parse(processOutput.stdout) as YarnDeps;
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
@@ -48,7 +75,7 @@ export class Yarn implements Packager {
             return (
               !isEmpty(error) &&
               !any(
-                ignoredError => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
+                (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
                 ignoredYarnErrors
               )
             );
@@ -65,33 +92,95 @@ export class Yarn implements Packager {
       throw err;
     }
 
-    const depJson = processOutput.stdout;
-    const parsedTree = JSON.parse(depJson);
-    const convertTrees = convertingTrees =>
-      reduce(
-        (__, tree: JSONObject) => {
-          const splitModule = split('@', tree.name);
-          // If we have a scoped module we have to re-add the @
-          if (startsWith('@', tree.name)) {
-            splitModule.splice(0, 1);
-            splitModule[0] = '@' + splitModule[0];
-          }
-          __[head(splitModule)] = {
-            version: join('@', tail(splitModule)),
-            dependencies: convertTrees(tree.children),
-          };
-          return __;
-        },
-        {},
-        convertingTrees || []
-      );
+    const rootTree = parsedDeps.data.trees;
 
-    const trees = pathOr([], ['data', 'trees'], parsedTree);
-    const result = {
-      problems: [],
-      dependencies: convertTrees(trees),
+    // Produces a version map for the modules present in our root node_modules folder
+    const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
+      const { name, version } = getNameAndVersion(tree.name);
+      deps[name] ??= {
+        version: version,
+      };
+      return deps;
+    }, {});
+
+    const convertTrees = (trees: YarnTree[]): DependencyMap => {
+      return trees.reduce<DependencyMap>((deps, tree) => {
+        const { name, version } = getNameAndVersion(tree.name);
+
+        if (tree.shadow) {
+          // Package is resolved somewhere else
+          if (satisfies(rootDependencies[name].version, version)) {
+            // Package is at root level
+            // {
+            //   "name": "samchungy-dep-a@1.0.0", <- MATCH
+            //   "children": [],
+            //   "hint": null,
+            //   "color": null,
+            //   "depth": 0
+            // },
+            // {
+            //   "name": "samchungy-a@2.0.0",
+            //   "children": [
+            //     {
+            //       "name": "samchungy-dep-a@1.0.0", <- THIS
+            //       "color": "dim",
+            //       "shadow": true
+            //     }
+            //   ],
+            //   "hint": null,
+            //   "color": "bold",
+            //   "depth": 0
+            // }
+            deps[name] ??= {
+              version,
+              isRootDep: true,
+            };
+          } else {
+            // Package info is in anther child so we can just ignore
+            // samchungy-dep-a@1.0.0 is in the root (see above example)
+            // {
+            //   "name": "samchungy-b@2.0.0",
+            //   "children": [
+            //     {
+            //       "name": "samchungy-dep-a@2.0.0", <- THIS
+            //       "color": "dim",
+            //       "shadow": true
+            //     },
+            //     {
+            //       "name": "samchungy-dep-a@2.0.0",
+            //       "children": [],
+            //       "hint": null,
+            //       "color": "bold",
+            //       "depth": 0
+            //     }
+            //   ],
+            //   "hint": null,
+            //   "color": "bold",
+            //   "depth": 0
+            // }
+          }
+          return deps;
+        }
+
+        // Package is not defined, store it and get the children
+        //     {
+        //       "name": "samchungy-dep-a@2.0.0",
+        //       "children": [],
+        //       "hint": null,
+        //       "color": "bold",
+        //       "depth": 0
+        //     }
+        deps[name] ??= {
+          version,
+          ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
+        };
+        return deps;
+      }, {});
     };
-    return result;
+
+    return {
+      dependencies: convertTrees(rootTree),
+    };
   }
 
   rebaseLockfile(pathToPackageRoot, lockfile) {
@@ -133,7 +222,7 @@ export class Yarn implements Packager {
   async runScripts(cwd, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     await Promise.all(
-      scriptNames.map(scriptName => spawnProcess(command, ['run', scriptName], { cwd }))
+      scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd }))
     );
   }
 }
