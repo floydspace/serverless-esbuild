@@ -33,7 +33,6 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
     - [Esbuild Plugins](#esbuild-plugins)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
-  - [Non Node Functions](#non-node-functions)
   - [Serverless Offline](#serverless-offline)
     - [Serverless Dynamodb Local](#serverless-dynamodb-local)
   - [Invoke Local](#invoke-local)
