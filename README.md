@@ -20,17 +20,17 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
 ## Table of Contents
 
 - [Install](#install)
-- [Configure](#configure)
+- [Configuration](#configuration)
   - [Examples](#examples)
   - [Options](#options)
     - [Default Esbuild Options](#default-esbuild-options)
     - [Packager Options](#packager-options)
     - [Watch Options](#watch-options)
-  - [Supported Runtimes](#supported-runtimes)
-  - [Advanced Configuration](#advanced-configuration)
-    - [Including Extra Files](#including-extra-files)
-    - [External Dependencies](#external-dependencies)
-    - [Esbuild Plugins](#esbuild-plugins)
+- [Supported Runtimes](#supported-runtimes)
+- [Advanced Configuration](#advanced-configuration)
+  - [Including Extra Files](#including-extra-files)
+  - [External Dependencies](#external-dependencies)
+  - [Esbuild Plugins](#esbuild-plugins)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
   - [Serverless Offline](#serverless-offline)
@@ -57,7 +57,7 @@ plugins:
   - serverless-esbuild
 ```
 
-## Configure
+## Configuration
 
 By default, no configuration is required, but you can override the default behavior via the `custom.esbuild` section in the `serverless.yml` file.
 
@@ -114,7 +114,7 @@ The following `esbuild` options are automatically set.
 | `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
 | `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.build', 'dist', 'node_modules', '.serverless']`    |
 
-### Supported Runtimes
+## Supported Runtimes
 
 This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes
 
@@ -128,13 +128,13 @@ AWS:
 
 If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
 
-### Advanced Configuration
+## Advanced Configuration
 
-#### Including Extra Files
+### Including Extra Files
 
 [Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. You can use `patterns`, `include` and `exclude` to include extra files into your bundles.
 
-#### External Dependencies
+### External Dependencies
 
 Packages that are marked as `external` and exist in the package.json's `dependencies` will be installed and included with your build under `node_modules`. You can customize this with a number of options.
 
@@ -165,7 +165,7 @@ custom:
       - 'another-package-name'
 ```
 
-#### Esbuild Plugins
+### Esbuild Plugins
 
 _Note: The [Esbuild plugins API](https://esbuild.github.io/plugins/) is still experimental_
 
