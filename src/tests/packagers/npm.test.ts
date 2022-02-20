@@ -1,6 +1,5 @@
 import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
 import { DependenciesResult } from '../../types';
-
 import * as utils from '../../utils';
 
 jest.mock('process');

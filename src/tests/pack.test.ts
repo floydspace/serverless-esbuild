@@ -1,10 +1,10 @@
-import { FunctionBuildResult } from '..';
 import { filterFilesForZipPackage, pack } from '../pack';
 import * as utils from '../utils';
 
-import * as fs from 'fs-extra';
-import * as globby from 'globby';
+import fs from 'fs-extra';
+import globby from 'globby';
 import { mocked } from 'ts-jest/utils';
+import { FunctionBuildResult } from '../types';
 
 jest.mock('globby');
 jest.mock('fs-extra');
