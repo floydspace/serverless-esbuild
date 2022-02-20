@@ -86,7 +86,7 @@ See [example folder](examples) for some example configurations.
 | `packager`            | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                         | `'npm'`            |
 | `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'` |
 | `packagerOptions`     | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                | N/A                |
-| `watch`               | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                |
+| `watch`               | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                | N/A                |
 
 #### Default Esbuild Options
 
