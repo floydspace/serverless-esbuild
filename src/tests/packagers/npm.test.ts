@@ -1,6 +1,4 @@
 import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
-import path from 'path';
-import mockSpawn from 'mock-spawn';
 import { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 
