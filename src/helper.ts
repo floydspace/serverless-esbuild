@@ -1,9 +1,9 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { uniq } from 'ramda';
-import * as Serverless from 'serverless';
-import * as matchAll from 'string.prototype.matchall';
+import Serverless from 'serverless';
+import matchAll from 'string.prototype.matchall';
 import { DependencyMap } from './types';
 
 export function extractFileNames(
@@ -143,6 +143,5 @@ export const providerRuntimeMatcher = Object.freeze({
   aws: {
     'nodejs14.x': 'node14',
     'nodejs12.x': 'node12',
-    'nodejs10.x': 'node10',
   },
 });

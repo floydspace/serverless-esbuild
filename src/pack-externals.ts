@@ -1,5 +1,5 @@
-import * as fse from 'fs-extra';
-import * as path from 'path';
+import fse from 'fs-extra';
+import path from 'path';
 import {
   compose,
   forEach,
@@ -28,7 +28,7 @@ import * as Packagers from './packagers';
 import { JSONObject } from './types';
 import { findProjectRoot, findUp } from './utils';
 
-import type { EsbuildServerlessPlugin } from './index';
+import EsbuildServerlessPlugin from './index';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {

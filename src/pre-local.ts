@@ -1,4 +1,4 @@
-import { EsbuildServerlessPlugin } from '.';
+import EsbuildServerlessPlugin from '.';
 
 export function preLocal(this: EsbuildServerlessPlugin) {
   this.serviceDirPath = this.buildDirPath;
