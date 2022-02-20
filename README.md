@@ -10,10 +10,10 @@ Serverless plugin for zero-config JavaScript and TypeScript code bundling using 
 
 ## Features
 
-- Zero-config: Works out of the box without the need to install any other compiler or plugins
-- Supports ESNext syntax with transforming limitations (See _Note_)
-- Supports `sls package`, `sls deploy`, `sls deploy function`, `sls invoke local`
-- Integrates with [`serverless-offline`](https://github.com/dherault/serverless-offline)
+- Zero-config: Works out of the box without the need to install any additional plugins
+- Supports Typescript and Javascript projects
+- Supports `sls package`, `sls deploy`, `sls deploy function`
+- Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
 ## Table of Contents
 
