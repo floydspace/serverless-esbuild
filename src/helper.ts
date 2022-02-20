@@ -4,7 +4,7 @@ import os from 'os';
 import { uniq } from 'ramda';
 import Serverless from 'serverless';
 import matchAll from 'string.prototype.matchall';
-import { JSONObject } from './types';
+import { DependencyMap } from './types';
 
 export function extractFileNames(
   cwd: string,
@@ -67,69 +67,69 @@ export function extractFileNames(
 }
 
 /**
- * Creates a "registry" of all the dependencies of the packages found in the tree described by deps.
- * @param deps
+ * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
+ * @param root the root of the dependency tree
+ * @param rootDeps array of top level root dependencies to whitelist
  */
-const buildAllDeps = (deps?: JSONObject) => {
-  if (!deps) {
-    return {};
-  }
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[] => {
+  const flattenedDependencies = new Set<string>();
 
-  const dependenciesLeft = Object.entries(deps);
-  const allDeps = {};
+  /**
+   *
+   * @param deps the current tree
+   * @param filter the dependencies to get from this tree
+   */
+  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[]) => {
+    if (!deps) return;
 
-  while (dependenciesLeft.length > 0) {
-    const [depName, details] = dependenciesLeft.shift();
+    Object.entries(deps).forEach(([depName, details]) => {
+      // only for root level dependencies
+      if (filter && !filter.includes(depName)) return;
 
-    if (
-      // we already have the dependencies for this package
-      depName in allDeps &&
-      'dependencies' in allDeps[depName]
-    ) {
-      continue;
-    }
+      if (details.isRootDep || filter) {
+        // We already have this root dep and it's dependencies - skip this iteration
+        if (flattenedDependencies.has(depName)) return;
 
-    const dependencies = (details as JSONObject).dependencies;
-    if (dependencies) {
-      Object.entries(dependencies).forEach((dep) => dependenciesLeft.push(dep));
-    }
+        recursiveFind(root[depName].dependencies);
+        flattenedDependencies.add(depName);
+        return;
+      }
 
-    allDeps[depName] = allDeps[depName] || {};
-    allDeps[depName][(details as JSONObject).version] = details;
-  }
+      // This is a nested dependency and will be included by default when we include it's parent
+      // We just need to check if we fulfil all it's dependencies
+      recursiveFind(details.dependencies);
+    });
+  };
 
-  return allDeps;
+  recursiveFind(root, rootDepsFilter);
+
+  return Array.from(flattenedDependencies);
 };
 
 /**
- * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
- * @param deps A nested object as given by the `npm list --json` command
- * @param filter an array of top dependencies to whitelist (takes all dependencies if omitted)
- * @param allDeps an object containing the dependencies for each package, the keys being the package names
+ * Extracts the base package from a package string taking scope into consideration
+ * @example getBaseDep('@scope/package/register') returns '@scope/package'
+ * @example getBaseDep('package/register') returns 'package'
+ * @example getBaseDep('package') returns 'package'
+ * @param path
  */
-export const flatDep = (deps: JSONObject, filter?: string[], allDeps?: JSONObject) => {
-  if (!deps) return [];
-
-  // keep tracks of all the dependencies for all the packages
-  if (!allDeps) allDeps = buildAllDeps(deps);
-
-  return Object.entries(deps).reduce((acc, [depName, details]) => {
-    if (filter && !filter.includes(depName)) return acc;
-    const detailsDeps =
-      allDeps[depName]?.[(details as JSONObject).version]?.dependencies ||
-      (details as JSONObject).dependencies;
-    return uniq([...acc, depName, ...flatDep(detailsDeps, undefined, allDeps)]);
-  }, []);
-};
+const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
 
 /**
  * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
  * @param bundlePath Absolute path to a bundled JS file
  */
-export const getDepsFromBundle = (bundlePath: string) => {
+export const getDepsFromBundle = (bundlePath: string, platform: string): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  const requireMatch = matchAll(bundleContent, /require\("(.*?)"\)/gim);
-  return uniq(Array.from(requireMatch).map((match) => match[1]));
+  const deps =
+    platform === 'neutral'
+      ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
+          (match) => match[1] || match[2]
+        )
+      : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map(
+          (match) => match[1]
+        );
+  return uniq(deps.map((dep): string => getBaseDep(dep)));
 };
 
 export const doSharePath = (child, parent) => {

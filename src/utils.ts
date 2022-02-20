@@ -169,3 +169,8 @@ export const zip = async (
 export function trimExtension(entry: string) {
   return entry.slice(0, -path.extname(entry).length);
 }
+
+export const isEmpty = (obj: Record<string, unknown>) => {
+  for (const _i in obj) return false;
+  return true;
+};
