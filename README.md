@@ -26,7 +26,7 @@ _Note_: The default JavaScript syntax target is determined from serverless provi
     - [Default Esbuild Options](#default-esbuild-options)
     - [Packager Options](#packager-options)
     - [Watch Options](#watch-options)
-  - [Supported Run Times](#supported-run-times)
+  - [Supported Runtimes](#supported-runtimes)
   - [Advanced Configuration](#advanced-configuration)
     - [Including Extra Files](#including-extra-files)
     - [External Dependencies](#external-dependencies)
