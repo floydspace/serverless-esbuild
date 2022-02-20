@@ -55,7 +55,7 @@ export interface FunctionBuildResult {
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
-  target: 'node10',
+  target: 'node12',
   external: [],
   exclude: ['aws-sdk'],
   nativeZip: false,
