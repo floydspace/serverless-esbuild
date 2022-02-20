@@ -78,7 +78,7 @@ See [example folder](examples) for some example configurations.
 | Esbuild Options    | This plugin can take any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). Note that some options like `entryPoints` or `outdir` cannot be overwritten. | N/A              |
 | `concurrency`      | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                               | `Infinity`       |
 | `exclude`          | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                               | `['aws-sdk']`    |
-| `installExtraArgs` | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `--legacy-peer-deps` for npm v7+ to use legacy `peerDependency` resolution behavior             | `[]`             |
+| `installExtraArgs` | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior         | `[]`             |
 | `nativeZip`        | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.           | `false`          |
 | `packager`         | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                                 | `npm`            |
 | `packagePath`      | Path to the `package.json` file for `external` dependency resolution.                                                                                                              | `./package.json` |
@@ -97,9 +97,6 @@ See [example folder](examples) for some example configurations.
 | --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
 | `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `[.build, 'dist', 'node_modules', '.serverless']`      |
-
-pattern: './\*_/_.(js|ts)' # watches all javascript or typescripts files in the project
-ignore: [.build, 'dist', 'node_modules', '.serverless']
 
 ### Advanced Configuration
 
