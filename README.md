@@ -90,14 +90,14 @@ See [example folder](examples) for some example configurations.
 
 The following `esbuild` options are automatically set.
 
-| Option        | Default    | Notes                                                                    |
-| ------------- | ---------- | ------------------------------------------------------------------------ |
-| `bundle`      | `true`     | You should not need to change this                                       |
-| `entryPoints` | N/A        | Cannot be overridden                                                     |
-| `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it             |
-| `outDir`      | N/A        | Cannot be overridden                                                     |
-| `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                                 |
-| `target`      | `'node12'` | We dynamically set this. See [Supported Run Times](#supported-run-times) |
+| Option        | Default    | Notes                                                                  |
+| ------------- | ---------- | ---------------------------------------------------------------------- |
+| `bundle`      | `true`     | You should not need to change this                                     |
+| `entryPoints` | N/A        | Cannot be overridden                                                   |
+| `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it           |
+| `outDir`      | N/A        | Cannot be overridden                                                   |
+| `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                               |
+| `target`      | `'node12'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
 
 #### Packager Options
 
