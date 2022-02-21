@@ -92,7 +92,7 @@ The following `esbuild` options are automatically set.
 
 | Option        | Default    | Notes                                                                  |
 | ------------- | ---------- | ---------------------------------------------------------------------- |
-| `bundle`      | `true`     | You should not need to change this                                     |
+| `bundle`      | `true`     | Esbuild requires this for use with `external`                          |
 | `entryPoints` | N/A        | Cannot be overridden                                                   |
 | `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it           |
 | `outDir`      | N/A        | Cannot be overridden                                                   |
