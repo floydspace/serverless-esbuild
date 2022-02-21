@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { mocked } from 'ts-jest/utils';
 
 import { extractFileNames, flatDep, getDepsFromBundle } from '../helper';

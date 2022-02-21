@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra';
-import * as globby from 'globby';
-import * as path from 'path';
+import fs from 'fs-extra';
+import globby from 'globby';
+import path from 'path';
 import {
   intersection,
   isEmpty,
@@ -13,8 +13,8 @@ import {
   test,
   without,
 } from 'ramda';
-import * as semver from 'semver';
-import { EsbuildServerlessPlugin } from '.';
+import semver from 'semver';
+import EsbuildServerlessPlugin from '.';
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
 import { doSharePath, flatDep, getDepsFromBundle } from './helper';
 import * as Packagers from './packagers';
