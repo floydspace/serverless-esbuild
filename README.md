@@ -81,8 +81,8 @@ See [example folder](examples) for some example configurations.
 | `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`               |
 | `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`            |
 | `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`            |
-| `packager`            | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                         | `'npm'`            |
 | `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'` |
+| `packager`            | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                         | `'npm'`            |
 | `packagerOptions`     | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                | N/A                |
 | `watch`               | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                | N/A                |
 
