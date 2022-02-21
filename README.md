@@ -10,13 +10,32 @@ Serverless plugin for zero-config JavaScript and TypeScript code bundling using 
 
 ## Features
 
-- Zero-config: Works out of the box without the need to install any other compiler or plugins
-- Supports ESNext syntax with transforming limitations (See _Note_)
-- Supports `sls package`, `sls deploy` and `sls deploy function`
-- Supports `sls invoke local`
-- Integrates nicely with [`serverless-offline`](https://github.com/dherault/serverless-offline)
+- Zero-config: Works out of the box without the need to install any additional plugins
+- Works with Typescript and Javascript projects
+- Supports `sls package`, `sls deploy`, `sls deploy function`
+- Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
-_Note_: The default JavaScript syntax target is determined from serverless provider configuration otherwise set to [`node12`], so the final bundle will be supported by all [AWS Lambda Node.js runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). If you still using an old lambda runtime and have to respect it you can play with esbuild `target` option, see [JavaScript syntax support](https://github.com/evanw/esbuild#javascript-syntax-support) for more details about syntax transform limitations.
+## Table of Contents
+
+- [Install](#install)
+- [Configuration](#configuration)
+  - [Examples](#examples)
+  - [Options](#options)
+    - [Default Esbuild Options](#default-esbuild-options)
+    - [Packager Options](#packager-options)
+    - [Watch Options](#watch-options)
+- [Supported Runtimes](#supported-runtimes)
+- [Advanced Configuration](#advanced-configuration)
+  - [Including Extra Files](#including-extra-files)
+  - [External Dependencies](#external-dependencies)
+  - [Esbuild Plugins](#esbuild-plugins)
+- [Usage](#usage)
+  - [Automatic Compilation](#automatic-compilation)
+  - [Serverless Offline](#serverless-offline)
+    - [Serverless Dynamodb Local](#serverless-dynamodb-local)
+  - [Invoke Local](#invoke-local)
+- [External Tools](#external-tools)
+- [Contributors](#contributors)
 
 ## Install
 
@@ -36,9 +55,9 @@ plugins:
   - serverless-esbuild
 ```
 
-## Configure
+## Configuration
 
-By default, no configuration is required, but you can change esbuild behavior in custom `esbuild` section in `serverless.yaml` config:
+By default, no configuration is required, but you can override the default behavior via the `custom.esbuild` section in the `serverless.yml` file.
 
 ```yml
 custom:
@@ -47,30 +66,88 @@ custom:
     minify: false
 ```
 
-Check [esbuild](https://github.com/evanw/esbuild#command-line-usage) documentation for the full list of available options. Note that some options like `entryPoints` or `outdir` cannot be overwritten. We rely on the Javascript API so make sure you provide the JavaScript options as they can be different to the CLI options.
-The package specified in the `exclude` option is passed to esbuild as `external`, but it is not included in the function bundle either. The default value for this option is `['aws-sdk']`. You can set `exclude` to `*` to disable packaging `node_modules`.
+### Examples
 
-See [example folder](examples) for a minimal example.
+See [example folder](examples) for some example configurations.
 
-### Including extra files
+### Options
 
-All files from `package/patterns` will be included in the final build file. See [Patterns](https://serverless.com/framework/docs/providers/aws/guide/packaging#patterns).
+| Option                | Description                                                                                                                                                                | Default            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). See [Default Esbuild Options](#default-esbuild-options)       | N/A                |
+| `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `'Infinity'`       |
+| `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`            |
+| `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`      |
+| `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`               |
+| `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`            |
+| `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`            |
+| `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'` |
+| `packager`            | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                         | `'npm'`            |
+| `packagerOptions`     | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                | N/A                |
+| `watch`               | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                | N/A                |
 
-Include/exclude is deprecated, but still supported.
+#### Default Esbuild Options
+
+The following `esbuild` options are automatically set.
+
+| Option        | Default    | Notes                                                                  |
+| ------------- | ---------- | ---------------------------------------------------------------------- |
+| `bundle`      | `true`     | Esbuild requires this for use with `external`                          |
+| `entryPoints` | N/A        | Cannot be overridden                                                   |
+| `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it           |
+| `outDir`      | N/A        | Cannot be overridden                                                   |
+| `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                               |
+| `target`      | `'node12'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
+
+#### Packager Options
+
+| Option    | Description                                                                                           | Default     |
+| --------- | ----------------------------------------------------------------------------------------------------- | ----------- |
+| `scripts` | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn | `undefined` |
+
+#### Watch Options
+
+| Option    | Description                                                                                          | Default                                                |
+| --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
+| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.build', 'dist', 'node_modules', '.serverless']`    |
+
+## Supported Runtimes
+
+This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes
+
+AWS:
+
+| Runtime      | Target   |
+| ------------ | -------- |
+| `nodejs14.x` | `node14` |
+| `nodejs12.x` | `node12` |
+
+If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
+
+## Advanced Configuration
+
+### Including Extra Files
+
+[Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. You can use `patterns`, `include` and `exclude` to include extra files into your bundles.
 
 ### External Dependencies
 
-Packages that are marked as `external` and exist in the package.json's `dependencies` will be installed and included with your build under `node_modules`. You can configure how these are installed:
+Packages that are marked as `external` and exist in the package.json's `dependencies` will be installed and included with your build under `node_modules`. You can customize this with a number of options.
 
 ```yml
 custom:
   esbuild:
-    packager: yarn # optional - npm, pnpm or yarn, default is npm
-    packagePath: absolute/path/to/package.json # optional - by default it looks for a package.json in the working directory
-    packagerOptions: # optional - packager related options, currently supports only 'scripts' for both npm, pnpm and yarn
-      scripts: # scripts to be executed, can be a string or array of strings
+    external:
+      - lodash
+    packager: yarn
+    packagePath: absolute/path/to/package.json
+    packagerOptions:
+      scripts:
         - echo 'Hello World!'
         - rm -rf node_modules
+    installExtraArgs:
+      - '--legacy-peer-deps'
 ```
 
 To easily mark all the `dependencies` in `package.json` as `external`, you can utilize `esbuild-node-externals` [plugin](https://www.npmjs.com/package/esbuild-node-externals).
@@ -85,21 +162,9 @@ custom:
       - 'another-package-name'
 ```
 
-### Passing Extra Arguments to Packager
+### Esbuild Plugins
 
-This might be required to resolve some issues on package installation.
-One example is to pass `--legacy-peer-deps` to npm v7+, to use legacy `peerDependency` resolution behavior.
-
-```yml
-custom:
-  esbuild:
-    installExtraArgs: # optional. Default is empty (no arguments)
-      - '--legacy-peer-deps'
-```
-
-### Using esbuild plugins
-
-_Note that the plugins API is still experimental : see [the documentation page](https://esbuild.github.io/plugins/)_
+_Note: The [Esbuild plugins API](https://esbuild.github.io/plugins/) is still experimental_
 
 You can configure esbuild plugins by passing a plugins' configuration file:
 
@@ -140,55 +205,13 @@ module.exports = (serverless) => {
 };
 ```
 
-### Native Zip
-
-If you wish to use your system's `zip` executable to create archives (can be significantly faster when working with many large archives), set the `nativeZip` option:
-
-```yml
-custom:
-  esbuild:
-    nativeZip: true
-```
-
-_NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.
-
-### Concurrency
-
-If you wish to limit the concurrency of the bundling process (can be very expensive on memory), set the `concurrency` option:
-
-```yml
-custom:
-  esbuild:
-    concurrency: 10
-```
-
-_NOTE_: This will produce slower builds.
-
 ## Usage
 
 ### Automatic compilation
 
-The normal Serverless deploy procedure will automatically compile with `esbuild`:
+As long as the plugin is properly installed, all regular Serverless operations `sls package`, `sls deploy`, `sls deploy function`, `sls invoke local`, `sls offline` will automatically compile using `serverless-esbuild`.
 
-- Create the Serverless project with `serverless create -t aws-nodejs`
-- Install Serverless esbuild plugin as above
-- Deploy with `serverless deploy`
-
-### ESM Support
-
-If you wish to enable ESM support you may set the esbuild [platform](https://esbuild.github.io/api/#platform) option to `neutral`. This is set to `node` by default.
-
-### Usage with non Node functions
-
-If you wish to use this plugin alongside non Node functions like Python, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
-
-Current supported runtimes:
-
-- AWS
-  - nodejs14.x
-  - nodejs12.x
-
-### Usage with serverless-offline
+### Serverless Offline
 
 The plugin integrates very well with [serverless-offline](https://github.com/dherault/serverless-offline) to
 simulate AWS Lambda and AWS API Gateway locally.
@@ -208,14 +231,7 @@ Run `serverless offline` or `serverless offline start` to start the Lambda/API s
 
 In comparison to `serverless offline`, the `start` command will fire an `init` and a `end` lifecycle hook which is needed for `serverless-offline` and e.g. `serverless-dynamodb-local` to switch off resources (see below)
 
-Automatic compilation is available while using the plugin with `serverless-offline`. Following are the default configuration:
-
-```
-pattern: './**/*.(js|ts)' # watches all javascript or typescripts files in the project
-ignore: [.build, 'dist', 'node_modules', '.serverless']
-```
-
-You can override the defaults by using `watch` option in serverless esbuild config. Both options take [anymatch-compatible definition] (https://github.com/es128/anymatch)
+Automatic compilation is available while using the plugin with `serverless-offline`.
 
 ```
 custom:
@@ -225,9 +241,9 @@ custom:
       ignore: ['temp/**/*']
 ```
 
-Note: When overriding ignore pattern, remember to ignore `.build` directory to avoid endless compilation.
+Note: When overriding the ignore pattern, remember to ignore `.build` directory to avoid endless compilation.
 
-#### serverless-dynamodb-local
+#### Serverless Dynamodb Local
 
 Configure your service the same as mentioned above, but additionally add the `serverless-dynamodb-local`
 plugin as follows:
@@ -241,32 +257,11 @@ plugins:
 
 Run `serverless offline start`.
 
-### Run a function locally
+### Invoke Local
 
-To run your compiled functions locally you can:
+This plugin supports the Serverless [Invoke Local](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) functionality and will automatically compile the selected function.
 
-```bash
-$ serverless invoke local --function <function-name>
-```
-
-Options are:
-
-- `--function` or `-f` (required) is the name of the function to run
-- `--path` or `-p` (optional) path to JSON or YAML file holding input data
-- `--data` or `-d` (optional) input data
-
-## Plugin-Specific Options in Serverless Config
-
-These options belong under `custom.esbuild` in your `serverless.yml` or `serverless.ts` file, and are specific to this plugin (these are not esbuild API options):
-
-- `packager`: Package to use (npm, pnpm or yarn - npm is default)
-- `packagePath`: Path to the `package.json` file (`./package.json` is default)
-- `packagerOptions`:
-  - `scripts`: A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn
-- `exclude`: An array of dependencies to exclude (declares it as an external as well as excludes it from Lambda ZIP file)
-- `installExtraArgs`: Optional arguments passed to npm or yarn (empty is default)
-
-## External tools
+## External Tools
 
 - [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
 
