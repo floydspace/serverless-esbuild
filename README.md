@@ -233,7 +233,7 @@ In comparison to `serverless offline`, the `start` command will fire an `init` a
 
 Automatic compilation is available while using the plugin with `serverless-offline`.
 
-```
+```yml
 custom:
   esbuild:
     watch:
