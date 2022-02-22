@@ -321,9 +321,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
           fs.mkdirpSync(dirname);
         }
 
-        if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), destFileName);
-        }
+        await fs.copy(path.resolve(filename), destFileName);
       }
     }
 
@@ -343,9 +341,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
           fs.mkdirpSync(dirname);
         }
 
-        if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), destFileName);
-        }
+        await fs.copy(path.resolve(filename), destFileName);
       }
     }
   }
