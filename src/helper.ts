@@ -4,13 +4,13 @@ import os from 'os';
 import { uniq } from 'ramda';
 import Serverless from 'serverless';
 import matchAll from 'string.prototype.matchall';
-import { DependencyMap } from './types';
+import { DependencyMap, FunctionEntry } from './types';
 
-export function extractFileNames(
+export function extractFunctionEntries(
   cwd: string,
   provider: string,
   functions?: Record<string, Serverless.FunctionDefinitionHandler>
-): { entry: string; func: Serverless.FunctionDefinitionHandler; functionAlias?: string }[] {
+): FunctionEntry[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
   // index.js file. This check reads the current package.json in the same way
