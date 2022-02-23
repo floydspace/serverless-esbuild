@@ -68,7 +68,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   };
 
   // Files can contain multiple handlers for multiple functions, we want to get only the unique ones
-  const uniqueFiles = uniq(this.functionEntries.map(({ entry }): string => entry));
+  const uniqueFiles: string[] = uniq(this.functionEntries.map(({ entry }) => entry));
 
   this.serverless.cli.log(`Compiling with concurrency: ${this.buildOptions.concurrency}`);
 
