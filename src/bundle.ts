@@ -85,6 +85,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     {}
   );
 
+  // Map function entries back to bundles
   this.buildResults = this.functionEntries.map(({ entry, func, functionAlias }) => {
     const { bundlePath } = this.buildCache[entry];
     return { bundlePath, func, functionAlias };
