@@ -46,12 +46,16 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
     ...serviceOverride,
   } as Service;
 
+  const mockCli = {
+    log: jest.fn(),
+  };
+
   return {
     service,
     config: {
       servicePath: '/workDir',
     },
-    cli: { log: () => null },
+    cli: mockCli,
   } as Partial<Serverless> as Serverless;
 };
 

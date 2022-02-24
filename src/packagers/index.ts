@@ -37,7 +37,7 @@ const registeredPackagers = {
 export function get(packagerId: string): Promise<Packager> {
   if (!(packagerId in registeredPackagers)) {
     const message = `Could not find packager '${packagerId}'`;
-    this.serverless.cli.log(`ERROR: ${message}`);
+    this.log.error(`ERROR: ${message}`);
     throw new this.serverless.classes.Error(message);
   }
   return registeredPackagers[packagerId];

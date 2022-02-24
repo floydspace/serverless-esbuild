@@ -90,10 +90,9 @@ function getProdModules(
       !packageJson.dependencies[externalModule.external] &&
       !packageJson.devDependencies[externalModule.external]
     ) {
-      this.options.verbose &&
-        this.serverless.cli.log(
-          `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
-        );
+      this.log.verbose(
+        `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
+      );
 
       return;
     }
@@ -109,7 +108,7 @@ function getProdModules(
 
       if (!includes(externalModule.external, ignoredDevDependencies)) {
         // Runtime dependency found in devDependencies but not forcefully excluded
-        this.serverless.cli.log(
+        this.log.error(
           `ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`
         );
         throw new this.serverless.classes.Error(
@@ -117,10 +116,9 @@ function getProdModules(
         );
       }
 
-      this.options.verbose &&
-        this.serverless.cli.log(
-          `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
-        );
+      this.log.verbose(
+        `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
+      );
 
       return;
     }
@@ -167,10 +165,9 @@ function getProdModules(
       );
 
       if (!isEmpty(peerDependenciesWithoutOptionals)) {
-        this.options.verbose &&
-          this.serverless.cli.log(
-            `Adding explicit non-optionals peers for dependency ${externalModule.external}`
-          );
+        this.log.verbose(
+          `Adding explicit non-optionals peers for dependency ${externalModule.external}`
+        );
         const peerModules = getProdModules.call(
           this,
           compose(
@@ -183,7 +180,7 @@ function getProdModules(
         Array.prototype.push.apply(prodModules, peerModules);
       }
     } catch (e) {
-      this.serverless.cli.log(
+      this.log.warning(
         `WARNING: Could not check for peer dependencies of ${externalModule.external}`
       );
     }
@@ -270,12 +267,11 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const packageSections = pick(sectionNames, packageJson);
 
   if (!isEmpty(packageSections)) {
-    this.options.verbose &&
-      this.serverless.cli.log(`Using package.json sections ${join(', ', keys(packageSections))}`);
+    this.log.verbose(`Using package.json sections ${join(', ', keys(packageSections))}`);
   }
 
   // Get first level dependency graph
-  this.options.verbose && this.serverless.cli.log(`Fetch dependency graph from ${packageJson}`);
+  this.log.verbose(`Fetch dependency graph from ${packageJson}`);
 
   // (1) Generate dependency composition
   const externalModules = map((external) => ({ external }), externals);
@@ -285,7 +281,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   if (isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
-    this.serverless.cli.log('No external modules needed');
+    this.log.warning('No external modules needed');
     return;
   }
 
@@ -315,7 +311,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const packageLockPath = path.join(path.dirname(packageJsonPath), packager.lockfileName);
   const exists = await fse.pathExists(packageLockPath);
   if (exists) {
-    this.serverless.cli.log('Package lock found - Using locked versions');
+    this.log.verbose('Package lock found - Using locked versions');
     try {
       let packageLockFile = this.serverless.utils.readFileSync(packageLockPath);
       packageLockFile = packager.rebaseLockfile(relativePath, packageLockFile);
@@ -328,7 +324,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
         packageLockFile as string
       );
     } catch (err) {
-      this.serverless.cli.log(`Warning: Could not read lock file: ${err.message}`);
+      this.log.warning(`Warning: Could not read lock file: ${err.message}`);
     }
   }
 
@@ -339,28 +335,26 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   }
 
   const start = Date.now();
-  this.serverless.cli.log('Packing external modules: ' + compositeModules.join(', '));
+  this.log.verbose('Packing external modules: ' + compositeModules.join(', '));
   const installExtraArgs = this.buildOptions.installExtraArgs;
   await packager.install(compositeModulePath, installExtraArgs, exists);
-  this.options.verbose && this.serverless.cli.log(`Package took [${Date.now() - start} ms]`);
+  this.log.verbose(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
   await packager.prune(compositeModulePath);
-  this.options.verbose &&
-    this.serverless.cli.log(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
+
+  this.log.verbose(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
 
   // Run packager scripts
   if (Object.keys(packagerScripts).length > 0) {
     const startScripts = Date.now();
     await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
-    this.options.verbose &&
-      this.serverless.cli.log(
-        `Packager scripts took [${
-          Date.now() - startScripts
-        } ms].\nExecuted scripts: ${Object.values(packagerScripts).map(
-          (script) => `\n  ${script}`
-        )}`
-      );
+
+    this.log.verbose(
+      `Packager scripts took [${Date.now() - startScripts} ms].\nExecuted scripts: ${Object.values(
+        packagerScripts
+      ).map((script) => `\n  ${script}`)}`
+    );
   }
 }

@@ -148,13 +148,14 @@ export const providerRuntimeMatcher = Object.freeze({
 });
 
 export const buildServerlessV3LoggerFromLegacyLogger = (
-  legacyLogger: (text: string) => void
+  legacyLogger: (text: string) => void,
+  verbose?: boolean
 ): ServerlessPlugin.Logging['log'] => ({
   error: legacyLogger,
   warning: legacyLogger,
   notice: legacyLogger,
   info: legacyLogger,
   debug: legacyLogger,
-  verbose: legacyLogger,
+  verbose: verbose ? legacyLogger : () => null,
   success: legacyLogger,
 });

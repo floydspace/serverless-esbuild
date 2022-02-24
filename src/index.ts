@@ -66,7 +66,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   ) {
     this.serverless = serverless;
     this.options = options;
-    this.log = logging?.log || buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log);
+    this.log =
+      logging?.log ||
+      buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log, this.options.verbose);
     this.packExternalModules = packExternalModules.bind(this);
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
@@ -212,7 +214,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
       this.bundle(true)
-        .then(() => this.log.info('Watching files for changes...'))
+        .then(() => this.log.verbose('Watching files for changes...'))
         .catch(() => this.log.error('Bundle error, waiting for a file change to reload...'))
     );
   }
