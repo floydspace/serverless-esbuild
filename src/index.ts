@@ -8,7 +8,11 @@ import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
 import chokidar from 'chokidar';
 
-import { extractFileNames, providerRuntimeMatcher } from './helper';
+import {
+  buildServerlessV3LoggerFromLegacyLogger,
+  extractFileNames,
+  providerRuntimeMatcher,
+} from './helper';
 import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
@@ -44,6 +48,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
   workDirPath: string;
   buildDirPath: string;
+  log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
   options: OptionsExtended;
@@ -54,9 +59,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   preOffline: () => Promise<void>;
   preLocal: () => void;
 
-  constructor(serverless: Serverless, options: OptionsExtended) {
+  constructor(
+    serverless: Serverless,
+    options: OptionsExtended,
+    logging?: ServerlessPlugin.Logging
+  ) {
     this.serverless = serverless;
     this.options = options;
+    this.log = logging?.log || buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log);
     this.packExternalModules = packExternalModules.bind(this);
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
@@ -202,10 +212,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
       this.bundle(true)
-        .then(() => this.serverless.cli.log('Watching files for changes...'))
-        .catch(() =>
-          this.serverless.cli.log('Bundle error, waiting for a file change to reload...')
-        )
+        .then(() => this.log.info('Watching files for changes...'))
+        .catch(() => this.log.error('Bundle error, waiting for a file change to reload...'))
     );
   }
 
@@ -241,7 +249,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   async bundle(incremental = false): Promise<BuildResult[]> {
     this.prepare();
-    this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
+    this.log.verbose(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
     if (this.buildOptions.disableIncremental === true) {
       incremental = false;
     }
@@ -295,13 +303,11 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
       return { result, bundlePath, func, functionAlias };
     };
-    this.serverless.cli.log(
-      `Compiling with concurrency: ${this.buildOptions.concurrency ?? 'Infinity'}`
-    );
+    this.log.verbose(`Compiling with concurrency: ${this.buildOptions.concurrency ?? 'Infinity'}`);
     this.buildResults = await pMap(this.rootFileNames, bundleMapper, {
       concurrency: this.buildOptions.concurrency,
     });
-    this.serverless.cli.log('Compiling completed.');
+    this.log.verbose('Compiling completed.');
     return this.buildResults.map((r) => r.result);
   }
 

@@ -51,6 +51,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
     config: {
       servicePath: '/workDir',
     },
+    cli: { log: () => null },
   } as Partial<Serverless> as Serverless;
 };
 
