@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { uniq } from 'ramda';
 import Serverless from 'serverless';
+import ServerlessPlugin from 'serverless/classes/Plugin';
 import matchAll from 'string.prototype.matchall';
 import { DependencyMap } from './types';
 
@@ -144,4 +145,17 @@ export const providerRuntimeMatcher = Object.freeze({
     'nodejs14.x': 'node14',
     'nodejs12.x': 'node12',
   },
+});
+
+export const buildServerlessV3LoggerFromLegacyLogger = (
+  legacyLogger: (text: string) => void,
+  verbose?: boolean
+): ServerlessPlugin.Logging['log'] => ({
+  error: legacyLogger,
+  warning: legacyLogger,
+  notice: legacyLogger,
+  info: legacyLogger,
+  debug: legacyLogger,
+  verbose: verbose ? legacyLogger : () => null,
+  success: legacyLogger,
 });
