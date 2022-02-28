@@ -19,13 +19,7 @@ import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { trimExtension } from './utils';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-import {
-  Configuration,
-  FunctionBuildResult,
-  OptionsExtended,
-  Plugins,
-  ReturnPluginsFn,
-} from './types';
+import { Configuration, FunctionBuildResult, Plugins, ReturnPluginsFn } from './types';
 
 const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   bundle: true,
@@ -51,7 +45,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
-  options: OptionsExtended;
+  options: Serverless.Options;
   hooks: ServerlessPlugin.Hooks;
   buildResults: FunctionBuildResult[];
   packExternalModules: () => Promise<void>;
@@ -61,7 +55,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   constructor(
     serverless: Serverless,
-    options: OptionsExtended,
+    options: Serverless.Options,
     logging?: ServerlessPlugin.Logging
   ) {
     this.serverless = serverless;

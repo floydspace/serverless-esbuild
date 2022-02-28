@@ -1,7 +1,6 @@
 import Serverless from 'serverless';
 import Service from 'serverless/classes/Service';
 import EsbuildServerlessPlugin from '../index';
-import { OptionsExtended } from '../types';
 
 import fs from 'fs-extra';
 
@@ -59,7 +58,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   } as Partial<Serverless> as Serverless;
 };
 
-const mockOptions: OptionsExtended = {
+const mockOptions: Serverless.Options = {
   region: 'us-east-1',
   stage: 'dev',
 };
