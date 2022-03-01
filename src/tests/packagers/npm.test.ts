@@ -1003,4 +1003,33 @@ describe('NPM Packager', () => {
     expect(v6dependencies).toStrictEqual(expectedResult);
     expect(v7dependencies).toStrictEqual(expectedResult);
   });
+
+  it('should handle no dependencies returned from npm output', async () => {
+    const v6depsList: NpmV6Deps = {
+      name: 'serverless-example',
+      version: '1.0.0',
+      description: 'Packaged externals for serverless-example',
+      private: true,
+      scripts: {},
+      readme: 'ERROR: No README data found!',
+      _id: 'serverless-example@1.0.0',
+      _shrinkwrap: {},
+      devDependencies: {},
+      optionalDependencies: {},
+      _dependencies: {},
+      path: '/workdir/.esbuild/.build',
+      error: '[Circular]',
+      extraneous: false,
+    };
+
+    const expectedResult: DependenciesResult = {};
+
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v6depsList) });
+
+    const v6dependencies = await npm.getProdDependencies(path);
+
+    expect(v6dependencies).toStrictEqual(expectedResult);
+  });
 });
