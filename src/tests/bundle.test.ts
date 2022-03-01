@@ -34,6 +34,15 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
     plugins: [],
     buildDirPath: '/workdir/.esbuild',
     functionEntries: [],
+    log: {
+      error: jest.fn(),
+      warning: jest.fn(),
+      notice: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      success: jest.fn(),
+    },
     ...override,
   } as PartialDeep<EsbuildServerlessPlugin> as EsbuildServerlessPlugin);
 
