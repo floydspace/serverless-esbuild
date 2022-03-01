@@ -104,6 +104,15 @@ describe('pack', () => {
         workDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/',
         serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
         buildResults,
+        log: {
+          error: jest.fn(),
+          warning: jest.fn(),
+          notice: jest.fn(),
+          info: jest.fn(),
+          debug: jest.fn(),
+          verbose: jest.fn(),
+          success: jest.fn(),
+        },
       };
 
       await pack.call(esbuildPlugin);

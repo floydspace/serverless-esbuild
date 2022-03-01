@@ -6,7 +6,11 @@ import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
 import chokidar from 'chokidar';
 
-import { extractFunctionEntries, providerRuntimeMatcher } from './helper';
+import {
+  buildServerlessV3LoggerFromLegacyLogger,
+  extractFunctionEntries,
+  providerRuntimeMatcher,
+} from './helper';
 import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
@@ -17,7 +21,6 @@ import {
   Configuration,
   FileBuildResult,
   FunctionBuildResult,
-  OptionsExtended,
   Plugins,
   ReturnPluginsFn,
 } from './types';
@@ -44,9 +47,10 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
   workDirPath: string;
   buildDirPath: string;
+  log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
-  options: OptionsExtended;
+  options: Serverless.Options;
   hooks: ServerlessPlugin.Hooks;
   buildResults: FunctionBuildResult[];
   /** Used for storing previous esbuild build results so we can rebuild more efficiently */
@@ -57,9 +61,16 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   preOffline: () => Promise<void>;
   preLocal: () => void;
 
-  constructor(serverless: Serverless, options: OptionsExtended) {
+  constructor(
+    serverless: Serverless,
+    options: Serverless.Options,
+    logging?: ServerlessPlugin.Logging
+  ) {
     this.serverless = serverless;
     this.options = options;
+    this.log =
+      logging?.log ||
+      buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log, this.options.verbose);
     this.packExternalModules = packExternalModules.bind(this);
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
@@ -206,10 +217,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
       this.bundle(true)
-        .then(() => this.serverless.cli.log('Watching files for changes...'))
-        .catch(() =>
-          this.serverless.cli.log('Bundle error, waiting for a file change to reload...')
-        )
+        .then(() => this.log.verbose('Watching files for changes...'))
+        .catch(() => this.log.error('Bundle error, waiting for a file change to reload...'))
     );
   }
 

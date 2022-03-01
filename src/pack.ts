@@ -27,9 +27,7 @@ function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPa
   if (semver.lt(version, '1.18.0')) {
     func.artifact = artifactPath;
     func.package = Object.assign({}, func.package, { disable: true });
-    this.serverless.cli.log(
-      `${func.name} is packaged by the esbuild plugin. Ignore messages from SLS.`
-    );
+    this.log.verbose(`${func.name} is packaged by the esbuild plugin. Ignore messages from SLS.`);
   } else {
     func.package = {
       artifact: artifactPath,
@@ -128,7 +126,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     await zip(artifactPath, filesPathList, this.buildOptions.nativeZip);
     const { size } = fs.statSync(artifactPath);
 
-    this.serverless.cli.log(
+    this.log.verbose(
       `Zip service ${this.serverless.service.service} - ${humanSize(size)} [${
         Date.now() - startZip
       } ms]`
@@ -208,7 +206,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
       const { size } = fs.statSync(artifactPath);
 
-      this.serverless.cli.log(
+      this.log.verbose(
         `Zip function: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`
       );
 

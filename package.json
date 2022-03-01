@@ -49,7 +49,7 @@
     "@types/node": "^12.12.38",
     "@types/ramda": "0.27.40",
     "@types/semver": "^7.3.8",
-    "@types/serverless": "^1.78.25",
+    "@types/serverless": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "esbuild": "^0.14.2",

@@ -10,7 +10,7 @@ import { trimExtension } from './utils';
 
 export async function bundle(this: EsbuildServerlessPlugin, incremental = false): Promise<void> {
   this.prepare();
-  this.serverless.cli.log(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
+  this.log.verbose(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
   if (this.buildOptions.disableIncremental === true) {
     incremental = false;
   }
@@ -70,7 +70,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   // Files can contain multiple handlers for multiple functions, we want to get only the unique ones
   const uniqueFiles: string[] = uniq(this.functionEntries.map(({ entry }) => entry));
 
-  this.serverless.cli.log(`Compiling with concurrency: ${this.buildOptions.concurrency}`);
+  this.log.verbose(`Compiling with concurrency: ${this.buildOptions.concurrency}`);
 
   const fileBuildResults = await pMap(uniqueFiles, bundleMapper, {
     concurrency: this.buildOptions.concurrency,
@@ -91,5 +91,5 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     return { bundlePath, func, functionAlias };
   });
 
-  this.serverless.cli.log('Compiling completed.');
+  this.log.verbose('Compiling completed.');
 }

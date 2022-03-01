@@ -4,10 +4,6 @@ import Serverless from 'serverless';
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
-export interface OptionsExtended extends Serverless.Options {
-  verbose?: boolean;
-}
-
 export interface WatchConfiguration {
   pattern?: string[] | string;
   ignore?: string[] | string;
