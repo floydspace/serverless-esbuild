@@ -1003,4 +1003,123 @@ describe('NPM Packager', () => {
     expect(v6dependencies).toStrictEqual(expectedResult);
     expect(v7dependencies).toStrictEqual(expectedResult);
   });
+
+  test.each([
+    { a: 1, b: 1, expected: 2 },
+    { a: 1, b: 2, expected: 3 },
+    { a: 2, b: 1, expected: 3 },
+  ])('.add($a, $b)', ({ a, b, expected }) => {
+    expect(a + b).toBe(expected);
+  });
+
+  it.each([
+    'npm ERR! code ELSPROBLEMS',
+    'npm ERR! extraneous: foo@1.2.3 ./bar/node_modules/foo',
+    'npm ERR! missing: foo-1@1.0.0, required by foo-2@1.0.0',
+    'npm ERR! peer dep missing: foo@1.2.3',
+  ])('should ignore npm error "%s"', async (ignoredNpmError) => {
+    const v7depsList: NpmV7Deps = {
+      version: '1.0.0',
+      name: 'serverless-example',
+      description: 'Packaged externals for serverless-example',
+      private: true,
+      scripts: {},
+      _id: 'serverless-example@1.0.0',
+      extraneous: false,
+      path: '/workdir/.esbuild/.build',
+      _dependencies: {
+        'samchungy-a': '2.0.0',
+        'samchungy-b': '2.0.0',
+      },
+      devDependencies: {},
+      peerDependencies: {},
+      dependencies: {
+        'samchungy-a': {
+          version: '2.0.0',
+          resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-2.0.0.tgz',
+          name: 'samchungy-a',
+          integrity:
+            'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
+          _id: 'samchungy-a@2.0.0',
+          extraneous: false,
+          path: '/workdir/.esbuild/.build/node_modules/samchungy-a',
+          _dependencies: {
+            'samchungy-dep-a': '1.0.0',
+          },
+          devDependencies: {},
+          peerDependencies: {},
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '1.0.0',
+              resolved: 'https://registry.npmjs.org/samchungy-dep-a/-/samchungy-dep-a-1.0.0.tgz',
+              name: 'samchungy-dep-a',
+              integrity:
+                'sha512-NVac5aAU+p7bsIrUTQO438vAO8MHyNILbeckhzxhadIUqGx3L9kEZ5HTqZ+XqDIRARmOU6UmFtus6Bc7q5+mWA==',
+              _id: 'samchungy-dep-a@1.0.0',
+              extraneous: false,
+              path: '/workdir/.esbuild/.build/node_modules/samchungy-dep-a',
+              _dependencies: {},
+              devDependencies: {},
+              peerDependencies: {},
+            },
+          },
+        },
+        'samchungy-b': {
+          version: '2.0.0',
+          resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-2.0.0.tgz',
+          name: 'samchungy-b',
+          integrity:
+            'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
+          _id: 'samchungy-b@2.0.0',
+          extraneous: false,
+          path: '/workdir/.esbuild/.build/node_modules/samchungy-b',
+          _dependencies: {
+            'samchungy-dep-a': '2.0.0',
+          },
+          devDependencies: {},
+          peerDependencies: {},
+          dependencies: {
+            'samchungy-dep-a': {
+              version: '2.0.0',
+              resolved: 'https://registry.npmjs.org/samchungy-dep-a/-/samchungy-dep-a-2.0.0.tgz',
+              name: 'samchungy-dep-a',
+              integrity:
+                'sha512-Yp30ASjwmyLWCGhlLTqWZa8MlBeBiaaHsmxXMwwQxK/o044vhCsPeugHqhtsZq7Xiq68/TcBux/LKId6eyPNjA==',
+              _id: 'samchungy-dep-a@2.0.0',
+              extraneous: false,
+              path: '/workdir/.esbuild/.build/node_modules/samchungy-b/node_modules/samchungy-dep-a',
+              _dependencies: {},
+              devDependencies: {},
+              peerDependencies: {},
+            },
+          },
+        },
+      },
+    };
+
+    const npm7stderr: string = ''.concat(
+      ignoredNpmError,
+      '\n',
+      JSON.stringify(
+        {
+          error: {
+            code: 'TEST_ERROR_CODE',
+            summary: 'test summary',
+            detail: 'test detail',
+          },
+        },
+        null,
+        1
+      )
+    );
+
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '7.0.0' })
+      .mockRejectedValueOnce(
+        new utils.SpawnError('a spawn error', JSON.stringify(v7depsList), npm7stderr)
+      );
+
+    const result = await npm.getProdDependencies(path);
+    expect(result).toStrictEqual({ stdout: JSON.stringify(v7depsList) });
+  });
 });
