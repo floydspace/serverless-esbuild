@@ -128,7 +128,7 @@ AWS:
 
 If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
 
-_Note:_ If you are using Python functions with Serverless Offline you will need to change the `workFolder` and `buildFolder` to folder names without fullstops.
+_Note:_ If you are using Python functions with Serverless Offline you will need to change the `outputWorkFolder` and `outputBuildFolder` to folder names without fullstops.
 
 ## Advanced Configuration
 
