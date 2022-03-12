@@ -155,7 +155,7 @@ export const buildServerlessV3LoggerFromLegacyLogger = (
   warning: legacyLogger,
   notice: legacyLogger,
   info: legacyLogger,
-  debug: legacyLogger,
-  verbose: verbose ? legacyLogger : () => null,
+  debug: verbose ? legacyLogger : () => null,
+  verbose: legacyLogger,
   success: legacyLogger,
 });
