@@ -17,6 +17,7 @@
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
     "test": "jest --passWithNoTests",
+    "test:e2e": "make test-e2e-minimal",
     "lint": "eslint .",
     "prepare": "husky install"
   },
