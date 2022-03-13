@@ -1,4 +1,4 @@
-import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
+import { any, isEmpty, replace, split, startsWith, takeWhile } from 'ramda';
 import * as path from 'path';
 
 import { DependenciesResult, DependencyMap, JSONObject } from '../types';
@@ -125,6 +125,7 @@ export class NPM implements Packager {
       { npmError: 'extraneous', log: false },
       { npmError: 'missing', log: false },
       { npmError: 'peer dep missing', log: true },
+      { npmError: 'code ELSPROBLEMS', log: false },
     ];
 
     let parsedDeps: NpmV6Deps | NpmV7Deps;
@@ -134,25 +135,21 @@ export class NPM implements Packager {
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
-        const errors = split('\n', err.stderr);
-        const failed = reduce(
-          (f, error) => {
-            if (f) {
-              return true;
-            }
-            return (
-              !isEmpty(error) &&
-              !any(
-                (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
-                ignoredNpmErrors
-              )
-            );
-          },
-          false,
-          errors
+        // Split the stderr by \n character to get the npm ERR! plaintext lines, ignore additonal JSON blob (emitted by npm >=7)
+        // see https://github.com/serverless-heaven/serverless-webpack/pull/782 and https://github.com/floydspace/serverless-esbuild/issues/288
+        const lines = split('\n', err.stderr);
+        const npmErrors = takeWhile((line) => line !== '{', lines);
+
+        const hasThrowableErrors = npmErrors.every(
+          (error) =>
+            !isEmpty(error) &&
+            !any(
+              (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
+              ignoredNpmErrors
+            )
         );
 
-        if (!failed && !isEmpty(err.stdout)) {
+        if (!hasThrowableErrors && !isEmpty(err.stdout)) {
           return { stdout: err.stdout };
         }
       }
