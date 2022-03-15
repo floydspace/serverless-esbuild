@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`individually 1`] = `
+"var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var r=e=>n(e,\\"__esModule\\",{value:!0}),u=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var p=(e,s)=>{r(e);for(var o in s)n(e,o,{get:s[o],enumerable:!0})},y=(e,s,o)=>{if(s&&typeof s==\\"object\\"||typeof s==\\"function\\")for(let t of d(s))!m.call(e,t)&&t!==\\"default\\"&&n(e,t,{get:()=>s[t],enumerable:!(o=a(s,t))||o.enumerable});return e},g=e=>y(r(n(e!=null?l(f(e)):{},\\"default\\",e&&e.__esModule&&\\"default\\"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);p(exports,{handler:()=>x});var c=g(require(\\"lodash\\"));async function x(e,s,o){console.log(c.VERSION),await new Promise(i=>setTimeout(i,500));let t={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};o(null,t)}u(x,\\"handler\\");0&&(module.exports={handler});
+"
+`;
+
+exports[`individually 2`] = `
+"var n=Object.defineProperty;var i=e=>n(e,\\"__esModule\\",{value:!0}),o=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var r=(e,s)=>{i(e);for(var t in s)n(e,t,{get:s[t],enumerable:!0})};r(exports,{handler:()=>a});async function a(e,s,t){await new Promise(c=>setTimeout(c,500));let u={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};t(null,u)}o(a,\\"handler\\");0&&(module.exports={handler});
+"
+`;

@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`complete 1`] = `
+"var d=Object.create;var a=Object.defineProperty;var e=Object.getOwnPropertyDescriptor;var I=Object.getOwnPropertyNames;var l=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var r=i=>a(i,\\"__esModule\\",{value:!0});var u=(i,n)=>{r(i);for(var s in n)a(i,s,{get:n[s],enumerable:!0})},c=(i,n,s)=>{if(n&&typeof n==\\"object\\"||typeof n==\\"function\\")for(let t of I(n))!f.call(i,t)&&t!==\\"default\\"&&a(i,t,{get:()=>n[t],enumerable:!(s=e(n,t))||s.enumerable});return i},g=i=>c(r(a(i!=null?d(l(i)):{},\\"default\\",i&&i.__esModule&&\\"default\\"in i?{get:()=>i.default,enumerable:!0}:{value:i,enumerable:!0})),i);u(exports,{handler:()=>m});var o=g(require(\\"isin-validator\\"));async function m(i){let n=(0,o.default)(i);return{statusCode:200,body:JSON.stringify({message:n?\\"ISIN is invalid!\\":\\"ISIN is fine!\\",input:i})}}0&&(module.exports={handler});
+"
+`;
+
+exports[`complete 2`] = `"diacritics,i18n-iso-countries,isin-validator"`;
