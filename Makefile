@@ -1,7 +1,7 @@
 test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete
 
 test-e2e-minimal:
-        npm link
+	npm link
 	rm -fr ./e2e-minimal && mkdir ./e2e-minimal && rsync -r ./examples/minimal/ ./e2e-minimal/
 	cd ./e2e-minimal && npm i && npm link serverless-esbuild && npx sls package
 	cd ./e2e-minimal/.serverless && unzip minimal-example.zip
