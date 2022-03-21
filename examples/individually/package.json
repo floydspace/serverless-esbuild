@@ -7,7 +7,7 @@
     "@types/lodash": "4.14.91",
     "@types/node": "^11.13.0",
     "serverless": "^2.36.0",
-    "serverless-esbuild": "^1.9.0",
+    "serverless-esbuild": "file:../../",
     "serverless-offline": "^6.4.0"
   },
   "scripts": {
