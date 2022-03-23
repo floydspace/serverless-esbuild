@@ -4,13 +4,10 @@
     "target": "es2019",
     "skipLibCheck": true,
     "outDir": "dist",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "rootDirs": ["e2e"]
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/tests"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "src/tests"]
 }
