@@ -2,6 +2,7 @@ import { bestzip } from 'bestzip';
 import archiver from 'archiver';
 import childProcess from 'child_process';
 import fs from 'fs-extra';
+import nodeFs from 'fs';
 import path from 'path';
 import os from 'os';
 import { join } from 'ramda';
@@ -134,7 +135,7 @@ export const zip = async (
     fs.rmdirSync(tempDirPath, { recursive: true });
   } else {
     const zip = archiver.create('zip');
-    const output = fs.createWriteStream(zipPath);
+    const output = nodeFs.createWriteStream(zipPath);
 
     // write zip
     output.on('open', () => {
