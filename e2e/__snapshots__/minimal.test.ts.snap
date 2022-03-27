@@ -13918,3 +13918,382 @@ module.exports.handler = (event, context, callback) => {
 };
 "
 `;
+
+exports[`minimal 2`] = `"2010-09-09"`;
+
+exports[`minimal 3`] = `
+Object {
+  "ServerlessDeploymentBucketName": Object {
+    "Export": Object {
+      "Name": "sls-minimal-example-dev-ServerlessDeploymentBucketName",
+    },
+    "Value": Object {
+      "Ref": "ServerlessDeploymentBucket",
+    },
+  },
+  "ServiceEndpoint": Object {
+    "Description": "URL of the service endpoint",
+    "Export": Object {
+      "Name": "sls-minimal-example-dev-ServiceEndpoint",
+    },
+    "Value": Object {
+      "Fn::Join": Array [
+        "",
+        Array [
+          "https://",
+          Object {
+            "Ref": "ApiGatewayRestApi",
+          },
+          ".execute-api.",
+          Object {
+            "Ref": "AWS::Region",
+          },
+          ".",
+          Object {
+            "Ref": "AWS::URLSuffix",
+          },
+          "/dev",
+        ],
+      ],
+    },
+  },
+  "ValidateIsinLambdaFunctionQualifiedArn": Object {
+    "Description": "Current Lambda function version",
+    "Export": Object {
+      "Name": "sls-minimal-example-dev-ValidateIsinLambdaFunctionQualifiedArn",
+    },
+    "Value": Object {
+      "Ref": "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg",
+    },
+  },
+}
+`;
+
+exports[`minimal 4`] = `
+Object {
+  "ApiGatewayMethodValidateDashisinIsinVarGet": Object {
+    "DependsOn": Array [
+      "ValidateIsinLambdaPermissionApiGateway",
+    ],
+    "Properties": Object {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "HttpMethod": "GET",
+      "Integration": Object {
+        "IntegrationHttpMethod": "POST",
+        "Type": "AWS_PROXY",
+        "Uri": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "arn:",
+              Object {
+                "Ref": "AWS::Partition",
+              },
+              ":apigateway:",
+              Object {
+                "Ref": "AWS::Region",
+              },
+              ":lambda:path/2015-03-31/functions/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ValidateIsinLambdaFunction",
+                  "Arn",
+                ],
+              },
+              "/invocations",
+            ],
+          ],
+        },
+      },
+      "MethodResponses": Array [],
+      "RequestParameters": Object {},
+      "ResourceId": Object {
+        "Ref": "ApiGatewayResourceValidateDashisinIsinVar",
+      },
+      "RestApiId": Object {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Method",
+  },
+  "ApiGatewayResourceValidateDashisin": Object {
+    "Properties": Object {
+      "ParentId": Object {
+        "Fn::GetAtt": Array [
+          "ApiGatewayRestApi",
+          "RootResourceId",
+        ],
+      },
+      "PathPart": "validate-isin",
+      "RestApiId": Object {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Resource",
+  },
+  "ApiGatewayResourceValidateDashisinIsinVar": Object {
+    "Properties": Object {
+      "ParentId": Object {
+        "Ref": "ApiGatewayResourceValidateDashisin",
+      },
+      "PathPart": "{isin}",
+      "RestApiId": Object {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Resource",
+  },
+  "ApiGatewayRestApi": Object {
+    "Properties": Object {
+      "EndpointConfiguration": Object {
+        "Types": Array [
+          "EDGE",
+        ],
+      },
+      "Name": "dev-minimal-example",
+      "Policy": "",
+    },
+    "Type": "AWS::ApiGateway::RestApi",
+  },
+  "IamRoleLambdaExecution": Object {
+    "Properties": Object {
+      "AssumeRolePolicyDocument": Object {
+        "Statement": Array [
+          Object {
+            "Action": Array [
+              "sts:AssumeRole",
+            ],
+            "Effect": "Allow",
+            "Principal": Object {
+              "Service": Array [
+                "lambda.amazonaws.com",
+              ],
+            },
+          },
+        ],
+        "Version": "2012-10-17",
+      },
+      "Path": "/",
+      "Policies": Array [
+        Object {
+          "PolicyDocument": Object {
+            "Statement": Array [
+              Object {
+                "Action": Array [
+                  "logs:CreateLogStream",
+                  "logs:CreateLogGroup",
+                ],
+                "Effect": "Allow",
+                "Resource": Array [
+                  Object {
+                    "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/minimal-example-dev*:*",
+                  },
+                ],
+              },
+              Object {
+                "Action": Array [
+                  "logs:PutLogEvents",
+                ],
+                "Effect": "Allow",
+                "Resource": Array [
+                  Object {
+                    "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/minimal-example-dev*:*:*",
+                  },
+                ],
+              },
+            ],
+            "Version": "2012-10-17",
+          },
+          "PolicyName": Object {
+            "Fn::Join": Array [
+              "-",
+              Array [
+                "minimal-example",
+                "dev",
+                "lambda",
+              ],
+            ],
+          },
+        },
+      ],
+      "RoleName": Object {
+        "Fn::Join": Array [
+          "-",
+          Array [
+            "minimal-example",
+            "dev",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "lambdaRole",
+          ],
+        ],
+      },
+    },
+    "Type": "AWS::IAM::Role",
+  },
+  "ServerlessDeploymentBucket": Object {
+    "Properties": Object {
+      "BucketEncryption": Object {
+        "ServerSideEncryptionConfiguration": Array [
+          Object {
+            "ServerSideEncryptionByDefault": Object {
+              "SSEAlgorithm": "AES256",
+            },
+          },
+        ],
+      },
+    },
+    "Type": "AWS::S3::Bucket",
+  },
+  "ServerlessDeploymentBucketPolicy": Object {
+    "Properties": Object {
+      "Bucket": Object {
+        "Ref": "ServerlessDeploymentBucket",
+      },
+      "PolicyDocument": Object {
+        "Statement": Array [
+          Object {
+            "Action": "s3:*",
+            "Condition": Object {
+              "Bool": Object {
+                "aws:SecureTransport": false,
+              },
+            },
+            "Effect": "Deny",
+            "Principal": "*",
+            "Resource": Array [
+              Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:",
+                    Object {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":s3:::",
+                    Object {
+                      "Ref": "ServerlessDeploymentBucket",
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+              Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:",
+                    Object {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":s3:::",
+                    Object {
+                      "Ref": "ServerlessDeploymentBucket",
+                    },
+                  ],
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    "Type": "AWS::S3::BucketPolicy",
+  },
+  "ValidateIsinLambdaFunction": Object {
+    "DependsOn": Array [
+      "ValidateIsinLogGroup",
+    ],
+    "Properties": Object {
+      "Code": Object {
+        "S3Bucket": Object {
+          "Ref": "ServerlessDeploymentBucket",
+        },
+        "S3Key": StringContaining "minimal-example.zip",
+      },
+      "FunctionName": "minimal-example-dev-validateIsin",
+      "Handler": "index.handler",
+      "MemorySize": 1024,
+      "Role": Object {
+        "Fn::GetAtt": Array [
+          "IamRoleLambdaExecution",
+          "Arn",
+        ],
+      },
+      "Runtime": "nodejs12.x",
+      "Timeout": 6,
+    },
+    "Type": "AWS::Lambda::Function",
+  },
+  "ValidateIsinLambdaPermissionApiGateway": Object {
+    "Properties": Object {
+      "Action": "lambda:InvokeFunction",
+      "FunctionName": Object {
+        "Fn::GetAtt": Array [
+          "ValidateIsinLambdaFunction",
+          "Arn",
+        ],
+      },
+      "Principal": "apigateway.amazonaws.com",
+      "SourceArn": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "arn:",
+            Object {
+              "Ref": "AWS::Partition",
+            },
+            ":execute-api:",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ":",
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+            ":",
+            Object {
+              "Ref": "ApiGatewayRestApi",
+            },
+            "/*/*",
+          ],
+        ],
+      },
+    },
+    "Type": "AWS::Lambda::Permission",
+  },
+  "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg": Object {
+    "DeletionPolicy": "Retain",
+    "Properties": Object {
+      "CodeSha256": "e3rFVkcGNQQ/f5FlNP1UrgUuW453BrlyaenA0ZTb2Yk=",
+      "FunctionName": Object {
+        "Ref": "ValidateIsinLambdaFunction",
+      },
+    },
+    "Type": "AWS::Lambda::Version",
+  },
+  "ValidateIsinLogGroup": Object {
+    "Properties": Object {
+      "LogGroupName": "/aws/lambda/minimal-example-dev-validateIsin",
+    },
+    "Type": "AWS::Logs::LogGroup",
+  },
+}
+`;
+
+exports[`minimal 5`] = `
+Object {
+  "DependsOn": Array [
+    "ApiGatewayMethodValidateDashisinIsinVarGet",
+  ],
+  "Properties": Object {
+    "RestApiId": Object {
+      "Ref": "ApiGatewayRestApi",
+    },
+    "StageName": "dev",
+  },
+  "Type": "AWS::ApiGateway::Deployment",
+}
+`;
