@@ -10,14 +10,26 @@ test('complete', () => {
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
   expect(cloudformation.Description).toMatchSnapshot;
-  expect(cloudformation.Outputs).toMatchSnapshot();
+  expect(cloudformation.Outputs).toMatchSnapshot({
+    ValidateIsinLambdaFunctionQualifiedArn: {
+      Value: {
+        Ref: expect.stringContaining('ValidateIsinLambdaVersion'),
+      },
+    },
+  });
 
   const apiGatewayDeploymentPropertyKey = Object.keys(cloudformation.Resources).find((s) =>
     s.startsWith('ApiGatewayDeployment')
   ) as keyof typeof cloudformation.Resources;
 
-  const { [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment, ...deterministicResources } =
-    cloudformation.Resources;
+  const validateIsinLambdaVersionPropertyKey = cloudformation.Outputs
+    .ValidateIsinLambdaFunctionQualifiedArn.Value.Ref as keyof typeof cloudformation.Resources;
+
+  const {
+    [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment,
+    [validateIsinLambdaVersionPropertyKey]: validateIsinLambdaVersion,
+    ...deterministicResources
+  } = cloudformation.Resources;
 
   expect(deterministicResources).toMatchSnapshot({
     ValidateIsinLambdaFunction: {
@@ -28,4 +40,5 @@ test('complete', () => {
   });
 
   expect(apiGatewayDeployment).toMatchSnapshot();
+  expect(validateIsinLambdaVersion).toMatchSnapshot();
 });

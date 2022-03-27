@@ -49,7 +49,7 @@ Object {
       "Name": "sls-complete-example-dev-ValidateIsinLambdaFunctionQualifiedArn",
     },
     "Value": Object {
-      "Ref": "ValidateIsinLambdaVersionnrAdhNOpL5vZaS4wFKAuSIhjsv70Uen722nrKBWYQaY",
+      "Ref": StringContaining "ValidateIsinLambdaVersion",
     },
   },
 }
@@ -350,16 +350,6 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersionnrAdhNOpL5vZaS4wFKAuSIhjsv70Uen722nrKBWYQaY": Object {
-    "DeletionPolicy": "Retain",
-    "Properties": Object {
-      "CodeSha256": "wKVdIcmR8V/CZ4aPirRH8t9cxvsWlWjq8y9pSabv+E8=",
-      "FunctionName": Object {
-        "Ref": "ValidateIsinLambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
   "ValidateIsinLogGroup": Object {
     "Properties": Object {
       "LogGroupName": "/aws/lambda/complete-example-dev-validateIsin",
@@ -381,5 +371,18 @@ Object {
     "StageName": "dev",
   },
   "Type": "AWS::ApiGateway::Deployment",
+}
+`;
+
+exports[`complete 6`] = `
+Object {
+  "DeletionPolicy": "Retain",
+  "Properties": Object {
+    "CodeSha256": "wKVdIcmR8V/CZ4aPirRH8t9cxvsWlWjq8y9pSabv+E8=",
+    "FunctionName": Object {
+      "Ref": "ValidateIsinLambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
 }
 `;
