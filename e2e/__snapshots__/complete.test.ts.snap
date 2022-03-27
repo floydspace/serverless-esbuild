@@ -378,7 +378,7 @@ exports[`complete 6`] = `
 Object {
   "DeletionPolicy": "Retain",
   "Properties": Object {
-    "CodeSha256": "wKVdIcmR8V/CZ4aPirRH8t9cxvsWlWjq8y9pSabv+E8=",
+    "CodeSha256": Any<String>,
     "FunctionName": Object {
       "Ref": "ValidateIsinLambdaFunction",
     },
