@@ -40,5 +40,9 @@ test('complete', () => {
   });
 
   expect(apiGatewayDeployment).toMatchSnapshot();
-  expect(validateIsinLambdaVersion).toMatchSnapshot();
+  expect(validateIsinLambdaVersion).toMatchSnapshot({
+    Properties: {
+      CodeSha256: expect.any(String),
+    },
+  });
 });
