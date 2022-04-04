@@ -25,6 +25,7 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
   disableIncremental?: boolean;
+  skipExternalsPacking?: boolean;
 }
 
 export interface FunctionBuildResult {

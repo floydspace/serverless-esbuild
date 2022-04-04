@@ -204,7 +204,9 @@ function getProdModules(
  */
 export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const plugins = this.plugins;
-
+  if (this.buildOptions.skipExternalsPacking) {
+    return;
+  }
   if (
     plugins &&
     plugins.map((plugin) => plugin.name).includes('node-externals') &&
