@@ -91,8 +91,8 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
         // We already have this root dep and it's dependencies - skip this iteration
         if (flattenedDependencies.has(depName)) return;
 
-        recursiveFind(root[depName].dependencies);
         flattenedDependencies.add(depName);
+        recursiveFind(root[depName].dependencies);
         return;
       }
 

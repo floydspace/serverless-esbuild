@@ -223,7 +223,7 @@ describe('flatDeps', () => {
         },
       };
 
-      const expectedResult: string[] = ['samchungy-dep-a', 'samchungy-a', 'samchungy-b'];
+      const expectedResult: string[] = ['samchungy-a', 'samchungy-dep-a', 'samchungy-b'];
 
       const result = flatDep(depMap, ['samchungy-a', 'samchungy-b']);
 
@@ -300,11 +300,11 @@ describe('flatDeps', () => {
       };
 
       const expectedResult: string[] = [
-        'samchungy-dep-e',
-        'samchungy-dep-c',
-        'samchungy-dep-d',
-        'samchungy-dep-b',
         'samchungy-a',
+        'samchungy-dep-b',
+        'samchungy-dep-c',
+        'samchungy-dep-e',
+        'samchungy-dep-d',
         'samchungy-b',
       ];
 
@@ -350,11 +350,11 @@ describe('flatDeps', () => {
       };
 
       const expectedResult: string[] = [
-        'samchungy-dep-e',
-        'samchungy-dep-c',
-        'samchungy-dep-d',
-        'samchungy-dep-b',
         'samchungy-a',
+        'samchungy-dep-b',
+        'samchungy-dep-c',
+        'samchungy-dep-e',
+        'samchungy-dep-d',
         'samchungy-b',
       ];
 
