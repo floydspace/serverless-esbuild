@@ -193,6 +193,37 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return plugins;
   }
 
+  get packagePatterns() {
+    const { service } = this.serverless;
+    const patterns = [];
+    const ignored = [];
+
+    for (const pattern of service.package.patterns) {
+      if (pattern.startsWith('!')) {
+        ignored.push(pattern.slice(1));
+      } else {
+        patterns.push(pattern);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, fn] of Object.entries(this.functions)) {
+      if (fn.package.patterns.length === 0) {
+        continue;
+      }
+
+      for (const pattern of fn.package.patterns) {
+        if (pattern.startsWith('!')) {
+          ignored.push(pattern.slice(1));
+        } else {
+          patterns.push(pattern);
+        }
+      }
+    }
+
+    return { patterns, ignored };
+  }
+
   private getCachedOptions = memoizeWith(always('cache'), () => {
     const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
     const target = runtimeMatcher?.[this.serverless.service.provider.runtime];
@@ -233,10 +264,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       options.ignored = [options.ignored];
     }
 
-    const { patterns, ignored } = this.patterns;
+    const { patterns, ignored } = this.packagePatterns;
     defaultPatterns = [...defaultPatterns, ...patterns];
     options.ignored = [...options.ignored, ...ignored];
-    console.log(options);
     chokidar.watch(defaultPatterns, options).on('all', (eventName, srcPath) =>
       this.bundle(true)
         .then(() => this.updateFile(eventName, srcPath))
@@ -337,37 +367,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     });
     this.log.verbose('Compiling completed.');
     return this.buildResults.map((r) => r.result);
-  }
-
-  get patterns() {
-    const { service } = this.serverless;
-    const patterns = [];
-    const ignored = [];
-
-    for (const pattern of service.package.patterns) {
-      if (pattern.startsWith('!')) {
-        ignored.push(pattern.slice(1));
-      } else {
-        patterns.push(pattern);
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const [_, fn] of Object.entries(this.functions)) {
-      if (fn.package.patterns.length === 0) {
-        continue;
-      }
-
-      for (const pattern of fn.package.patterns) {
-        if (pattern.startsWith('!')) {
-          ignored.push(pattern.slice(1));
-        } else {
-          patterns.push(pattern);
-        }
-      }
-    }
-
-    return { patterns, ignored };
   }
 
   async updateFile(op: string, filename: string) {
