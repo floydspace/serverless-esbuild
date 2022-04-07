@@ -7,6 +7,7 @@ import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
 import chokidar from 'chokidar';
+import anymatch from 'anymatch';
 
 import {
   buildServerlessV3LoggerFromLegacyLogger,
@@ -37,6 +38,22 @@ const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
   packagerOptions: {},
   platform: 'node',
 };
+
+function updateFile(op: string, src: string, dest: string) {
+  if (['add', 'change', 'addDir'].includes(op)) {
+    fs.copySync(src, dest, {
+      dereference: true,
+      errorOnExist: false,
+      preserveTimestamps: true,
+      recursive: true,
+    });
+    return;
+  }
+
+  if (['unlink', 'unlinkDir'].includes(op)) {
+    fs.removeSync(dest);
+  }
+}
 
 class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
@@ -200,14 +217,29 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   async watch(): Promise<void> {
+    let defaultPatterns = this.buildOptions.watch.pattern;
+
     const options = {
-      ignored: this.buildOptions.watch.ignore,
+      ignored: this.buildOptions.watch.ignore || [],
       awaitWriteFinish: true,
       ignoreInitial: true,
     };
 
-    chokidar.watch(this.buildOptions.watch.pattern, options).on('all', () =>
+    if (!Array.isArray(defaultPatterns)) {
+      defaultPatterns = [defaultPatterns];
+    }
+
+    if (!Array.isArray(options.ignored)) {
+      options.ignored = [options.ignored];
+    }
+
+    const { patterns, ignored } = this.patterns;
+    defaultPatterns = [...defaultPatterns, ...patterns];
+    options.ignored = [...options.ignored, ...ignored];
+    console.log(options);
+    chokidar.watch(defaultPatterns, options).on('all', (eventName, srcPath) =>
       this.bundle(true)
+        .then(() => this.updateFile(eventName, srcPath))
         .then(() => this.log.verbose('Watching files for changes...'))
         .catch(() => this.log.error('Bundle error, waiting for a file change to reload...'))
     );
@@ -307,6 +339,72 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return this.buildResults.map((r) => r.result);
   }
 
+  get patterns() {
+    const { service } = this.serverless;
+    const patterns = [];
+    const ignored = [];
+
+    for (const pattern of service.package.patterns) {
+      if (pattern.startsWith('!')) {
+        ignored.push(pattern.slice(1));
+      } else {
+        patterns.push(pattern);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, fn] of Object.entries(this.functions)) {
+      if (fn.package.patterns.length === 0) {
+        continue;
+      }
+
+      for (const pattern of fn.package.patterns) {
+        if (pattern.startsWith('!')) {
+          ignored.push(pattern.slice(1));
+        } else {
+          patterns.push(pattern);
+        }
+      }
+    }
+
+    return { patterns, ignored };
+  }
+
+  async updateFile(op: string, filename: string) {
+    const { service } = this.serverless;
+
+    if (
+      service.package.patterns.length > 0 &&
+      anymatch(
+        service.package.patterns.filter((p) => !p.startsWith('!')),
+        filename
+      )
+    ) {
+      const destFileName = path.resolve(path.join(this.buildDirPath, filename));
+      updateFile(op, path.resolve(filename), destFileName);
+      return;
+    }
+
+    for (const [functionAlias, fn] of Object.entries(this.functions)) {
+      if (fn.package.patterns.length === 0) {
+        continue;
+      }
+
+      if (
+        anymatch(
+          fn.package.patterns.filter((p) => !p.startsWith('!')),
+          filename
+        )
+      ) {
+        const destFileName = path.resolve(
+          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
+        );
+        updateFile(op, path.resolve(filename), destFileName);
+        return;
+      }
+    }
+  }
+
   /** Link or copy extras such as node_modules or package.patterns definitions */
   async copyExtras() {
     const { service } = this.serverless;
@@ -317,15 +415,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, filename));
-        const dirname = path.dirname(destFileName);
-
-        if (!fs.existsSync(dirname)) {
-          fs.mkdirpSync(dirname);
-        }
-
-        if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), destFileName);
-        }
+        updateFile('add', path.resolve(filename), destFileName);
       }
     }
 
@@ -339,15 +429,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         const destFileName = path.resolve(
           path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
         );
-        const dirname = path.dirname(destFileName);
-
-        if (!fs.existsSync(dirname)) {
-          fs.mkdirpSync(dirname);
-        }
-
-        if (!fs.existsSync(destFileName)) {
-          fs.copySync(path.resolve(filename), destFileName);
-        }
+        updateFile('add', path.resolve(filename), destFileName);
       }
     }
   }
