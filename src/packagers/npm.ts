@@ -221,7 +221,10 @@ export class NPM implements Packager {
     };
 
     return {
-      dependencies: convertTrees(parsedDeps.dependencies, {}),
+      ...(parsedDeps.dependencies &&
+        !isEmpty(parsedDeps.dependencies) && {
+          dependencies: convertTrees(parsedDeps.dependencies, {}),
+        }),
     };
   }
 
