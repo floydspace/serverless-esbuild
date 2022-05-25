@@ -131,7 +131,7 @@ export const zip = async (
     });
 
     // delete the temporary folder
-    fs.rmdirSync(tempDirPath, { recursive: true });
+    fs.removeSync(tempDirPath);
   } else {
     const zip = archiver.create('zip');
     const output = fs.createWriteStream(zipPath);
@@ -157,7 +157,7 @@ export const zip = async (
     return new Promise((resolve, reject) => {
       output.on('close', () => {
         // delete the temporary folder
-        fs.rmdirSync(tempDirPath, { recursive: true });
+        fs.removeSync(tempDirPath);
 
         resolve();
       });

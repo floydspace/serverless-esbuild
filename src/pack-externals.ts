@@ -90,7 +90,7 @@ function getProdModules(
       !packageJson.dependencies[externalModule.external] &&
       !packageJson.devDependencies[externalModule.external]
     ) {
-      this.log.verbose(
+      this.log.debug(
         `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
       );
 
@@ -116,7 +116,7 @@ function getProdModules(
         );
       }
 
-      this.log.verbose(
+      this.log.debug(
         `INFO: Runtime dependency '${externalModule.external}' found in devDependencies. It has been excluded automatically.`
       );
 
@@ -165,7 +165,7 @@ function getProdModules(
       );
 
       if (!isEmpty(peerDependenciesWithoutOptionals)) {
-        this.log.verbose(
+        this.log.debug(
           `Adding explicit non-optionals peers for dependency ${externalModule.external}`
         );
         const peerModules = getProdModules.call(
@@ -267,11 +267,11 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const packageSections = pick(sectionNames, packageJson);
 
   if (!isEmpty(packageSections)) {
-    this.log.verbose(`Using package.json sections ${join(', ', keys(packageSections))}`);
+    this.log.debug(`Using package.json sections ${join(', ', keys(packageSections))}`);
   }
 
   // Get first level dependency graph
-  this.log.verbose(`Fetch dependency graph from ${packageJson}`);
+  this.log.debug(`Fetch dependency graph from ${packageJson}`);
 
   // (1) Generate dependency composition
   const externalModules = map((external) => ({ external }), externals);
@@ -338,20 +338,20 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   this.log.verbose('Packing external modules: ' + compositeModules.join(', '));
   const installExtraArgs = this.buildOptions.installExtraArgs;
   await packager.install(compositeModulePath, installExtraArgs, exists);
-  this.log.verbose(`Package took [${Date.now() - start} ms]`);
+  this.log.debug(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
   await packager.prune(compositeModulePath);
 
-  this.log.verbose(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
+  this.log.debug(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
 
   // Run packager scripts
   if (Object.keys(packagerScripts).length > 0) {
     const startScripts = Date.now();
     await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
 
-    this.log.verbose(
+    this.log.debug(
       `Packager scripts took [${Date.now() - startScripts} ms].\nExecuted scripts: ${Object.values(
         packagerScripts
       ).map((script) => `\n  ${script}`)}`

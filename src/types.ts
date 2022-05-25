@@ -13,7 +13,9 @@ export interface PackagerOptions {
   scripts?: string[] | string;
 }
 
-export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'> {
+export type EsbuildOptions = Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'>;
+
+export interface Configuration extends EsbuildOptions {
   concurrency?: number;
   packager: 'npm' | 'yarn';
   packagePath: string;
@@ -25,6 +27,8 @@ export interface Configuration extends Omit<BuildOptions, 'nativeZip' | 'watch' 
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
   disableIncremental?: boolean;
+  outputWorkFolder?: string;
+  outputBuildFolder?: string;
 }
 
 export interface FunctionEntry {

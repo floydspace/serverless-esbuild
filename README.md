@@ -72,19 +72,21 @@ See [example folder](examples) for some example configurations.
 
 ### Options
 
-| Option                | Description                                                                                                                                                                | Default            |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api). See [Default Esbuild Options](#default-esbuild-options)       | N/A                |
-| `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `Infinity`         |
-| `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`            |
-| `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`      |
-| `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`               |
-| `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`            |
-| `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`            |
-| `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'` |
-| `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`            |
-| `packagerOptions`     | Extra options for packagers for `external` dependency resolution. See [Packager Options](#packager-options)                                                                | N/A                |
-| `watch`               | Watch options for `serverless-offline`. See [Watch Options](#watch-options)                                                                                                | N/A                |
+| Option                | Description                                                                                                                                                                | Default                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api).                                                               | [Default Esbuild Options](#default-esbuild-options) |
+| `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `Infinity`                                          |
+| `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`                                             |
+| `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`                                       |
+| `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`                                                |
+| `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`                                             |
+| `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`                                             |
+| `outputBuildFolder`   | The output folder for Esbuild builds within the work folder.                                                                                                               | `'.build'`                                          |
+| `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done.                                                                                                | `'.esbuild'`                                        |
+| `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'`                                  |
+| `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
+| `packagerOptions`     | Extra options for packagers for `external` dependency resolution.                                                                                                          | [Packager Options](#packager-options)               |
+| `watch`               | Watch options for `serverless-offline`.                                                                                                                                    | [Watch Options](#watch-options)                     |
 
 #### Default Esbuild Options
 
@@ -98,6 +100,7 @@ The following `esbuild` options are automatically set.
 | `outDir`      | N/A        | Cannot be overridden                                                   |
 | `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                               |
 | `target`      | `'node12'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
+| `watch`       | N/A        | Cannot be overridden                                                   |
 
 #### Packager Options
 
@@ -107,10 +110,10 @@ The following `esbuild` options are automatically set.
 
 #### Watch Options
 
-| Option    | Description                                                                                          | Default                                                |
-| --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
-| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.build', 'dist', 'node_modules', '.serverless']`    |
+| Option    | Description                                                                                          | Default                                                             |
+| --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files)              |
+| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `[{outputBuildFolder}, 'dist', 'node_modules', {outputWorkFolder}]` |
 
 ## Supported Runtimes
 
@@ -120,10 +123,13 @@ AWS:
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs16.x` | `node16` |
 | `nodejs14.x` | `node14` |
 | `nodejs12.x` | `node12` |
 
 If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
+
+_Note:_ If you are using Python functions with Serverless Offline you will need to change the `outputWorkFolder` and `outputBuildFolder` to folder names without fullstops.
 
 ## Advanced Configuration
 

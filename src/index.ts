@@ -25,27 +25,11 @@ import {
   ReturnPluginsFn,
 } from './types';
 
-const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
-  concurrency: Infinity,
-  bundle: true,
-  target: 'node12',
-  external: [],
-  exclude: ['aws-sdk'],
-  nativeZip: false,
-  packager: 'npm',
-  installExtraArgs: [],
-  watch: {
-    pattern: './**/*.(js|ts)',
-    ignore: [WORK_FOLDER, 'dist', 'node_modules', SERVERLESS_FOLDER],
-  },
-  keepOutputDirectory: false,
-  packagerOptions: {},
-  platform: 'node',
-};
-
 class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
+  outputWorkFolder: string;
   workDirPath: string;
+  outputBuildFolder: string;
   buildDirPath: string;
   log: ServerlessPlugin.Logging['log'];
 
@@ -77,11 +61,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.preLocal = preLocal.bind(this);
     this.bundle = bundle.bind(this);
 
+    this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
+    this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore old versions use servicePath, new versions serviceDir. Types will use only one of them
     this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
-    this.workDirPath = path.join(this.serviceDirPath, WORK_FOLDER);
-    this.buildDirPath = path.join(this.workDirPath, BUILD_FOLDER);
+    this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
+    this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
 
     this.hooks = {
       'before:run:run': async () => {
@@ -186,6 +173,24 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   private getCachedOptions = memoizeWith(always('cache'), () => {
+    const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {
+        pattern: './**/*.(js|ts)',
+        ignore: [this.outputWorkFolder, 'dist', 'node_modules', this.outputBuildFolder],
+      },
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'node',
+    };
+
     const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];
     const target = runtimeMatcher?.[this.serverless.service.provider.runtime];
     const resolvedOptions = {
