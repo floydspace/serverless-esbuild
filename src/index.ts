@@ -1,8 +1,6 @@
-import { build, BuildResult, BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import globby from 'globby';
 import path from 'path';
-import pMap from 'p-map';
 import { concat, always, memoizeWith, mergeRight } from 'ramda';
 import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
@@ -11,16 +9,22 @@ import anymatch from 'anymatch';
 
 import {
   buildServerlessV3LoggerFromLegacyLogger,
-  extractFileNames,
+  extractFunctionEntries,
   providerRuntimeMatcher,
 } from './helper';
 import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
-import { trimExtension } from './utils';
+import { bundle } from './bundle';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-import { Configuration, FunctionBuildResult, Plugins, ReturnPluginsFn } from './types';
+import {
+  Configuration,
+  FileBuildResult,
+  FunctionBuildResult,
+  Plugins,
+  ReturnPluginsFn,
+} from './types';
 
 function updateFile(op: string, src: string, dest: string) {
   if (['add', 'change', 'addDir'].includes(op)) {
@@ -50,6 +54,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   options: Serverless.Options;
   hooks: ServerlessPlugin.Hooks;
   buildResults: FunctionBuildResult[];
+  /** Used for storing previous esbuild build results so we can rebuild more efficiently */
+  buildCache: Record<string, FileBuildResult>;
+  bundle: (incremental?: boolean) => Promise<void>;
   packExternalModules: () => Promise<void>;
   pack: () => Promise<void>;
   preOffline: () => Promise<void>;
@@ -69,6 +76,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
+    this.bundle = bundle.bind(this);
 
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
@@ -214,6 +222,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   private getCachedOptions = memoizeWith(always('cache'), () => {
     const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
+      concurrency: Infinity,
       bundle: true,
       target: 'node12',
       external: [],
@@ -244,8 +253,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return this.getCachedOptions();
   }
 
-  get rootFileNames() {
-    return extractFileNames(
+  get functionEntries() {
+    return extractFunctionEntries(
       this.serviceDirPath,
       this.serverless.service.provider.name,
       this.functions
@@ -308,70 +317,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         ],
       };
     }
-  }
-
-  async bundle(incremental = false): Promise<BuildResult[]> {
-    this.prepare();
-    this.log.verbose(`Compiling to ${this.buildOptions.target} bundle with esbuild...`);
-    if (this.buildOptions.disableIncremental === true) {
-      incremental = false;
-    }
-
-    const bundleMapper = async (bundleInfo) => {
-      const { entry, func, functionAlias } = bundleInfo;
-      const config: Omit<BuildOptions, 'watch'> = {
-        ...this.buildOptions,
-        external: [
-          ...this.buildOptions.external,
-          ...(this.buildOptions.exclude === '*' || this.buildOptions.exclude.includes('*')
-            ? []
-            : this.buildOptions.exclude),
-        ],
-        entryPoints: [entry],
-        outdir: path.join(this.buildDirPath, path.dirname(entry)),
-        incremental,
-        plugins: this.plugins,
-      };
-
-      // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
-      delete config['concurrency'];
-      delete config['exclude'];
-      delete config['nativeZip'];
-      delete config['packager'];
-      delete config['packagePath'];
-      delete config['watch'];
-      delete config['keepOutputDirectory'];
-      delete config['packagerOptions'];
-      delete config['installExtraArgs'];
-      delete config['disableIncremental'];
-
-      const bundlePath = entry.substr(0, entry.lastIndexOf('.')) + '.js';
-
-      if (this.buildResults) {
-        const { result } = this.buildResults.find(({ func: fn }) => fn.name === func.name);
-        if (result.rebuild) {
-          await result.rebuild();
-          return { result, bundlePath, func, functionAlias };
-        }
-      }
-
-      const result = await build(config);
-
-      if (config.metafile) {
-        fs.writeFileSync(
-          path.join(this.buildDirPath, `${trimExtension(entry)}-meta.json`),
-          JSON.stringify(result.metafile, null, 2)
-        );
-      }
-
-      return { result, bundlePath, func, functionAlias };
-    };
-    this.log.verbose(`Compiling with concurrency: ${this.buildOptions.concurrency ?? 'Infinity'}`);
-    this.buildResults = await pMap(this.rootFileNames, bundleMapper, {
-      concurrency: this.buildOptions.concurrency,
-    });
-    this.log.verbose('Compiling completed.');
-    return this.buildResults.map((r) => r.result);
   }
 
   async updateFile(op: string, filename: string) {

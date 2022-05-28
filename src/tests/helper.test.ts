@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFileNames, flatDep, getDepsFromBundle } from '../helper';
+import { extractFunctionEntries, flatDep, getDepsFromBundle } from '../helper';
 import { DependencyMap } from '../types';
 
 jest.mock('fs-extra');
@@ -14,7 +14,7 @@ afterEach(() => {
   jest.resetAllMocks();
 });
 
-describe('extractFileNames', () => {
+describe('extractFunctionEntries', () => {
   const cwd = process.cwd();
 
   describe('aws', () => {
@@ -31,7 +31,7 @@ describe('extractFileNames', () => {
         },
       };
 
-      const fileNames = extractFileNames(cwd, 'aws', functionDefinitions);
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
 
       expect(fileNames).toStrictEqual([
         {
@@ -60,7 +60,7 @@ describe('extractFileNames', () => {
         },
       };
 
-      const fileNames = extractFileNames(cwd, 'aws', functionDefinitions);
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
 
       expect(fileNames).toStrictEqual([
         {
@@ -89,7 +89,7 @@ describe('extractFileNames', () => {
         },
       };
 
-      const fileNames = extractFileNames(cwd, 'aws', functionDefinitions);
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
 
       expect(fileNames).toStrictEqual([
         {
@@ -116,7 +116,7 @@ describe('extractFileNames', () => {
         },
       };
 
-      const fileNames = extractFileNames(cwd, 'aws', functionDefinitions);
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
 
       expect(fileNames).toStrictEqual([
         {
@@ -140,7 +140,7 @@ describe('extractFileNames', () => {
         },
       };
 
-      expect(() => extractFileNames(cwd, 'aws', functionDefinitions)).toThrowError();
+      expect(() => extractFunctionEntries(cwd, 'aws', functionDefinitions)).toThrowError();
       expect(consoleSpy).toBeCalled();
     });
   });
