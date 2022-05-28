@@ -63,7 +63,6 @@ describe('pack', () => {
 
       const buildResults: FunctionBuildResult[] = [
         {
-          result: { errors: [], warnings: [] },
           bundlePath: 'hello1.js',
           func: {
             handler: 'hello1.handler',
@@ -74,7 +73,6 @@ describe('pack', () => {
           functionAlias: 'hello1',
         },
         {
-          result: { errors: [], warnings: [] },
           bundlePath: 'hello2.js',
           func: {
             handler: 'hello2.handler',

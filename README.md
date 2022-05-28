@@ -75,7 +75,7 @@ See [example folder](examples) for some example configurations.
 | Option                | Description                                                                                                                                                                | Default                                             |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api).                                                               | [Default Esbuild Options](#default-esbuild-options) |
-| `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `'Infinity'`                                        |
+| `concurrency`         | The number of concurrent zip and bundle operations to run at once (This can be memory intensive). eg. `10`. _NOTE_: This will produce slower builds.                       | `Infinity`                                          |
 | `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`                                             |
 | `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`                                       |
 | `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`                                                |
@@ -84,7 +84,7 @@ See [example folder](examples) for some example configurations.
 | `outputBuildFolder`   | The output folder for Esbuild builds within the work folder.                                                                                                               | `'.build'`                                          |
 | `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done.                                                                                                | `'.esbuild'`                                        |
 | `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'`                                  |
-| `packager`            | Package to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                         | `'npm'`                                             |
+| `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
 | `packagerOptions`     | Extra options for packagers for `external` dependency resolution.                                                                                                          | [Packager Options](#packager-options)               |
 | `watch`               | Watch options for `serverless-offline`.                                                                                                                                    | [Watch Options](#watch-options)                     |
 
@@ -239,7 +239,7 @@ In comparison to `serverless offline`, the `start` command will fire an `init` a
 
 Automatic compilation is available while using the plugin with `serverless-offline`.
 
-```
+```yml
 custom:
   esbuild:
     watch:

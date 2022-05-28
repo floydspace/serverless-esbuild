@@ -31,11 +31,22 @@ export interface Configuration extends EsbuildOptions {
   outputBuildFolder?: string;
 }
 
+export interface FunctionEntry {
+  entry: string;
+  func: Serverless.FunctionDefinitionHandler;
+  functionAlias?: string;
+}
+
 export interface FunctionBuildResult {
-  result: BuildResult;
   bundlePath: string;
   func: Serverless.FunctionDefinitionHandler;
   functionAlias: string;
+}
+
+export interface FileBuildResult {
+  bundlePath: string;
+  entry: string;
+  result: BuildResult;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
