@@ -397,17 +397,12 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     if (service.package.individually || this.options.function) {
       Object.values(this.functions).forEach((func) => {
-        func.package.artifact = path.join(
-          this.serviceDirPath,
-          SERVERLESS_FOLDER,
-          path.basename(func.package.artifact)
-        );
+        func.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(func.package.artifact));
       });
       return;
     }
 
     service.package.artifact = path.join(
-      this.serviceDirPath,
       SERVERLESS_FOLDER,
       path.basename(service.package.artifact)
     );
