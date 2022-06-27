@@ -24,6 +24,7 @@ import {
   FunctionBuildResult,
   Plugins,
   ReturnPluginsFn,
+  ConfigFn,
 } from './types';
 
 function updateFile(op: string, src: string, dest: string) {
@@ -72,6 +73,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.log =
       logging?.log ||
       buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log, this.options.verbose);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore old versions use servicePath, new versions serviceDir. Types will use only one of them
+    this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
     this.packExternalModules = packExternalModules.bind(this);
     this.pack = pack.bind(this);
     this.preOffline = preOffline.bind(this);
@@ -81,9 +85,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore old versions use servicePath, new versions serviceDir. Types will use only one of them
-    this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
     this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
     this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
 
@@ -177,9 +178,13 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   get plugins(): Plugins {
     if (!this.buildOptions.plugins) return;
 
+    if (Array.isArray(this.buildOptions.plugins)) {
+      return this.buildOptions.plugins;
+    }
+
     const plugins: Plugins | ReturnPluginsFn = require(path.join(
       this.serviceDirPath,
-      this.buildOptions.plugins
+      this.buildOptions.plugins as string
     ));
 
     if (typeof plugins === 'function') {
@@ -246,7 +251,15 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     };
     const withDefaultOptions = mergeRight(DEFAULT_BUILD_OPTIONS);
     const withResolvedOptions = mergeRight(withDefaultOptions(resolvedOptions));
-    return withResolvedOptions<Configuration>(this.serverless.service.custom?.esbuild ?? {});
+
+    const configPath = this.serverless.service.custom?.esbuild?.config;
+    let config: ConfigFn;
+    if (configPath) {
+      config = require(path.join(this.serviceDirPath, configPath));
+    }
+    return withResolvedOptions<Configuration>(
+      config ? config(this.serverless) : this.serverless.service.custom?.esbuild ?? {}
+    );
   });
 
   get buildOptions() {

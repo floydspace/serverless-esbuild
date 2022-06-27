@@ -1,6 +1,8 @@
 import { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import Serverless from 'serverless';
 
+export type ConfigFn = (sls: Serverless) => Configuration;
+
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
@@ -23,7 +25,7 @@ export interface Configuration extends EsbuildOptions {
   nativeZip: boolean;
   watch: WatchConfiguration;
   installExtraArgs: string[];
-  plugins?: string;
+  plugins?: string | Plugin[];
   keepOutputDirectory?: boolean;
   packagerOptions?: PackagerOptions;
   disableIncremental?: boolean;

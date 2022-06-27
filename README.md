@@ -133,6 +133,26 @@ _Note:_ If you are using Python functions with Serverless Offline you will need 
 
 ## Advanced Configuration
 
+### Config file
+
+Esbuild configuration can be defined by a config file.
+
+```yml
+custom:
+  esbuild:
+    config: './esbuild.config.js'
+```
+
+```js
+// esbuild.config.js
+module.exports = (serverless) => ({
+  external: [
+    'lodash'
+  ],
+  plugins: []
+})
+```
+
 ### Including Extra Files
 
 [Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. You can use `patterns`, `include` and `exclude` to include extra files into your bundles.
