@@ -49,10 +49,12 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   workDirPath: string;
   outputBuildFolder: string;
   buildDirPath: string;
+  compiledPath: string;
   log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
   options: Serverless.Options;
+  commands: ServerlessPlugin.Commands;
   hooks: ServerlessPlugin.Hooks;
   buildResults: FunctionBuildResult[];
   /** Used for storing previous esbuild build results so we can rebuild more efficiently */
@@ -85,8 +87,26 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
 
+    this.log.info(JSON.stringify(this.options));
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.compiledPath = this.options.esbuildArtifactPath;
+
     this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
     this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
+
+    this.commands = {
+      esbuild: {
+        usage: 'Bundle with esbuild',
+        lifecycleEvents: ['esbuild'],
+        options: {
+          esbuildArtifactPath: {
+            usage: 'Path to esbuild artifacts',
+            // @TODO type: 'string'
+          },
+        },
+      },
+    };
 
     this.hooks = {
       'before:run:run': async () => {
@@ -109,10 +129,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         this.watch();
       },
       'before:package:createDeploymentArtifacts': async () => {
-        await this.bundle();
-        await this.packExternalModules();
-        await this.copyExtras();
-        await this.pack();
+        if (!this.compiledPath) {
+          await this.bundle();
+          await this.packExternalModules();
+          await this.copyExtras();
+          await this.pack();
+        } else {
+          await this.restoreArtifacts();
+        }
       },
       'after:package:createDeploymentArtifacts': async () => {
         await this.cleanup();
@@ -131,6 +155,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         await this.packExternalModules();
         await this.copyExtras();
         await this.preLocal();
+      },
+      'esbuild:esbuild': async () => {
+        await this.bundle();
+        await this.packExternalModules();
+        await this.copyExtras();
+        await this.pack();
+        await this.saveArtifacts();
+        await this.cleanup();
       },
     };
   }
@@ -424,6 +456,56 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       SERVERLESS_FOLDER,
       path.basename(service.package.artifact)
     );
+  }
+
+  async restoreArtifacts(): Promise<void> {
+    // const { service } = this.serverless;
+    // if (service.package.individually || this.options.function) {}
+
+    this.prepare();
+    this.log.verbose(`Placing compiled artifacts to ${this.buildOptions.target} target...`);
+
+    const buildResults = this.functionEntries.map(({ func, functionAlias }) => {
+      return { func, functionAlias };
+    });
+
+    await Promise.all(
+      buildResults.map(async ({ func, functionAlias }) => {
+        this.log.info(JSON.stringify({ func, functionAlias }));
+        const zipName = `${functionAlias}.zip`;
+        const compiledPath = path.join(this.compiledPath, zipName);
+        func.package = {
+          artifact: compiledPath,
+        };
+      })
+    );
+  }
+
+  async saveArtifacts(): Promise<void> {
+    const { service } = this.serverless;
+
+    if (!this.compiledPath) {
+      this.log.error('Missing --esbuildArtifactPath');
+      return;
+    }
+
+    fs.removeSync(path.join(this.compiledPath));
+
+    await fs.copy(path.join(this.workDirPath, SERVERLESS_FOLDER), path.join(this.compiledPath));
+
+    if (service.package.individually || this.options.function) {
+      Object.values(this.functions).forEach((func) => {
+        func.package.artifact = path.join(this.compiledPath, path.basename(func.package.artifact));
+      });
+      return;
+    }
+
+    service.package.artifact = path.join(
+      this.compiledPath,
+      path.basename(service.package.artifact)
+    );
+
+    fs.removeSync(path.join(this.workDirPath));
   }
 
   async cleanup(): Promise<void> {
