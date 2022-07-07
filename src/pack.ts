@@ -60,6 +60,9 @@ export const filterFilesForZipPackage = ({
       return true;
     }
 
+    // GOOGLE Provider requires a package.json and NO node_modules
+    if (!isGoogleProvider && excludedFilesDefault.includes(localPath)) return false;
+
     // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
@@ -86,9 +89,7 @@ export const filterFilesForZipPackage = ({
 };
 
 export async function pack(this: EsbuildServerlessPlugin) {
-  // GOOGLE Provider requires a package.json and NO node_modules
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
-  const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
 
   // Google provider cannot use individual packaging for now - this could be built in a future release
   if (isGoogleProvider && this.serverless?.service?.package?.individually)
@@ -103,7 +104,6 @@ export async function pack(this: EsbuildServerlessPlugin) {
       dot: true,
       onlyFiles: true,
     })
-    .filter((p) => !excludedFiles.includes(p))
     .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
