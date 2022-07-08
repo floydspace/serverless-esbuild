@@ -111,7 +111,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       'before:package:createDeploymentArtifacts': async () => {
         await this.bundle();
         await this.packExternalModules();
-        await this.copyExtras();
+        await this.copyExtras(true);
         await this.pack();
       },
       'after:package:createDeploymentArtifacts': async () => {
@@ -120,7 +120,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       'before:deploy:function:packageFunction': async () => {
         await this.bundle();
         await this.packExternalModules();
-        await this.copyExtras();
+        await this.copyExtras(true);
         await this.pack();
       },
       'after:deploy:function:packageFunction': async () => {
@@ -347,7 +347,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return;
     }
 
-    for (const [functionAlias, fn] of Object.entries(this.functions)) {
+    for (const [_, fn] of Object.entries(this.functions)) {
       if (fn.package.patterns.length === 0) {
         continue;
       }
@@ -358,9 +358,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
           filename
         )
       ) {
-        const destFileName = path.resolve(
-          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
-        );
+        const destFileName = path.resolve(path.join(this.buildDirPath, filename));
         updateFile(op, path.resolve(filename), destFileName);
         return;
       }
@@ -368,7 +366,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   /** Link or copy extras such as node_modules or package.patterns definitions */
-  async copyExtras() {
+  async copyExtras(pack = false) {
     const { service } = this.serverless;
 
     // include any "extras" from the "patterns" section
@@ -389,7 +387,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
         const destFileName = path.resolve(
-          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
+          path.join(this.buildDirPath, pack ? `${ONLY_PREFIX}${functionAlias}` : '', filename)
         );
         updateFile('add', path.resolve(filename), destFileName);
       }
