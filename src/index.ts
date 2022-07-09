@@ -91,20 +91,16 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.hooks = {
       'before:run:run': async () => {
         await this.bundle();
-        await this.packExternalModules();
         await this.copyExtras();
       },
       'before:offline:start': async () => {
         await this.bundle(true);
-        await this.packExternalModules();
         await this.copyExtras();
         await this.preOffline();
         this.watch();
       },
       'before:offline:start:init': async () => {
         await this.bundle(true);
-        await this.packExternalModules();
-        await this.copyExtras();
         await this.preOffline();
         this.watch();
       },
@@ -128,7 +124,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'before:invoke:local:invoke': async () => {
         await this.bundle();
-        await this.packExternalModules();
         await this.copyExtras();
         await this.preLocal();
       },
@@ -347,7 +342,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return;
     }
 
-    for (const [_, fn] of Object.entries(this.functions)) {
+    for (const [, fn] of Object.entries(this.functions)) {
       if (fn.package.patterns.length === 0) {
         continue;
       }
