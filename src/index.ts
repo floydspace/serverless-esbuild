@@ -242,6 +242,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       keepOutputDirectory: false,
       packagerOptions: {},
       platform: 'node',
+      outputFileExtension: '.js',
     };
 
     const runtimeMatcher = providerRuntimeMatcher[this.serverless.service.provider.name];

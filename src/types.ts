@@ -31,6 +31,7 @@ export interface Configuration extends EsbuildOptions {
   disableIncremental?: boolean;
   outputWorkFolder?: string;
   outputBuildFolder?: string;
+  outputFileExtension: '.js' | '.cjs' | '.mjs';
 }
 
 export interface FunctionEntry {
