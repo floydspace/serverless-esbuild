@@ -70,6 +70,7 @@ afterEach(() => {
 describe('Move Artifacts', () => {
   it('should copy files from the esbuild folder to the serverless folder', async () => {
     const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
+    plugin.hooks.initialize();
 
     await plugin.moveArtifacts();
 
@@ -83,6 +84,7 @@ describe('Move Artifacts', () => {
         ...mockOptions,
         function: 'hello1',
       });
+      plugin.hooks.initialize();
 
       await plugin.moveArtifacts();
 
@@ -103,6 +105,7 @@ describe('Move Artifacts', () => {
   describe('package individually', () => {
     it('should update function package artifacts base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
+      plugin.hooks.initialize();
 
       await plugin.moveArtifacts();
 
@@ -136,6 +139,7 @@ describe('Move Artifacts', () => {
         }),
         mockOptions
       );
+      plugin.hooks.initialize();
 
       await plugin.moveArtifacts();
 
@@ -163,6 +167,7 @@ describe('Move Artifacts', () => {
   describe('service package', () => {
     it('should update the service package artifact base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(packageService), mockOptions);
+      plugin.hooks.initialize();
 
       await plugin.moveArtifacts();
 

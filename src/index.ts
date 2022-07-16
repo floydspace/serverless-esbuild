@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import globby from 'globby';
 import path from 'path';
-import { concat, always, memoizeWith, mergeRight } from 'ramda';
+import { concat, mergeRight } from 'ramda';
 import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
 import chokidar from 'chokidar';
@@ -54,6 +54,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   serverless: Serverless;
   options: Serverless.Options;
   hooks: ServerlessPlugin.Hooks;
+  buildOptions: Configuration;
   buildResults: FunctionBuildResult[];
   /** Used for storing previous esbuild build results so we can rebuild more efficiently */
   buildCache: Record<string, FileBuildResult>;
@@ -82,13 +83,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.preLocal = preLocal.bind(this);
     this.bundle = bundle.bind(this);
 
-    this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
-    this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
-
-    this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
-    this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
-
     this.hooks = {
+      initialize: () => this.init(),
       'before:run:run': async () => {
         await this.bundle();
         await this.packExternalModules();
@@ -133,6 +129,15 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         await this.preLocal();
       },
     };
+  }
+
+  private init() {
+    this.buildOptions = this.getBuildOptions();
+
+    this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
+    this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
+    this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
+    this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
   }
 
   /**
@@ -225,7 +230,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return { patterns, ignored };
   }
 
-  private getCachedOptions = memoizeWith(always('cache'), () => {
+  private getBuildOptions() {
     const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
       concurrency: Infinity,
       bundle: true,
@@ -260,10 +265,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return withResolvedOptions<Configuration>(
       config ? config(this.serverless) : this.serverless.service.custom?.esbuild ?? {}
     );
-  });
-
-  get buildOptions() {
-    return this.getCachedOptions();
   }
 
   get functionEntries() {
