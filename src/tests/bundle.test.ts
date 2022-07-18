@@ -2,7 +2,7 @@ import { PartialDeep } from 'type-fest';
 import EsbuildServerlessPlugin from '..';
 import { bundle } from '../bundle';
 import { build } from 'esbuild';
-import { FunctionBuildResult, FunctionEntry } from '../types';
+import { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
 import pMap from 'p-map';
 import { mocked } from 'ts-jest/utils';
 
@@ -15,6 +15,9 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
     serverless: {
       cli: {
         log: jest.fn(),
+      },
+      classes: {
+        Error: Error,
       },
     },
     buildOptions: {
@@ -30,6 +33,7 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
       keepOutputDirectory: false,
       packagerOptions: {},
       platform: 'node',
+      outputFileExtension: '.js',
     },
     plugins: [],
     buildDirPath: '/workdir/.esbuild',
@@ -192,5 +196,312 @@ it('should filter out non esbuild options', async () => {
     platform: 'node',
     plugins: [],
     target: 'node12',
+  });
+});
+
+describe('buildOption platform node', () => {
+  it('should set buildResults buildPath after compilation is complete with default extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const expectedResults: FunctionBuildResult[] = [
+      {
+        bundlePath: 'file1.js',
+        func: { events: [], handler: 'file1.handler' },
+        functionAlias: 'func1',
+      },
+      {
+        bundlePath: 'file2.js',
+        func: { events: [], handler: 'file2.handler' },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const plugin = esbuildPlugin({ functionEntries });
+
+    await bundle.call(plugin);
+
+    expect(plugin.buildResults).toStrictEqual(expectedResults);
+  });
+
+  it('should set buildResults buildPath after compilation is complete with ".cjs" extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const buildOptions: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {},
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'node',
+      outputFileExtension: '.cjs',
+    };
+
+    const expectedResults: FunctionBuildResult[] = [
+      {
+        bundlePath: 'file1.cjs',
+        func: { events: [], handler: 'file1.handler' },
+        functionAlias: 'func1',
+      },
+      {
+        bundlePath: 'file2.cjs',
+        func: { events: [], handler: 'file2.handler' },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
+
+    await bundle.call(plugin);
+
+    expect(plugin.buildResults).toStrictEqual(expectedResults);
+  });
+
+  it('should error when trying to use ".mjs" extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const buildOptions: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {},
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'node',
+      outputFileExtension: '.mjs',
+    };
+
+    const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
+
+    const expectedError = 'ERROR: platform "node" should not output a file with extension ".mjs".';
+
+    try {
+      await bundle.call(plugin);
+    } catch (error) {
+      expect(error).toHaveProperty('message', expectedError);
+    }
+  });
+});
+
+describe('buildOption platform neutral', () => {
+  it('should set buildResults buildPath after compilation is complete with default extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const buildOptions: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {},
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'neutral',
+      outputFileExtension: '.js',
+    };
+
+    const expectedResults: FunctionBuildResult[] = [
+      {
+        bundlePath: 'file1.js',
+        func: { events: [], handler: 'file1.handler' },
+        functionAlias: 'func1',
+      },
+      {
+        bundlePath: 'file2.js',
+        func: { events: [], handler: 'file2.handler' },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
+
+    await bundle.call(plugin);
+
+    expect(plugin.buildResults).toStrictEqual(expectedResults);
+  });
+
+  it('should set buildResults buildPath after compilation is complete with ".mjs" extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const buildOptions: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {},
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'neutral',
+      outputFileExtension: '.mjs',
+    };
+
+    const expectedResults: FunctionBuildResult[] = [
+      {
+        bundlePath: 'file1.mjs',
+        func: { events: [], handler: 'file1.handler' },
+        functionAlias: 'func1',
+      },
+      {
+        bundlePath: 'file2.mjs',
+        func: { events: [], handler: 'file2.handler' },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
+
+    await bundle.call(plugin);
+
+    expect(plugin.buildResults).toStrictEqual(expectedResults);
+  });
+
+  it('should error when trying to use ".cjs" extension', async () => {
+    const functionEntries: FunctionEntry[] = [
+      {
+        entry: 'file1.ts',
+        func: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        functionAlias: 'func1',
+      },
+      {
+        entry: 'file2.ts',
+        func: {
+          events: [],
+          handler: 'file2.handler',
+        },
+        functionAlias: 'func2',
+      },
+    ];
+
+    const buildOptions: Partial<Configuration> = {
+      concurrency: Infinity,
+      bundle: true,
+      target: 'node12',
+      external: [],
+      exclude: ['aws-sdk'],
+      nativeZip: false,
+      packager: 'npm',
+      installExtraArgs: [],
+      watch: {},
+      keepOutputDirectory: false,
+      packagerOptions: {},
+      platform: 'neutral',
+      outputFileExtension: '.cjs',
+    };
+
+    const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
+
+    const expectedError =
+      'ERROR: platform "neutral" should not output a file with extension ".cjs".';
+
+    try {
+      await bundle.call(plugin);
+    } catch (error) {
+      expect(error).toHaveProperty('message', expectedError);
+    }
   });
 });

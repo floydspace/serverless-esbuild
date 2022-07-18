@@ -27,6 +27,29 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     plugins: this.plugins,
   };
 
+  if (
+    this.buildOptions.platform === 'neutral' &&
+    this.buildOptions.outputFileExtension === '.cjs'
+  ) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
+    throw new this.serverless.classes.Error(
+      'ERROR: platform "neutral" should not output a file with extension ".cjs".'
+    );
+  }
+
+  if (this.buildOptions.platform === 'node' && this.buildOptions.outputFileExtension === '.mjs') {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
+    throw new this.serverless.classes.Error(
+      'ERROR: platform "node" should not output a file with extension ".mjs".'
+    );
+  }
+
+  if (this.buildOptions.outputFileExtension !== '.js') {
+    config.outExtension = { '.js': this.buildOptions.outputFileExtension };
+  }
+
   // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
   delete config['concurrency'];
   delete config['exclude'];
@@ -38,10 +61,12 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   delete config['packagerOptions'];
   delete config['installExtraArgs'];
   delete config['disableIncremental'];
+  delete config['outputFileExtension'];
 
   /** Build the files */
   const bundleMapper = async (entry: string): Promise<FileBuildResult> => {
-    const bundlePath = entry.slice(0, entry.lastIndexOf('.')) + '.js';
+    const bundlePath =
+      entry.slice(0, entry.lastIndexOf('.')) + this.buildOptions.outputFileExtension;
 
     // check cache
     if (this.buildCache) {
