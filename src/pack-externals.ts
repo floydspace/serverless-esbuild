@@ -75,7 +75,7 @@ function getProdModules(
   packageJsonPath: string,
   rootPackageJsonPath: string
 ) {
-  const packageJson = require(packageJsonPath);
+  const packageJson = this.serverless.utils.readFileSync(packageJsonPath);
   const prodModules = [];
 
   // only process the module stated in dependencies section
@@ -132,6 +132,7 @@ function getProdModules(
       'package.json'
     );
     const localModulePackagePath = path.join(
+      process.cwd(),
       path.dirname(packageJsonPath),
       'node_modules',
       externalModule.external,
@@ -308,7 +309,11 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   );
 
   // (1.a.2) Copy package-lock.json if it exists, to prevent unwanted upgrades
-  const packageLockPath = path.join(path.dirname(packageJsonPath), packager.lockfileName);
+  const packageLockPath = path.join(
+    process.cwd(),
+    path.dirname(packageJsonPath),
+    packager.lockfileName
+  );
   const exists = await fse.pathExists(packageLockPath);
   if (exists) {
     this.log.verbose('Package lock found - Using locked versions');
