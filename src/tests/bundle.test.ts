@@ -334,7 +334,7 @@ describe('buildOption platform node', () => {
 
     const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
 
-    const expectedError = 'ERROR: platform "node" should not output a file with extension ".mjs".';
+    const expectedError = 'ERROR: Non esm builds should not output a file with extension ".mjs".';
 
     try {
       await bundle.call(plugin);
@@ -496,7 +496,7 @@ describe('buildOption platform neutral', () => {
     const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
 
     const expectedError =
-      'ERROR: platform "neutral" should not output a file with extension ".cjs".';
+      'ERROR: format "esm" or platform "neutral" should not output a file with extension ".cjs".';
 
     try {
       await bundle.call(plugin);
