@@ -62,6 +62,8 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   delete config['installExtraArgs'];
   delete config['disableIncremental'];
   delete config['outputFileExtension'];
+  delete config['outputBuildFolder'];
+  delete config['outputWorkFolder'];
 
   /** Build the files */
   const bundleMapper = async (entry: string): Promise<FileBuildResult> => {
