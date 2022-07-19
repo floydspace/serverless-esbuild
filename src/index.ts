@@ -82,8 +82,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.preLocal = preLocal.bind(this);
     this.bundle = bundle.bind(this);
 
-    this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
-    this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
+    this.outputWorkFolder = this.outputWorkFolder || WORK_FOLDER;
+    this.outputBuildFolder = this.outputBuildFolder || BUILD_FOLDER;
 
     this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
     this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
