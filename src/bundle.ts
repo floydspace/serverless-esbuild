@@ -5,6 +5,7 @@ import path from 'path';
 import { uniq } from 'ramda';
 
 import EsbuildServerlessPlugin from '.';
+import { isESM } from './helper';
 import { FileBuildResult } from './types';
 import { trimExtension } from './utils';
 
@@ -27,22 +28,19 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     plugins: this.plugins,
   };
 
-  if (
-    this.buildOptions.platform === 'neutral' &&
-    this.buildOptions.outputFileExtension === '.cjs'
-  ) {
+  if (isESM(this.buildOptions) && this.buildOptions.outputFileExtension === '.cjs') {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
     throw new this.serverless.classes.Error(
-      'ERROR: platform "neutral" should not output a file with extension ".cjs".'
+      'ERROR: format "esm" or platform "neutral" should not output a file with extension ".cjs".'
     );
   }
 
-  if (this.buildOptions.platform === 'node' && this.buildOptions.outputFileExtension === '.mjs') {
+  if (!isESM(this.buildOptions) && this.buildOptions.outputFileExtension === '.mjs') {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
     throw new this.serverless.classes.Error(
-      'ERROR: platform "node" should not output a file with extension ".mjs".'
+      'ERROR: Non esm builds should not output a file with extension ".mjs".'
     );
   }
 

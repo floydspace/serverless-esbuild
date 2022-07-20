@@ -83,7 +83,7 @@ See [example folder](examples) for some example configurations.
 | `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`                                             |
 | `outputBuildFolder`   | The output folder for Esbuild builds within the work folder.                                                                                                               | `'.build'`                                          |
 | `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done.                                                                                                | `'.esbuild'`                                        |
-| `outputFileExtension` | The file extension used for the bundled output file. This will override the esbuild `outExtension` option               | `'.js'`                                        |
+| `outputFileExtension` | The file extension used for the bundled output file. This will override the esbuild `outExtension` option                                                                  | `'.js'`                                             |
 | `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'`                                  |
 | `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
 | `packagerOptions`     | Extra options for packagers for `external` dependency resolution.                                                                                                          | [Packager Options](#packager-options)               |
@@ -99,7 +99,7 @@ The following `esbuild` options are automatically set.
 | `entryPoints` | N/A        | Cannot be overridden                                                   |
 | `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it           |
 | `outDir`      | N/A        | Cannot be overridden                                                   |
-| `platform`    | `'node'`   | Set to `'neutral'` to enable ESM support                               |
+| `platform`    | `'node'`   | Set `format` to `esm` to enable ESM support                            |
 | `target`      | `'node12'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
 | `watch`       | N/A        | Cannot be overridden                                                   |
 
@@ -147,11 +147,9 @@ custom:
 ```js
 // esbuild.config.js
 module.exports = (serverless) => ({
-  external: [
-    'lodash'
-  ],
-  plugins: []
-})
+  external: ['lodash'],
+  plugins: [],
+});
 ```
 
 ### Including Extra Files

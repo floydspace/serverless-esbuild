@@ -3,8 +3,8 @@ import path from 'path';
 import os from 'os';
 import { mocked } from 'ts-jest/utils';
 
-import { extractFunctionEntries, flatDep, getDepsFromBundle } from '../helper';
-import { DependencyMap } from '../types';
+import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM } from '../helper';
+import { Configuration, DependencyMap } from '../types';
 
 jest.mock('fs-extra');
 
@@ -148,18 +148,17 @@ describe('extractFunctionEntries', () => {
 
 describe('getDepsFromBundle', () => {
   const path = './';
-  describe('node platform', () => {
-    const platform = 'node';
+  describe('useESM = false', () => {
     it('should extract deps from a string', () => {
       mocked(fs).readFileSync.mockReturnValue('require("@scope/package1");require("package2")');
-      expect(getDepsFromBundle(path, platform)).toStrictEqual(['@scope/package1', 'package2']);
+      expect(getDepsFromBundle(path, false)).toStrictEqual(['@scope/package1', 'package2']);
     });
 
     it('should extract the base dep from a string', () => {
       mocked(fs).readFileSync.mockReturnValue(
         'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath")require("package4/subpath/subpath")'
       );
-      expect(getDepsFromBundle(path, platform)).toStrictEqual([
+      expect(getDepsFromBundle(path, false)).toStrictEqual([
         '@scope/package1',
         'package2',
         '@scope/package3',
@@ -171,13 +170,11 @@ describe('getDepsFromBundle', () => {
       mocked(fs).readFileSync.mockReturnValue(
         'require("package1/subpath");require("package1");require("package1")'
       );
-      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1']);
+      expect(getDepsFromBundle(path, false)).toStrictEqual(['package1']);
     });
   });
 
-  describe('neutral platform', () => {
-    const platform = 'neutral';
-
+  describe('useESM = true', () => {
     it('should extract deps from a string', () => {
       mocked(fs).readFileSync.mockReturnValue(
         `
@@ -186,14 +183,40 @@ describe('getDepsFromBundle', () => {
         import {hello as r} from "package3";
         `
       );
-      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
     it('should extract deps from a minified string', () => {
       mocked(fs).readFileSync.mockReturnValue(
         'import*as n from"package1";import"package2";import{hello as r}from"package3";'
       );
-      expect(getDepsFromBundle(path, platform)).toStrictEqual(['package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
+  });
+});
+
+describe('isESM', () => {
+  it('should return true when format is set to esm', () => {
+    const config = {
+      format: 'esm',
+    } as Partial<Configuration> as Configuration;
+
+    expect(isESM(config)).toBe(true);
+  });
+
+  it('should return true when platform is set to neutral and format is not set', () => {
+    const config = {
+      platform: 'neutral',
+    } as Partial<Configuration> as Configuration;
+
+    expect(isESM(config)).toBe(true);
+  });
+
+  it('should return false when platform is set to node and format is not set', () => {
+    const config = {
+      platform: 'node',
+    } as Partial<Configuration> as Configuration;
+
+    expect(isESM(config)).toBe(false);
   });
 });
 

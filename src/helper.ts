@@ -5,7 +5,7 @@ import { uniq } from 'ramda';
 import Serverless from 'serverless';
 import ServerlessPlugin from 'serverless/classes/Plugin';
 import matchAll from 'string.prototype.matchall';
-import { DependencyMap, FunctionEntry } from './types';
+import { Configuration, DependencyMap, FunctionEntry } from './types';
 
 export function extractFunctionEntries(
   cwd: string,
@@ -116,20 +116,23 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
  */
 const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
 
+export const isESM = (buildOptions: Configuration): boolean => {
+  return (
+    buildOptions.format === 'esm' || (buildOptions.platform === 'neutral' && !buildOptions.format)
+  );
+};
+
 /**
  * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
  * @param bundlePath Absolute path to a bundled JS file
  */
-export const getDepsFromBundle = (bundlePath: string, platform: string): string[] => {
+export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  const deps =
-    platform === 'neutral'
-      ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
-          (match) => match[1] || match[2]
-        )
-      : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map(
-          (match) => match[1]
-        );
+  const deps = useESM
+    ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
+        (match) => match[1] || match[2]
+      )
+    : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map((match) => match[1]);
   return uniq(deps.map((dep): string => getBaseDep(dep)));
 };
 

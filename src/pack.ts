@@ -16,7 +16,7 @@ import {
 import semver from 'semver';
 import EsbuildServerlessPlugin from '.';
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
-import { doSharePath, flatDep, getDepsFromBundle } from './helper';
+import { doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
 import * as Packagers from './packagers';
 import { IFiles } from './types';
 import { humanSize, zip, trimExtension } from './utils';
@@ -176,7 +176,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       if (hasExternals) {
         const bundleDeps = getDepsFromBundle(
           path.join(this.buildDirPath, bundlePath),
-          this.buildOptions.platform
+          isESM(this.buildOptions)
         );
         const bundleExternals = intersection(bundleDeps, externals);
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
