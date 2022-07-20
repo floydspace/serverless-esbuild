@@ -1,11 +1,14 @@
-import fs from 'fs-extra';
-import path from 'path';
 import os from 'os';
+import path from 'path';
+
+import { parse } from 'acorn';
+import { simple as simpleWalk } from 'acorn-walk';
+import fs from 'fs-extra';
 import { uniq } from 'ramda';
-import Serverless from 'serverless';
-import ServerlessPlugin from 'serverless/classes/Plugin';
-import matchAll from 'string.prototype.matchall';
-import { Configuration, DependencyMap, FunctionEntry } from './types';
+
+import type Serverless from 'serverless';
+import type ServerlessPlugin from 'serverless/classes/Plugin';
+import type { Configuration, DependencyMap, FunctionEntry } from './types';
 
 export function extractFunctionEntries(
   cwd: string,
@@ -123,17 +126,39 @@ export const isESM = (buildOptions: Configuration): boolean => {
 };
 
 /**
- * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
+ * Extracts the list of dependencies that appear in a bundle as `import 'XXX'`, `import('XXX')`, or `require('XXX')`.
  * @param bundlePath Absolute path to a bundled JS file
+ * @param useESM Should the bundle be treated as ESM
  */
 export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  const deps = useESM
-    ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
-        (match) => match[1] || match[2]
-      )
-    : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map((match) => match[1]);
-  return uniq(deps.map((dep): string => getBaseDep(dep)));
+  const deps: string[] = [];
+
+  const ast = parse(bundleContent, {
+    ecmaVersion: 'latest',
+    sourceType: useESM ? 'module' : 'script',
+  });
+
+  // I'm using `node: any` since the type definition is not accurate.
+  // There are properties at runtime that do not exist in the `acorn.Node` type.
+  simpleWalk(ast, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CallExpression(node: any) {
+      if (node.callee.name === 'require') {
+        deps.push(node.arguments[0].value);
+      }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ImportExpression(node: any) {
+      deps.push(node.source.value);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ImportDeclaration(node: any) {
+      deps.push(node.source.value);
+    },
+  });
+
+  return uniq(deps.map((dep) => getBaseDep(dep)));
 };
 
 export const doSharePath = (child, parent) => {
