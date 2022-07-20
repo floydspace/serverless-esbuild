@@ -92,7 +92,7 @@ describe('Move Artifacts', () => {
             "events": Array [],
             "handler": "hello1.handler",
             "package": Object {
-              "artifact": "/workDir/.serverless/hello1",
+              "artifact": ".serverless/hello1",
             },
           },
         }
@@ -112,14 +112,14 @@ describe('Move Artifacts', () => {
             "events": Array [],
             "handler": "hello1.handler",
             "package": Object {
-              "artifact": "/workDir/.serverless/hello1",
+              "artifact": ".serverless/hello1",
             },
           },
           "hello2": Object {
             "events": Array [],
             "handler": "hello2.handler",
             "package": Object {
-              "artifact": "/workDir/.serverless/hello2",
+              "artifact": ".serverless/hello2",
             },
           },
         }
@@ -145,14 +145,14 @@ describe('Move Artifacts', () => {
             "events": Array [],
             "handler": "hello1.handler",
             "package": Object {
-              "artifact": "/workDir/.serverless/hello1",
+              "artifact": ".serverless/hello1",
             },
           },
           "hello2": Object {
             "events": Array [],
             "handler": "hello2.handler",
             "package": Object {
-              "artifact": "/workDir/.serverless/hello2",
+              "artifact": ".serverless/hello2",
             },
           },
         }
@@ -166,7 +166,7 @@ describe('Move Artifacts', () => {
 
       await plugin.moveArtifacts();
 
-      expect(plugin.serverless.service.package.artifact).toBe('/workDir/.serverless/hello');
+      expect(plugin.serverless.service.package.artifact).toBe('.serverless/hello');
     });
   });
 });
