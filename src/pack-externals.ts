@@ -238,7 +238,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   // get the local package.json by looking up until we hit a package.json file
   // if this is *not* a yarn workspace, it will be the same as rootPackageJsonPath
   const packageJsonPath =
-    this.buildOptions.packagePath || path.join(findUp('package.json'), './package.json');
+    this.buildOptions.packagePath ||
+    path.relative(process.cwd(), path.join(findUp('package.json'), './package.json'));
 
   // Determine and create packager
   const packager = await Packagers.get(this.buildOptions.packager);

@@ -13,7 +13,10 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "precommit": "npm run test",
-    "build": "npm run clean && tsc",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "dev": "npm run build -- --watch",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist",
     "pretest": "npm run lint",
     "test": "jest --passWithNoTests",
@@ -66,6 +69,8 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
+    "acorn": "^8.7.1",
+    "acorn-walk": "^8.2.0",
     "anymatch": "^3.1.2",
     "archiver": "^5.3.0",
     "bestzip": "^2.2.0",
@@ -74,8 +79,7 @@
     "globby": "^11.0.1",
     "p-map": "^4.0.0",
     "ramda": "^0.27.0",
-    "semver": "^7.3.5",
-    "string.prototype.matchall": "^4.0.4"
+    "semver": "^7.3.5"
   },
   "peerDependencies": {
     "esbuild": ">=0.8 <0.15"
