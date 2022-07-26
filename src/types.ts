@@ -1,5 +1,5 @@
-import { BuildOptions, BuildResult, Plugin } from 'esbuild';
-import Serverless from 'serverless';
+import type { BuildOptions, BuildResult, Plugin } from 'esbuild';
+import type Serverless from 'serverless';
 
 export type ConfigFn = (sls: Serverless) => Configuration;
 
@@ -74,3 +74,5 @@ export interface IFile {
   readonly rootPath: string;
 }
 export type IFiles = readonly IFile[];
+
+export type PackagerId = 'npm' | 'pnpm' | 'yarn';

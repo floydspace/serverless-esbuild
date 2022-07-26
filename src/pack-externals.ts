@@ -1,5 +1,6 @@
-import fse from 'fs-extra';
 import path from 'path';
+
+import fse from 'fs-extra';
 import {
   compose,
   forEach,
@@ -24,11 +25,11 @@ import {
   without,
 } from 'ramda';
 
-import * as Packagers from './packagers';
-import { JSONObject } from './types';
+import { getPackager } from './packagers';
 import { findProjectRoot, findUp } from './utils';
 
-import EsbuildServerlessPlugin from './index';
+import type EsbuildServerlessPlugin from './index';
+import type { JSONObject } from './types';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
@@ -242,7 +243,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     path.relative(process.cwd(), path.join(findUp('package.json'), './package.json'));
 
   // Determine and create packager
-  const packager = await Packagers.get(this.buildOptions.packager);
+  const packager = await getPackager.call(this, this.buildOptions.packager);
 
   // Fetch needed original package.json sections
   const sectionNames = packager.copyPackageSectionNames;

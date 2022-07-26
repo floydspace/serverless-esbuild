@@ -1,6 +1,7 @@
+import path from 'path';
+
 import fs from 'fs-extra';
 import globby from 'globby';
-import path from 'path';
 import {
   intersection,
   isEmpty,
@@ -14,12 +15,14 @@ import {
   without,
 } from 'ramda';
 import semver from 'semver';
-import EsbuildServerlessPlugin from '.';
+
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
 import { doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
-import * as Packagers from './packagers';
-import { IFiles } from './types';
+import { getPackager } from './packagers';
 import { humanSize, zip, trimExtension } from './utils';
+
+import type EsbuildServerlessPlugin from './index';
+import type { IFiles } from './types';
 
 function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPath) {
   const version = this.serverless.getVersion();
@@ -137,7 +140,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   }
 
   // 2) If individually is set, we'll optimize files and zip per-function
-  const packager = await Packagers.get(this.buildOptions.packager);
+  const packager = await getPackager.call(this, this.buildOptions.packager);
 
   // get a list of every function bundle
   const buildResults = this.buildResults;
