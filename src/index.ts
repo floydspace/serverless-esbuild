@@ -242,7 +242,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       installExtraArgs: [],
       watch: {
         pattern: './**/*.(js|ts)',
-        ignore: [this.outputWorkFolder, 'dist', 'node_modules', this.outputBuildFolder],
+        ignore: [WORK_FOLDER, 'dist', 'node_modules', BUILD_FOLDER],
       },
       keepOutputDirectory: false,
       packagerOptions: {},
