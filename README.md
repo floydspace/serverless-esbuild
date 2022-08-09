@@ -81,8 +81,8 @@ See [example folder](examples) for some example configurations.
 | `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`                                                |
 | `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`                                             |
 | `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`                                             |
-| `outputBuildFolder`   | The output folder for Esbuild builds within the work folder.                                                                                                               | `'.build'`                                          |
-| `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done.                                                                                                | `'.esbuild'`                                        |
+| `outputBuildFolder`   | The output folder for Esbuild builds within the work folder. You will also need to manually override the watch ignore config if used.                                      | `'.build'`                                          |
+| `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done. You will also need to manually override the watch config if used.                              | `'.esbuild'`                                        |
 | `outputFileExtension` | The file extension used for the bundled output file. This will override the esbuild `outExtension` option                                                                  | `'.js'`                                             |
 | `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'`                                  |
 | `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
@@ -114,7 +114,7 @@ The following `esbuild` options are automatically set.
 | Option    | Description                                                                                          | Default                                                             |
 | --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files)              |
-| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `[{outputBuildFolder}, 'dist', 'node_modules', {outputWorkFolder}]` |
+| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `'.esbuild', 'dist', 'node_modules', '.build']`                     |
 
 ## Supported Runtimes
 
