@@ -82,7 +82,7 @@
     "semver": "^7.3.5"
   },
   "peerDependencies": {
-    "esbuild": ">=0.8 <0.15"
+    "esbuild": ">=0.8 <0.16"
   },
   "lint-staged": {
     "*.ts": [
