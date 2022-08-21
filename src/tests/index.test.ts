@@ -1,6 +1,7 @@
-import Serverless from 'serverless';
-import Service from 'serverless/classes/Service';
 import EsbuildServerlessPlugin from '../index';
+
+import type Serverless from 'serverless';
+import type Service from 'serverless/classes/Service';
 
 import fs from 'fs-extra';
 
@@ -79,7 +80,7 @@ describe('Move Artifacts', () => {
 
   describe('function option', () => {
     it('should update the selected functions base path to the serverless folder', async () => {
-      mockGetFunction.mockReturnValue(packageIndividuallyService.functions.hello1);
+      mockGetFunction.mockReturnValue(packageIndividuallyService.functions?.hello1);
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), {
         ...mockOptions,
         function: 'hello1',
