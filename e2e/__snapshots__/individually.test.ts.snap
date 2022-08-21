@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`individually 1`] = `
-"var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var r=e=>n(e,\\"__esModule\\",{value:!0}),u=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var p=(e,s)=>{r(e);for(var o in s)n(e,o,{get:s[o],enumerable:!0})},y=(e,s,o)=>{if(s&&typeof s==\\"object\\"||typeof s==\\"function\\")for(let t of d(s))!m.call(e,t)&&t!==\\"default\\"&&n(e,t,{get:()=>s[t],enumerable:!(o=a(s,t))||o.enumerable});return e},g=e=>y(r(n(e!=null?l(f(e)):{},\\"default\\",e&&e.__esModule&&\\"default\\"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);p(exports,{handler:()=>x});var c=g(require(\\"lodash\\"));async function x(e,s,o){console.log(c.VERSION),await new Promise(i=>setTimeout(i,500));let t={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};o(null,t)}u(x,\\"handler\\");0&&(module.exports={handler});
+"var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,d=Object.prototype.hasOwnProperty;var u=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var p=(e,s)=>{for(var o in s)n(e,o,{get:s[o],enumerable:!0})},c=(e,s,o,r)=>{if(s&&typeof s==\\"object\\"||typeof s==\\"function\\")for(let t of f(s))!d.call(e,t)&&t!==o&&n(e,t,{get:()=>s[t],enumerable:!(r=a(s,t))||r.enumerable});return e};var y=(e,s,o)=>(o=e!=null?l(m(e)):{},c(s||!e||!e.__esModule?n(o,\\"default\\",{value:e,enumerable:!0}):o,e)),g=e=>c(n({},\\"__esModule\\",{value:!0}),e);var S={};p(S,{handler:()=>x});module.exports=g(S);var i=y(require(\\"lodash\\"));async function x(e,s,o){console.log(i.VERSION),await new Promise(t=>setTimeout(t,500));let r={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};o(null,r)}u(x,\\"handler\\");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 2`] = `
-"var n=Object.defineProperty;var i=e=>n(e,\\"__esModule\\",{value:!0}),o=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var r=(e,s)=>{i(e);for(var t in s)n(e,t,{get:s[t],enumerable:!0})};r(exports,{handler:()=>a});async function a(e,s,t){await new Promise(c=>setTimeout(c,500));let u={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};t(null,u)}o(a,\\"handler\\");0&&(module.exports={handler});
+"var u=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var r=Object.getOwnPropertyNames;var a=Object.prototype.hasOwnProperty;var c=(s,e)=>u(s,\\"name\\",{value:e,configurable:!0});var l=(s,e)=>{for(var n in e)u(s,n,{get:e[n],enumerable:!0})},d=(s,e,n,o)=>{if(e&&typeof e==\\"object\\"||typeof e==\\"function\\")for(let t of r(e))!a.call(s,t)&&t!==n&&u(s,t,{get:()=>e[t],enumerable:!(o=i(e,t))||o.enumerable});return s};var f=s=>d(u({},\\"__esModule\\",{value:!0}),s);var m={};l(m,{handler:()=>y});module.exports=f(m);async function y(s,e,n){await new Promise(t=>setTimeout(t,500));let o={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:s})};n(null,o)}c(y,\\"handler\\");0&&(module.exports={handler});
 "
 `;
 
@@ -20,7 +20,7 @@ Object {
       "Name": "sls-serverless-example-dev-Hello1LambdaFunctionQualifiedArn",
     },
     "Value": Object {
-      "Ref": "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo",
+      "Ref": "Hello1LambdaVersionrCQpBasrl7NEc5jdBPyUcZFyk0SWtGtN6fb3630OHQ",
     },
   },
   "Hello2LambdaFunctionQualifiedArn": Object {
@@ -29,7 +29,7 @@ Object {
       "Name": "sls-serverless-example-dev-Hello2LambdaFunctionQualifiedArn",
     },
     "Value": Object {
-      "Ref": "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE",
+      "Ref": "Hello2LambdaVersionongx6o4TBoQbh3kyG4cSG0Bj7rT3CNaL1NNKJ5gGiI",
     },
   },
   "ServerlessDeploymentBucketName": Object {
@@ -71,7 +71,53 @@ Object {
 
 exports[`individually 5`] = `
 Object {
-  "ApiGatewayMethodHelloGet": Object {
+  "ApiGatewayMethodHello1Get": Object {
+    "DependsOn": Array [
+      "Hello1LambdaPermissionApiGateway",
+    ],
+    "Properties": Object {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "HttpMethod": "GET",
+      "Integration": Object {
+        "IntegrationHttpMethod": "POST",
+        "Type": "AWS_PROXY",
+        "Uri": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "arn:",
+              Object {
+                "Ref": "AWS::Partition",
+              },
+              ":apigateway:",
+              Object {
+                "Ref": "AWS::Region",
+              },
+              ":lambda:path/2015-03-31/functions/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "Hello1LambdaFunction",
+                  "Arn",
+                ],
+              },
+              "/invocations",
+            ],
+          ],
+        },
+      },
+      "MethodResponses": Array [],
+      "RequestParameters": Object {},
+      "ResourceId": Object {
+        "Ref": "ApiGatewayResourceHello1",
+      },
+      "RestApiId": Object {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Method",
+  },
+  "ApiGatewayMethodHello2Get": Object {
     "DependsOn": Array [
       "Hello2LambdaPermissionApiGateway",
     ],
@@ -109,7 +155,7 @@ Object {
       "MethodResponses": Array [],
       "RequestParameters": Object {},
       "ResourceId": Object {
-        "Ref": "ApiGatewayResourceHello",
+        "Ref": "ApiGatewayResourceHello2",
       },
       "RestApiId": Object {
         "Ref": "ApiGatewayRestApi",
@@ -117,7 +163,7 @@ Object {
     },
     "Type": "AWS::ApiGateway::Method",
   },
-  "ApiGatewayResourceHello": Object {
+  "ApiGatewayResourceHello1": Object {
     "Properties": Object {
       "ParentId": Object {
         "Fn::GetAtt": Array [
@@ -125,7 +171,22 @@ Object {
           "RootResourceId",
         ],
       },
-      "PathPart": "hello",
+      "PathPart": "hello1",
+      "RestApiId": Object {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Resource",
+  },
+  "ApiGatewayResourceHello2": Object {
+    "Properties": Object {
+      "ParentId": Object {
+        "Fn::GetAtt": Array [
+          "ApiGatewayRestApi",
+          "RootResourceId",
+        ],
+      },
+      "PathPart": "hello2",
       "RestApiId": Object {
         "Ref": "ApiGatewayRestApi",
       },
@@ -206,10 +267,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo": Object {
+  "Hello1LambdaVersionrCQpBasrl7NEc5jdBPyUcZFyk0SWtGtN6fb3630OHQ": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "zvn3/B4BtuYoEDUiWabnbK+IBitTWrDVHjhmVsdilTk=",
+      "CodeSha256": "eKZez9CebIgfqBXSfrG2X18sVT3Yt9QI2b/mNE8KP4s=",
       "FunctionName": Object {
         "Ref": "Hello1LambdaFunction",
       },
@@ -284,10 +345,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE": Object {
+  "Hello2LambdaVersionongx6o4TBoQbh3kyG4cSG0Bj7rT3CNaL1NNKJ5gGiI": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "JATk1Y3OqG7tx8Vw+NlNrcgBqJZWAj6nJHJV5y4MarE=",
+      "CodeSha256": "/SxMTGQwz5vnREIiwAcRKKUaMwxLEHO7Z+w0b75N2Ws=",
       "FunctionName": Object {
         "Ref": "Hello2LambdaFunction",
       },
@@ -452,8 +513,8 @@ Object {
 exports[`individually 6`] = `
 Object {
   "DependsOn": Array [
-    "ApiGatewayMethodHelloGet",
-    "ApiGatewayMethodHelloGet",
+    "ApiGatewayMethodHello1Get",
+    "ApiGatewayMethodHello2Get",
   ],
   "Properties": Object {
     "RestApiId": Object {

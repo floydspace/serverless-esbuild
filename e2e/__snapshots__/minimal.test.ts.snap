@@ -1,8 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`minimal 1`] = `
-"var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+"var __getOwnPropNames = Object.getOwnPropertyNames;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 
 // node_modules/i18n-iso-countries/codes.json
@@ -13963,7 +13964,7 @@ Object {
       "Name": "sls-minimal-example-dev-ValidateIsinLambdaFunctionQualifiedArn",
     },
     "Value": Object {
-      "Ref": "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg",
+      "Ref": "ValidateIsinLambdaVersionGmMQZiArm4DPeKSFh1p52LaTpYXcVfaCai5ZLRw",
     },
   },
 }
@@ -14264,10 +14265,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg": Object {
+  "ValidateIsinLambdaVersionGmMQZiArm4DPeKSFh1p52LaTpYXcVfaCai5ZLRw": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "e3rFVkcGNQQ/f5FlNP1UrgUuW453BrlyaenA0ZTb2Yk=",
+      "CodeSha256": "CsjE5Tdt5AzqfCKgnZa1SV49cPDxTv+51mWQOlcN7iA=",
       "FunctionName": Object {
         "Ref": "ValidateIsinLambdaFunction",
       },

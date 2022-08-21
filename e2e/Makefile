@@ -1,6 +1,6 @@
 test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete
 
-build: 
+build:
 	npm run build
 	npm link
 
