@@ -1,12 +1,24 @@
 import fs from 'fs';
-import cloudformation from './minimal/.serverless/cloudformation-template-update-stack.json';
+import path from 'path';
 
 test('minimal', () => {
-  const indexContents = fs.readFileSync('e2e/minimal/.serverless/index.js').toString();
+  const cloudformation = JSON.parse(
+    fs
+      .readFileSync(
+        path.join(__dirname, 'minimal/.serverless/cloudformation-template-update-stack.json')
+      )
+      .toString()
+  );
+  const indexContents = fs
+    .readFileSync(path.join(__dirname, 'minimal/.serverless/index.js'))
+    .toString();
+
   expect(indexContents).toMatchSnapshot();
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
+
   expect(cloudformation.Description).toMatchSnapshot;
+
   expect(cloudformation.Outputs).toMatchSnapshot();
 
   const apiGatewayDeploymentPropertyKey = Object.keys(cloudformation.Resources).find((s) =>
