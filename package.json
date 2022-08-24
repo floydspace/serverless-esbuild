@@ -21,6 +21,7 @@
     "pretest": "npm run lint",
     "test": "jest --passWithNoTests",
     "test:e2e": "make -f e2e/Makefile",
+    "clean:e2e": "make -f e2e/Makefile clean",
     "lint": "eslint .",
     "prepare": "husky install"
   },
