@@ -7,7 +7,9 @@ exports[`complete 1`] = `
 
 exports[`complete 2`] = `"2010-09-09"`;
 
-exports[`complete 3`] = `
+exports[`complete 3`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`complete 4`] = `
 Object {
   "ServerlessDeploymentBucketName": Object {
     "Export": Object {
@@ -55,7 +57,7 @@ Object {
 }
 `;
 
-exports[`complete 4`] = `
+exports[`complete 5`] = `
 Object {
   "ApiGatewayMethodValidateDashisinIsinVarGet": Object {
     "DependsOn": Array [
@@ -359,7 +361,7 @@ Object {
 }
 `;
 
-exports[`complete 5`] = `
+exports[`complete 6`] = `
 Object {
   "DependsOn": Array [
     "ApiGatewayMethodValidateDashisinIsinVarGet",
@@ -374,7 +376,7 @@ Object {
 }
 `;
 
-exports[`complete 6`] = `
+exports[`complete 7`] = `
 Object {
   "DeletionPolicy": "Retain",
   "Properties": Object {

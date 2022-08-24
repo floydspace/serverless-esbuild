@@ -22,7 +22,7 @@ test('individually', () => {
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
 
-  expect(cloudformation.Description).toMatchSnapshot;
+  expect(cloudformation.Description).toMatchSnapshot();
 
   expect(cloudformation.Outputs).toMatchSnapshot();
 
