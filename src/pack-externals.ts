@@ -213,10 +213,15 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))
   ) {
     const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
+
+    const allowList = this.buildOptions?.nodeExternals?.allowList
+      ? this.buildOptions.nodeExternals.allowList
+      : [];
+
     this.buildOptions.external = findDependencies({
       dependencies: true,
       packagePaths: findPackagePaths(),
-      allowList: [],
+      allowList,
     });
   }
 
