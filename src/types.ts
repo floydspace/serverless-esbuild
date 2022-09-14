@@ -15,6 +15,10 @@ export interface PackagerOptions {
   scripts?: string[] | string;
 }
 
+interface NodeExternalsOptions {
+  allowList?: string[];
+}
+
 export type EsbuildOptions = Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'>;
 
 export interface Configuration extends EsbuildOptions {
@@ -32,6 +36,7 @@ export interface Configuration extends EsbuildOptions {
   outputWorkFolder?: string;
   outputBuildFolder?: string;
   outputFileExtension: '.js' | '.cjs' | '.mjs';
+  nodeExternals?: NodeExternalsOptions;
 }
 
 export interface FunctionEntry {
