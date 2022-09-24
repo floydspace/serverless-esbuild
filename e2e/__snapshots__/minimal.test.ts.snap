@@ -13963,7 +13963,7 @@ Object {
       "Name": "sls-minimal-example-dev-ValidateIsinLambdaFunctionQualifiedArn",
     },
     "Value": Object {
-      "Ref": "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg",
+      "Ref": Any<String>,
     },
   },
 }
@@ -14264,10 +14264,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersion6F1yFivwUErVb4oeRL4yIAVELyFwfsjK7XsJuVKpg": Object {
+  "ValidateIsinLambdaVersionB7CGimGwkzX4VvjfOLhBKNzyM0E3cvLweXKHVVWYpgg": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "e3rFVkcGNQQ/f5FlNP1UrgUuW453BrlyaenA0ZTb2Yk=",
+      "CodeSha256": Any<String>,
       "FunctionName": Object {
         "Ref": "ValidateIsinLambdaFunction",
       },

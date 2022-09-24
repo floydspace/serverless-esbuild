@@ -16,35 +16,23 @@ exports[`individually 4`] = `
 Object {
   "Hello1LambdaFunctionQualifiedArn": Object {
     "Description": "Current Lambda function version",
-    "Export": Object {
-      "Name": "sls-serverless-example-dev-Hello1LambdaFunctionQualifiedArn",
-    },
     "Value": Object {
-      "Ref": "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo",
+      "Ref": Any<String>,
     },
   },
   "Hello2LambdaFunctionQualifiedArn": Object {
     "Description": "Current Lambda function version",
-    "Export": Object {
-      "Name": "sls-serverless-example-dev-Hello2LambdaFunctionQualifiedArn",
-    },
     "Value": Object {
-      "Ref": "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE",
+      "Ref": Any<String>,
     },
   },
   "ServerlessDeploymentBucketName": Object {
-    "Export": Object {
-      "Name": "sls-serverless-example-dev-ServerlessDeploymentBucketName",
-    },
     "Value": Object {
       "Ref": "ServerlessDeploymentBucket",
     },
   },
   "ServiceEndpoint": Object {
     "Description": "URL of the service endpoint",
-    "Export": Object {
-      "Name": "sls-serverless-example-dev-ServiceEndpoint",
-    },
     "Value": Object {
       "Fn::Join": Array [
         "",
@@ -72,9 +60,6 @@ Object {
 exports[`individually 5`] = `
 Object {
   "ApiGatewayMethodHelloGet": Object {
-    "DependsOn": Array [
-      "Hello2LambdaPermissionApiGateway",
-    ],
     "Properties": Object {
       "ApiKeyRequired": false,
       "AuthorizationType": "NONE",
@@ -206,10 +191,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo": Object {
+  "Hello1LambdaVersioncqcVSV8tNXHbeUvHuv4CZO7wqEZT94UBnDRbN5T8": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "zvn3/B4BtuYoEDUiWabnbK+IBitTWrDVHjhmVsdilTk=",
+      "CodeSha256": Any<String>,
       "FunctionName": Object {
         "Ref": "Hello1LambdaFunction",
       },
@@ -284,10 +269,10 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE": Object {
+  "Hello2LambdaVersionZtozZcKHXOdGSOYyxQFNlTQvw0eS0u0v3utikJceH80": Object {
     "DeletionPolicy": "Retain",
     "Properties": Object {
-      "CodeSha256": "JATk1Y3OqG7tx8Vw+NlNrcgBqJZWAj6nJHJV5y4MarE=",
+      "CodeSha256": Any<String>,
       "FunctionName": Object {
         "Ref": "Hello2LambdaFunction",
       },
