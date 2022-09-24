@@ -10,8 +10,8 @@
   "devDependencies": {
     "@types/node": "^11.13.0",
     "esbuild": "^0.14.2",
-    "serverless": "^2.17.0",
+    "serverless": "^3.22.0",
     "serverless-esbuild": "^1.26.1",
-    "serverless-offline": "^6.4.0"
+    "serverless-offline": "^10.2.1"
   }
 }
