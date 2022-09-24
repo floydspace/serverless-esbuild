@@ -495,8 +495,7 @@ describe('buildOption platform neutral', () => {
 
     const plugin = esbuildPlugin({ functionEntries, buildOptions: buildOptions as any });
 
-    const expectedError =
-      'ERROR: format "esm" or platform "neutral" should not output a file with extension ".cjs".';
+    const expectedError = 'ERROR: format "esm" or platform "neutral" should not output a file with extension ".cjs".';
 
     try {
       await bundle.call(plugin);

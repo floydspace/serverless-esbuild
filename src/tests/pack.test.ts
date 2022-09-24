@@ -19,14 +19,12 @@ describe('filterFilesForZipPackage', () => {
       filterFilesForZipPackage({
         files: [
           {
-            localPath:
-              '__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+            localPath: '__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
           {
-            localPath:
-              '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+            localPath: '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },

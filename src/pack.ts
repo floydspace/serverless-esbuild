@@ -2,18 +2,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import globby from 'globby';
-import {
-  intersection,
-  isEmpty,
-  lensProp,
-  map,
-  over,
-  pipe,
-  reject,
-  replace,
-  test,
-  without,
-} from 'ramda';
+import { intersection, isEmpty, lensProp, map, over, pipe, reject, replace, test, without } from 'ramda';
 import semver from 'semver';
 
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
@@ -67,11 +56,7 @@ export const filterFilesForZipPackage = ({
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
     // exclude files that belong to individual functions
-    if (
-      localPath.startsWith(ONLY_PREFIX) &&
-      !localPath.startsWith(`${ONLY_PREFIX}${functionAlias}/`)
-    )
-      return false;
+    if (localPath.startsWith(ONLY_PREFIX) && !localPath.startsWith(`${ONLY_PREFIX}${functionAlias}/`)) return false;
 
     // exclude non whitelisted dependencies
     if (localPath.startsWith('node_modules')) {
@@ -95,9 +80,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   // Google provider cannot use individual packaging for now - this could be built in a future release
   if (isGoogleProvider && this.serverless?.service?.package?.individually)
-    throw new Error(
-      'Packaging failed: cannot package function individually when using Google provider'
-    );
+    throw new Error('Packaging failed: cannot package function individually when using Google provider');
 
   // get a list of all path in build
   const files: IFiles = globby
@@ -130,9 +113,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     const { size } = fs.statSync(artifactPath);
 
     this.log.verbose(
-      `Zip service ${this.serverless.service.service} - ${humanSize(size)} [${
-        Date.now() - startZip
-      } ms]`
+      `Zip service ${this.serverless.service.service} - ${humanSize(size)} [${Date.now() - startZip} ms]`
     );
     // defined present zip as output artifact
     this.serverless.service.package.artifact = artifactPath;
@@ -156,18 +137,14 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const hasExternals = !!externals?.length;
 
   // get a tree of all production dependencies
-  const packagerDependenciesList = hasExternals
-    ? await packager.getProdDependencies(this.buildDirPath)
-    : {};
+  const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(this.buildDirPath) : {};
 
   const packageFiles = await globby(this.serverless.service.package.patterns);
 
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
-      const excludedFiles = bundlePathList
-        .filter((p) => !bundlePath.startsWith(p))
-        .map(trimExtension);
+      const excludedFiles = bundlePathList.filter((p) => !bundlePath.startsWith(p)).map(trimExtension);
 
       const functionFiles = await globby(func.package.patterns);
 
@@ -177,10 +154,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       let depWhiteList = [];
 
       if (hasExternals) {
-        const bundleDeps = getDepsFromBundle(
-          path.join(this.buildDirPath, bundlePath),
-          isESM(this.buildOptions)
-        );
+        const bundleDeps = getDepsFromBundle(path.join(this.buildDirPath, bundlePath), isESM(this.buildOptions));
         const bundleExternals = intersection(bundleDeps, externals);
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }
@@ -209,9 +183,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
       const { size } = fs.statSync(artifactPath);
 
-      this.log.verbose(
-        `Zip function: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`
-      );
+      this.log.verbose(`Zip function: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`);
 
       // defined present zip as output artifact
       setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));

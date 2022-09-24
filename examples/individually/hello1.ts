@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 
 // modern module syntax
 export async function handler(event, context, callback) {
-
   // dependencies work as expected
   console.log(_.VERSION);
 

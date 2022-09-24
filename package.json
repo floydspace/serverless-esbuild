@@ -1,9 +1,32 @@
 {
   "name": "serverless-esbuild",
-  "description": "Serverless plugin for zero-config JavaScript and TypeScript code bundling using extremely fast esbuild",
   "version": "0.0.0-development",
+  "description": "Serverless plugin for zero-config JavaScript and TypeScript code bundling using extremely fast esbuild",
+  "keywords": [
+    "serverless",
+    "serverless plugin",
+    "plugin",
+    "esbuild",
+    "aws lambda",
+    "aws",
+    "lambda",
+    "bundler",
+    "minifier",
+    "typescript"
+  ],
+  "homepage": "https://floydspace.github.io/serverless-esbuild",
+  "bugs": {
+    "url": "https://github.com/floydspace/serverless-esbuild/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/floydspace/serverless-esbuild.git"
+  },
   "license": "MIT",
-  "author": "Victor Korzunin",
+  "author": {
+    "name": "Victor Korzunin",
+    "url": "https://floydspace.github.io"
+  },
   "main": "dist/index.js",
   "files": [
     "dist",
@@ -24,29 +47,30 @@
     "lint": "eslint .",
     "prepare": "husky install"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/floydspace/serverless-esbuild.git"
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint"
+    ]
   },
-  "bugs": {
-    "url": "https://github.com/floydspace/serverless-esbuild/issues"
+  "prettier": "@floydspace/prettier-config",
+  "dependencies": {
+    "acorn": "^8.7.1",
+    "acorn-walk": "^8.2.0",
+    "anymatch": "^3.1.2",
+    "archiver": "^5.3.0",
+    "bestzip": "^2.2.0",
+    "chokidar": "^3.4.3",
+    "fs-extra": "^10.1.0",
+    "globby": "^11.0.1",
+    "p-map": "^4.0.0",
+    "ramda": "^0.27.0",
+    "semver": "^7.3.5"
   },
-  "homepage": "https://floydspace.github.io",
-  "keywords": [
-    "serverless",
-    "serverless plugin",
-    "plugin",
-    "esbuild",
-    "aws lambda",
-    "aws",
-    "lambda",
-    "bundler",
-    "minifier",
-    "typescript"
-  ],
   "devDependencies": {
     "@commitlint/cli": "^13.2.0",
     "@commitlint/config-conventional": "^13.2.0",
+    "@floydspace/prettier-config": "^1.36.4",
     "@types/archiver": "^5.1.1",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.14",
@@ -63,34 +87,15 @@
     "lint-staged": "^11.1.2",
     "mock-fs": "^4.12.0",
     "mock-spawn": "^0.2.6",
-    "prettier": "^2.3.2",
+    "prettier": "^2.7.1",
     "semantic-release": "^19.0.2",
     "ts-jest": "^26.4.0",
-    "typescript": "^4.0.3"
-  },
-  "dependencies": {
-    "acorn": "^8.7.1",
-    "acorn-walk": "^8.2.0",
-    "anymatch": "^3.1.2",
-    "archiver": "^5.3.0",
-    "bestzip": "^2.2.0",
-    "chokidar": "^3.4.3",
-    "fs-extra": "^10.1.0",
-    "globby": "^11.0.1",
-    "p-map": "^4.0.0",
-    "ramda": "^0.27.0",
-    "semver": "^7.3.5"
+    "typescript": "~4.4.4"
   },
   "peerDependencies": {
     "esbuild": ">=0.8 <0.16"
   },
-  "lint-staged": {
-    "*.ts": [
-      "prettier --write",
-      "eslint"
-    ]
-  },
   "engines": {
-    "node": ">=12"
+    "node": ">=16.0.0"
   }
 }

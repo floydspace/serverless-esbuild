@@ -1,4 +1,3 @@
-
 // modern module syntax
 export async function handler(event, context, callback) {
   // async/await also works out of the box

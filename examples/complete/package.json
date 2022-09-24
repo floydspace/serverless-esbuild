@@ -1,6 +1,12 @@
 {
   "name": "complete",
   "version": "0.1.0",
+  "scripts": {
+    "start": "sls offline"
+  },
+  "dependencies": {
+    "isin-validator": "^1.1.1"
+  },
   "devDependencies": {
     "@types/node": "^11.13.0",
     "esbuild": "^0.14.2",
@@ -9,11 +15,5 @@
     "serverless-offline": "^6.4.0",
     "ts-node": "^8.1.0",
     "typescript": "~3.9.7"
-  },
-  "dependencies": {
-    "isin-validator": "^1.1.1"
-  },
-  "scripts": {
-    "start": "sls offline"
   }
 }

@@ -13,7 +13,7 @@ provider:
 
 custom:
   esbuild:
-    plugins : ./plugins.js
+    plugins: ./plugins.js
     packager: yarn
     bundle: true
     minify: true
@@ -21,7 +21,6 @@ custom:
     keepNames: true
     external:
       - lodash
-
 
 functions:
   hello1:

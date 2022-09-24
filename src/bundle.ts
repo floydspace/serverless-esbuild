@@ -39,9 +39,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   if (!isESM(this.buildOptions) && this.buildOptions.outputFileExtension === '.mjs') {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
-    throw new this.serverless.classes.Error(
-      'ERROR: Non esm builds should not output a file with extension ".mjs".'
-    );
+    throw new this.serverless.classes.Error('ERROR: Non esm builds should not output a file with extension ".mjs".');
   }
 
   if (this.buildOptions.outputFileExtension !== '.js') {
@@ -65,8 +63,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
 
   /** Build the files */
   const bundleMapper = async (entry: string): Promise<FileBuildResult> => {
-    const bundlePath =
-      entry.slice(0, entry.lastIndexOf('.')) + this.buildOptions.outputFileExtension;
+    const bundlePath = entry.slice(0, entry.lastIndexOf('.')) + this.buildOptions.outputFileExtension;
 
     // check cache
     if (this.buildCache) {
@@ -102,13 +99,10 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   });
 
   // Create a cache with entry as key
-  this.buildCache = fileBuildResults.reduce<Record<string, FileBuildResult>>(
-    (acc, fileBuildResult) => {
-      acc[fileBuildResult.entry] = fileBuildResult;
-      return acc;
-    },
-    {}
-  );
+  this.buildCache = fileBuildResults.reduce<Record<string, FileBuildResult>>((acc, fileBuildResult) => {
+    acc[fileBuildResult.entry] = fileBuildResult;
+    return acc;
+  }, {});
 
   // Map function entries back to bundles
   this.buildResults = this.functionEntries.map(({ entry, func, functionAlias }) => {

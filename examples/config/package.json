@@ -1,5 +1,8 @@
 {
   "main": "handler.js",
+  "scripts": {
+    "start": "sls offline"
+  },
   "dependencies": {
     "lodash": "^4.17.4"
   },
@@ -10,8 +13,5 @@
     "serverless": "^2.36.0",
     "serverless-esbuild": "file:../..",
     "serverless-offline": "^6.4.0"
-  },
-  "scripts": {
-    "start": "sls offline"
   }
 }

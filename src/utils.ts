@@ -25,11 +25,7 @@ export class SpawnError extends Error {
  * @param {string[]} [args] - Arguments
  * @param {Object} [options] - Options for child_process.spawn
  */
-export function spawnProcess(
-  command: string,
-  args: string[],
-  options: childProcess.SpawnOptionsWithoutStdio
-) {
+export function spawnProcess(command: string, args: string[], options: childProcess.SpawnOptionsWithoutStdio) {
   return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
     const child = childProcess.spawn(command, args, options);
     let stdout = '';
@@ -49,13 +45,7 @@ export function spawnProcess(
     });
     child.on('close', (exitCode) => {
       if (exitCode !== 0) {
-        reject(
-          new SpawnError(
-            `${command} ${join(' ', args)} failed with code ${exitCode}`,
-            stdout,
-            stderr
-          )
-        );
+        reject(new SpawnError(`${command} ${join(' ', args)} failed with code ${exitCode}`, stdout, stderr));
       } else {
         resolve({ stdout, stderr });
       }
@@ -66,10 +56,7 @@ export function spawnProcess(
 /**
  * Find a file by walking up parent directories
  */
-export function findUp(
-  names: string | string[],
-  directory: string = process.cwd()
-): string | undefined {
+export function findUp(names: string | string[], directory: string = process.cwd()): string | undefined {
   const absoluteDirectory = path.resolve(directory);
 
   if (typeof names === 'string') {
@@ -104,20 +91,14 @@ export const humanSize = (size: number) => {
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
 };
 
-export const zip = async (
-  zipPath: string,
-  filesPathList: IFiles,
-  useNativeZip = false
-): Promise<void> => {
+export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
   const tempDirPath = path.join(os.tmpdir(), tempDirName);
   fs.mkdirpSync(tempDirPath);
 
   // copy all required files from origin path to (sometimes modified) target path
-  await Promise.all(
-    filesPathList.map((file) => fs.copy(file.rootPath, path.join(tempDirPath, file.localPath)))
-  );
+  await Promise.all(filesPathList.map((file) => fs.copy(file.rootPath, path.join(tempDirPath, file.localPath))));
 
   // prepare zip folder
   fs.mkdirpSync(path.dirname(zipPath));
