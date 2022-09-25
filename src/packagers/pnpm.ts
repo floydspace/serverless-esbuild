@@ -49,10 +49,7 @@ export class Pnpm implements Packager {
             }
             return (
               !isEmpty(error) &&
-              !any(
-                (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
-                ignoredPnpmErrors
-              )
+              !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredPnpmErrors)
             );
           },
           false,
@@ -98,9 +95,7 @@ export class Pnpm implements Packager {
   async install(cwd, extraArgs: Array<string>, useLockfile = true) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
 
-    const args = useLockfile
-      ? ['install', '--frozen-lockfile', ...extraArgs]
-      : ['install', ...extraArgs];
+    const args = useLockfile ? ['install', '--frozen-lockfile', ...extraArgs] : ['install', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }

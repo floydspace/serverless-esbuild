@@ -1,17 +1,17 @@
 {
   "name": "minimal",
   "version": "0.1.0",
-  "devDependencies": {
-    "@types/node": "^18.7.8",
-    "esbuild": "^0.15.5",
-    "serverless": "^3.22.0",
-    "serverless-esbuild": "^1.32.8",
-    "serverless-offline": "^9.2.5"
+  "scripts": {
+    "start": "sls offline"
   },
   "dependencies": {
     "isin-validator": "^1.1.1"
   },
-  "scripts": {
-    "start": "sls offline"
+  "devDependencies": {
+    "@types/node": "^18.7.21",
+    "esbuild": "^0.15.9",
+    "serverless": "^3.22.0",
+    "serverless-esbuild": "^1.33.0",
+    "serverless-offline": "^10.2.1"
   }
 }

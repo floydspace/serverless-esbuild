@@ -7,25 +7,14 @@ import ServerlessPlugin from 'serverless/classes/Plugin';
 import chokidar from 'chokidar';
 import anymatch from 'anymatch';
 
-import {
-  buildServerlessV3LoggerFromLegacyLogger,
-  extractFunctionEntries,
-  providerRuntimeMatcher,
-} from './helper';
+import { buildServerlessV3LoggerFromLegacyLogger, extractFunctionEntries, providerRuntimeMatcher } from './helper';
 import { packExternalModules } from './pack-externals';
 import { pack } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { bundle } from './bundle';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-import {
-  Configuration,
-  FileBuildResult,
-  FunctionBuildResult,
-  Plugins,
-  ReturnPluginsFn,
-  ConfigFn,
-} from './types';
+import { Configuration, FileBuildResult, FunctionBuildResult, Plugins, ReturnPluginsFn, ConfigFn } from './types';
 
 function updateFile(op: string, src: string, dest: string) {
   if (['add', 'change', 'addDir'].includes(op)) {
@@ -64,16 +53,10 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   preOffline: () => Promise<void>;
   preLocal: () => void;
 
-  constructor(
-    serverless: Serverless,
-    options: Serverless.Options,
-    logging?: ServerlessPlugin.Logging
-  ) {
+  constructor(serverless: Serverless, options: Serverless.Options, logging?: ServerlessPlugin.Logging) {
     this.serverless = serverless;
     this.options = options;
-    this.log =
-      logging?.log ||
-      buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli.log, this.options.verbose);
+    this.log = logging?.log || buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli, this.options.verbose);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore old versions use servicePath, new versions serviceDir. Types will use only one of them
     this.serviceDirPath = this.serverless.config.serviceDir || this.serverless.config.servicePath;
@@ -269,11 +252,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   get functionEntries() {
-    return extractFunctionEntries(
-      this.serviceDirPath,
-      this.serverless.service.provider.name,
-      this.functions
-    );
+    return extractFunctionEntries(this.serviceDirPath, this.serverless.service.provider.name, this.functions);
   }
 
   async watch(): Promise<void> {
@@ -360,9 +339,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
           filename
         )
       ) {
-        const destFileName = path.resolve(
-          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
-        );
+        const destFileName = path.resolve(path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename));
         updateFile(op, path.resolve(filename), destFileName);
         return;
       }
@@ -390,9 +367,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       }
       const files = await globby(fn.package.patterns);
       for (const filename of files) {
-        const destFileName = path.resolve(
-          path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename)
-        );
+        const destFileName = path.resolve(path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename));
         updateFile('add', path.resolve(filename), destFileName);
       }
     }
@@ -405,10 +380,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   async moveArtifacts(): Promise<void> {
     const { service } = this.serverless;
 
-    await fs.copy(
-      path.join(this.workDirPath, SERVERLESS_FOLDER),
-      path.join(this.serviceDirPath, SERVERLESS_FOLDER)
-    );
+    await fs.copy(path.join(this.workDirPath, SERVERLESS_FOLDER), path.join(this.serviceDirPath, SERVERLESS_FOLDER));
 
     if (service.package.individually || this.options.function) {
       Object.values(this.functions).forEach((func) => {
@@ -417,10 +389,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return;
     }
 
-    service.package.artifact = path.join(
-      SERVERLESS_FOLDER,
-      path.basename(service.package.artifact)
-    );
+    service.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(service.package.artifact));
   }
 
   async cleanup(): Promise<void> {

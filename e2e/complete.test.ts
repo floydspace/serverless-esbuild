@@ -1,23 +1,11 @@
 import fs from 'fs';
-import path from 'path';
+import cloudformation from './.test-artifacts/complete/.serverless/cloudformation-template-update-stack.json';
 
 test('complete', () => {
-  const cloudformation = JSON.parse(
-    fs
-      .readFileSync(
-        path.join(__dirname, 'complete/.serverless/cloudformation-template-update-stack.json')
-      )
-      .toString()
-  );
-
-  const indexContents = fs
-    .readFileSync(path.join(__dirname, 'complete/.serverless/src/index.js'))
-    .toString();
-
+  const indexContents = fs.readFileSync('e2e/.test-artifacts/complete/.serverless/src/index.js').toString();
   expect(indexContents).toMatchSnapshot();
 
-  const nodeModules = fs.readdirSync('e2e/complete/.serverless/node_modules').toString();
-
+  const nodeModules = fs.readdirSync('e2e/.test-artifacts/complete/.serverless/node_modules').toString();
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
@@ -36,8 +24,8 @@ test('complete', () => {
     s.startsWith('ApiGatewayDeployment')
   ) as keyof typeof cloudformation.Resources;
 
-  const validateIsinLambdaVersionPropertyKey = cloudformation.Outputs
-    .ValidateIsinLambdaFunctionQualifiedArn.Value.Ref as keyof typeof cloudformation.Resources;
+  const validateIsinLambdaVersionPropertyKey = cloudformation.Outputs.ValidateIsinLambdaFunctionQualifiedArn.Value
+    .Ref as keyof typeof cloudformation.Resources;
 
   const {
     [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment,

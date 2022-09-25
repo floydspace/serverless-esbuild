@@ -120,9 +120,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
 const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
 
 export const isESM = (buildOptions: Configuration): boolean => {
-  return (
-    buildOptions.format === 'esm' || (buildOptions.platform === 'neutral' && !buildOptions.format)
-  );
+  return buildOptions.format === 'esm' || (buildOptions.platform === 'neutral' && !buildOptions.format);
 };
 
 /**
@@ -177,14 +175,14 @@ export const providerRuntimeMatcher = Object.freeze({
 });
 
 export const buildServerlessV3LoggerFromLegacyLogger = (
-  legacyLogger: (text: string) => void,
+  legacyLogger: Serverless['cli'],
   verbose?: boolean
 ): ServerlessPlugin.Logging['log'] => ({
-  error: legacyLogger,
-  warning: legacyLogger,
-  notice: legacyLogger,
-  info: legacyLogger,
-  debug: verbose ? legacyLogger : () => null,
-  verbose: legacyLogger,
-  success: legacyLogger,
+  error: legacyLogger.log.bind(legacyLogger),
+  warning: legacyLogger.log.bind(legacyLogger),
+  notice: legacyLogger.log.bind(legacyLogger),
+  info: legacyLogger.log.bind(legacyLogger),
+  debug: verbose ? legacyLogger.log.bind(legacyLogger) : () => null,
+  verbose: legacyLogger.log.bind(legacyLogger),
+  success: legacyLogger.log.bind(legacyLogger),
 });

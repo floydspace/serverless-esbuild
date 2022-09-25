@@ -143,10 +143,7 @@ export class NPM implements Packager {
         const hasThrowableErrors = npmErrors.every(
           (error) =>
             !isEmpty(error) &&
-            !any(
-              (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
-              ignoredNpmErrors
-            )
+            !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredNpmErrors)
         );
 
         if (!hasThrowableErrors && !isEmpty(err.stdout)) {

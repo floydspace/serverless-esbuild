@@ -52,9 +52,7 @@ export class Yarn implements Packager {
 
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(
-      Boolean
-    );
+    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(Boolean);
 
     // If we need to ignore some errors add them here
     const ignoredYarnErrors = [];
@@ -74,10 +72,7 @@ export class Yarn implements Packager {
             }
             return (
               !isEmpty(error) &&
-              !any(
-                (ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error),
-                ignoredYarnErrors
-              )
+              !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredYarnErrors)
             );
           },
           false,
@@ -197,11 +192,7 @@ export class Yarn implements Packager {
     }
 
     // Replace all lines in lockfile
-    return reduce(
-      (__, replacement) => replace(__, replacement.oldRef, replacement.newRef),
-      lockfile,
-      replacements
-    );
+    return reduce((__, replacement) => replace(replacement.oldRef, replacement.newRef, __), lockfile, replacements);
   }
 
   async install(cwd: string, extraArgs: Array<string>, useLockfile = true) {
@@ -221,8 +212,6 @@ export class Yarn implements Packager {
 
   async runScripts(cwd, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    await Promise.all(
-      scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd }))
-    );
+    await Promise.all(scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd })));
   }
 }

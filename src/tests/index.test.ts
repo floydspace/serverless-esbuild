@@ -90,11 +90,11 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
@@ -111,18 +111,18 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
-          "hello2": Object {
-            "events": Array [],
+          "hello2": {
+            "events": [],
             "handler": "hello2.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello2",
             },
           },
@@ -145,18 +145,18 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
-          "hello2": Object {
-            "events": Array [],
+          "hello2": {
+            "events": [],
             "handler": "hello2.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello2",
             },
           },

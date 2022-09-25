@@ -158,11 +158,7 @@ describe('getDepsFromBundle', () => {
           return require('package3');
         }
       `);
-      expect(getDepsFromBundle(path, false)).toStrictEqual([
-        '@scope/package1',
-        'package2',
-        'package3',
-      ]);
+      expect(getDepsFromBundle(path, false)).toStrictEqual(['@scope/package1', 'package2', 'package3']);
     });
 
     it('should extract the base dep from a string', () => {
@@ -182,9 +178,7 @@ describe('getDepsFromBundle', () => {
     it('should remove duplicate package requires', () => {
       jest
         .mocked(fs)
-        .readFileSync.mockReturnValue(
-          'require("package1/subpath");require("package1");require("package1")'
-        );
+        .readFileSync.mockReturnValue('require("package1/subpath");require("package1");require("package1")');
       expect(getDepsFromBundle(path, false)).toStrictEqual(['package1']);
     });
   });
@@ -202,20 +196,13 @@ describe('getDepsFromBundle', () => {
         }
         `
       );
-      expect(getDepsFromBundle(path, true)).toStrictEqual([
-        'package1',
-        'package2',
-        'package3',
-        'package4',
-      ]);
+      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3', 'package4']);
     });
 
     it('should extract deps from a minified string', () => {
       jest
         .mocked(fs)
-        .readFileSync.mockReturnValue(
-          'import*as n from"package1";import"package2";import{hello as r}from"package3";'
-        );
+        .readFileSync.mockReturnValue('import*as n from"package1";import"package2";import{hello as r}from"package3";');
       expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
   });

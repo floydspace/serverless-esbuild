@@ -19,18 +19,18 @@ describe('filterFilesForZipPackage', () => {
       filterFilesForZipPackage({
         files: [
           {
-            localPath:
-              '__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+            localPath: '__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
+
           {
-            localPath:
-              '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
+            localPath: '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
         ],
+
         depWhiteList: [],
         functionAlias: 'fnAlias',
         isGoogleProvider: false,
@@ -39,8 +39,8 @@ describe('filterFilesForZipPackage', () => {
         excludedFiles: [],
       })
     ).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "localPath": "__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
           "rootPath": "/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
         },
@@ -57,7 +57,7 @@ describe('pack', () => {
   describe('individually', () => {
     it('should create zips with the functionAlias as the name', async () => {
       const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
-      jest.mocked(globby, true).sync.mockReturnValue(['hello1.js', 'hello2.js']);
+      jest.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
       jest.mocked(globby).mockResolvedValue([]);
       jest.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
 

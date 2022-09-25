@@ -1,17 +1,17 @@
 {
   "main": "handler.js",
-  "dependencies": {
-    "lodash": "^4.17.4"
-  },
-  "devDependencies": {
-    "@types/lodash": "4.14.184",
-    "@types/node": "^18.7.13",
-    "esbuild": "^0.15.5",
-    "serverless": "^3.22.0",
-    "serverless-esbuild": "file:../..",
-    "serverless-offline": "^9.2.6"
-  },
   "scripts": {
     "start": "sls offline"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.185",
+    "@types/node": "^18.7.21",
+    "esbuild": "^0.15.9",
+    "serverless": "^3.22.0",
+    "serverless-esbuild": "file:../..",
+    "serverless-offline": "^10.2.1"
   }
 }
