@@ -5,6 +5,3 @@ node_modules
 dist
 *.log
 yarn.lock
-e2e/complete/
-e2e/individually/
-e2e/minimal/
