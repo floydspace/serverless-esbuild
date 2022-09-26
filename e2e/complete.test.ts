@@ -9,7 +9,9 @@ test('complete', () => {
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
-  expect(cloudformation.Description).toMatchSnapshot;
+
+  expect(cloudformation.Description).toMatchSnapshot();
+
   expect(cloudformation.Outputs).toMatchSnapshot({
     ValidateIsinLambdaFunctionQualifiedArn: {
       Value: {
@@ -40,6 +42,7 @@ test('complete', () => {
   });
 
   expect(apiGatewayDeployment).toMatchSnapshot();
+
   expect(validateIsinLambdaVersion).toMatchSnapshot({
     Properties: {
       CodeSha256: expect.any(String),

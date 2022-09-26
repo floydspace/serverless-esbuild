@@ -1,41 +1,43 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`complete 1`] = `
-"var d=Object.create;var a=Object.defineProperty;var e=Object.getOwnPropertyDescriptor;var I=Object.getOwnPropertyNames;var l=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var r=i=>a(i,\\"__esModule\\",{value:!0});var u=(i,n)=>{r(i);for(var s in n)a(i,s,{get:n[s],enumerable:!0})},c=(i,n,s)=>{if(n&&typeof n==\\"object\\"||typeof n==\\"function\\")for(let t of I(n))!f.call(i,t)&&t!==\\"default\\"&&a(i,t,{get:()=>n[t],enumerable:!(s=e(n,t))||s.enumerable});return i},g=i=>c(r(a(i!=null?d(l(i)):{},\\"default\\",i&&i.__esModule&&\\"default\\"in i?{get:()=>i.default,enumerable:!0}:{value:i,enumerable:!0})),i);u(exports,{handler:()=>m});var o=g(require(\\"isin-validator\\"));async function m(i){let n=(0,o.default)(i);return{statusCode:200,body:JSON.stringify({message:n?\\"ISIN is invalid!\\":\\"ISIN is fine!\\",input:i})}}0&&(module.exports={handler});
+"var e=Object.create;var a=Object.defineProperty;var I=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var l=Object.getPrototypeOf,u=Object.prototype.hasOwnProperty;var c=(i,n)=>{for(var s in n)a(i,s,{get:n[s],enumerable:!0})},o=(i,n,s,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let t of f(n))!u.call(i,t)&&t!==s&&a(i,t,{get:()=>n[t],enumerable:!(r=I(n,t))||r.enumerable});return i};var g=(i,n,s)=>(s=i!=null?e(l(i)):{},o(n||!i||!i.__esModule?a(s,"default",{value:i,enumerable:!0}):s,i)),m=i=>o(a({},"__esModule",{value:!0}),i);var y={};c(y,{handler:()=>p});module.exports=m(y);var d=g(require("isin-validator"));async function p(i){let n=(0,d.default)(i);return{statusCode:200,body:JSON.stringify({message:n?"ISIN is invalid!":"ISIN is fine!",input:i})}}0&&(module.exports={handler});
 "
 `;
 
 exports[`complete 2`] = `"2010-09-09"`;
 
-exports[`complete 3`] = `
-Object {
-  "ServerlessDeploymentBucketName": Object {
-    "Export": Object {
+exports[`complete 3`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`complete 4`] = `
+{
+  "ServerlessDeploymentBucketName": {
+    "Export": {
       "Name": "sls-complete-example-dev-ServerlessDeploymentBucketName",
     },
-    "Value": Object {
+    "Value": {
       "Ref": "ServerlessDeploymentBucket",
     },
   },
-  "ServiceEndpoint": Object {
+  "ServiceEndpoint": {
     "Description": "URL of the service endpoint",
-    "Export": Object {
+    "Export": {
       "Name": "sls-complete-example-dev-ServiceEndpoint",
     },
-    "Value": Object {
-      "Fn::Join": Array [
+    "Value": {
+      "Fn::Join": [
         "",
-        Array [
+        [
           "https://",
-          Object {
+          {
             "Ref": "ApiGatewayRestApi",
           },
           ".execute-api.",
-          Object {
+          {
             "Ref": "AWS::Region",
           },
           ".",
-          Object {
+          {
             "Ref": "AWS::URLSuffix",
           },
           "/dev",
@@ -43,46 +45,46 @@ Object {
       ],
     },
   },
-  "ValidateIsinLambdaFunctionQualifiedArn": Object {
+  "ValidateIsinLambdaFunctionQualifiedArn": {
     "Description": "Current Lambda function version",
-    "Export": Object {
+    "Export": {
       "Name": "sls-complete-example-dev-ValidateIsinLambdaFunctionQualifiedArn",
     },
-    "Value": Object {
+    "Value": {
       "Ref": StringContaining "ValidateIsinLambdaVersion",
     },
   },
 }
 `;
 
-exports[`complete 4`] = `
-Object {
-  "ApiGatewayMethodValidateDashisinIsinVarGet": Object {
-    "DependsOn": Array [
+exports[`complete 5`] = `
+{
+  "ApiGatewayMethodValidateDashisinIsinVarGet": {
+    "DependsOn": [
       "ValidateIsinLambdaPermissionApiGateway",
     ],
-    "Properties": Object {
+    "Properties": {
       "ApiKeyRequired": false,
       "AuthorizationType": "NONE",
       "HttpMethod": "GET",
-      "Integration": Object {
+      "Integration": {
         "IntegrationHttpMethod": "POST",
         "Type": "AWS_PROXY",
-        "Uri": Object {
-          "Fn::Join": Array [
+        "Uri": {
+          "Fn::Join": [
             "",
-            Array [
+            [
               "arn:",
-              Object {
+              {
                 "Ref": "AWS::Partition",
               },
               ":apigateway:",
-              Object {
+              {
                 "Ref": "AWS::Region",
               },
               ":lambda:path/2015-03-31/functions/",
-              Object {
-                "Fn::GetAtt": Array [
+              {
+                "Fn::GetAtt": [
                   "ValidateIsinLambdaFunction",
                   "Arn",
                 ],
@@ -92,48 +94,48 @@ Object {
           ],
         },
       },
-      "MethodResponses": Array [],
-      "RequestParameters": Object {},
-      "ResourceId": Object {
+      "MethodResponses": [],
+      "RequestParameters": {},
+      "ResourceId": {
         "Ref": "ApiGatewayResourceValidateDashisinIsinVar",
       },
-      "RestApiId": Object {
+      "RestApiId": {
         "Ref": "ApiGatewayRestApi",
       },
     },
     "Type": "AWS::ApiGateway::Method",
   },
-  "ApiGatewayResourceValidateDashisin": Object {
-    "Properties": Object {
-      "ParentId": Object {
-        "Fn::GetAtt": Array [
+  "ApiGatewayResourceValidateDashisin": {
+    "Properties": {
+      "ParentId": {
+        "Fn::GetAtt": [
           "ApiGatewayRestApi",
           "RootResourceId",
         ],
       },
       "PathPart": "validate-isin",
-      "RestApiId": Object {
+      "RestApiId": {
         "Ref": "ApiGatewayRestApi",
       },
     },
     "Type": "AWS::ApiGateway::Resource",
   },
-  "ApiGatewayResourceValidateDashisinIsinVar": Object {
-    "Properties": Object {
-      "ParentId": Object {
+  "ApiGatewayResourceValidateDashisinIsinVar": {
+    "Properties": {
+      "ParentId": {
         "Ref": "ApiGatewayResourceValidateDashisin",
       },
       "PathPart": "{isin}",
-      "RestApiId": Object {
+      "RestApiId": {
         "Ref": "ApiGatewayRestApi",
       },
     },
     "Type": "AWS::ApiGateway::Resource",
   },
-  "ApiGatewayRestApi": Object {
-    "Properties": Object {
-      "EndpointConfiguration": Object {
-        "Types": Array [
+  "ApiGatewayRestApi": {
+    "Properties": {
+      "EndpointConfiguration": {
+        "Types": [
           "EDGE",
         ],
       },
@@ -142,17 +144,17 @@ Object {
     },
     "Type": "AWS::ApiGateway::RestApi",
   },
-  "IamRoleLambdaExecution": Object {
-    "Properties": Object {
-      "AssumeRolePolicyDocument": Object {
-        "Statement": Array [
-          Object {
-            "Action": Array [
+  "IamRoleLambdaExecution": {
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Statement": [
+          {
+            "Action": [
               "sts:AssumeRole",
             ],
             "Effect": "Allow",
-            "Principal": Object {
-              "Service": Array [
+            "Principal": {
+              "Service": [
                 "lambda.amazonaws.com",
               ],
             },
@@ -161,29 +163,29 @@ Object {
         "Version": "2012-10-17",
       },
       "Path": "/",
-      "Policies": Array [
-        Object {
-          "PolicyDocument": Object {
-            "Statement": Array [
-              Object {
-                "Action": Array [
+      "Policies": [
+        {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
                   "logs:CreateLogStream",
                   "logs:CreateLogGroup",
                 ],
                 "Effect": "Allow",
-                "Resource": Array [
-                  Object {
+                "Resource": [
+                  {
                     "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/complete-example-dev*:*",
                   },
                 ],
               },
-              Object {
-                "Action": Array [
+              {
+                "Action": [
                   "logs:PutLogEvents",
                 ],
                 "Effect": "Allow",
-                "Resource": Array [
-                  Object {
+                "Resource": [
+                  {
                     "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/complete-example-dev*:*:*",
                   },
                 ],
@@ -191,10 +193,10 @@ Object {
             ],
             "Version": "2012-10-17",
           },
-          "PolicyName": Object {
-            "Fn::Join": Array [
+          "PolicyName": {
+            "Fn::Join": [
               "-",
-              Array [
+              [
                 "complete-example",
                 "dev",
                 "lambda",
@@ -203,13 +205,13 @@ Object {
           },
         },
       ],
-      "RoleName": Object {
-        "Fn::Join": Array [
+      "RoleName": {
+        "Fn::Join": [
           "-",
-          Array [
+          [
             "complete-example",
             "dev",
-            Object {
+            {
               "Ref": "AWS::Region",
             },
             "lambdaRole",
@@ -219,12 +221,12 @@ Object {
     },
     "Type": "AWS::IAM::Role",
   },
-  "ServerlessDeploymentBucket": Object {
-    "Properties": Object {
-      "BucketEncryption": Object {
-        "ServerSideEncryptionConfiguration": Array [
-          Object {
-            "ServerSideEncryptionByDefault": Object {
+  "ServerlessDeploymentBucket": {
+    "Properties": {
+      "BucketEncryption": {
+        "ServerSideEncryptionConfiguration": [
+          {
+            "ServerSideEncryptionByDefault": {
               "SSEAlgorithm": "AES256",
             },
           },
@@ -233,49 +235,49 @@ Object {
     },
     "Type": "AWS::S3::Bucket",
   },
-  "ServerlessDeploymentBucketPolicy": Object {
-    "Properties": Object {
-      "Bucket": Object {
+  "ServerlessDeploymentBucketPolicy": {
+    "Properties": {
+      "Bucket": {
         "Ref": "ServerlessDeploymentBucket",
       },
-      "PolicyDocument": Object {
-        "Statement": Array [
-          Object {
+      "PolicyDocument": {
+        "Statement": [
+          {
             "Action": "s3:*",
-            "Condition": Object {
-              "Bool": Object {
+            "Condition": {
+              "Bool": {
                 "aws:SecureTransport": false,
               },
             },
             "Effect": "Deny",
             "Principal": "*",
-            "Resource": Array [
-              Object {
-                "Fn::Join": Array [
+            "Resource": [
+              {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:",
-                    Object {
+                    {
                       "Ref": "AWS::Partition",
                     },
                     ":s3:::",
-                    Object {
+                    {
                       "Ref": "ServerlessDeploymentBucket",
                     },
                     "/*",
                   ],
                 ],
               },
-              Object {
-                "Fn::Join": Array [
+              {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:",
-                    Object {
+                    {
                       "Ref": "AWS::Partition",
                     },
                     ":s3:::",
-                    Object {
+                    {
                       "Ref": "ServerlessDeploymentBucket",
                     },
                   ],
@@ -288,13 +290,13 @@ Object {
     },
     "Type": "AWS::S3::BucketPolicy",
   },
-  "ValidateIsinLambdaFunction": Object {
-    "DependsOn": Array [
+  "ValidateIsinLambdaFunction": {
+    "DependsOn": [
       "ValidateIsinLogGroup",
     ],
-    "Properties": Object {
-      "Code": Object {
-        "S3Bucket": Object {
+    "Properties": {
+      "Code": {
+        "S3Bucket": {
           "Ref": "ServerlessDeploymentBucket",
         },
         "S3Key": StringContaining "complete-example.zip",
@@ -302,8 +304,8 @@ Object {
       "FunctionName": "complete-example-dev-validateIsin",
       "Handler": "src/index.handler",
       "MemorySize": 1024,
-      "Role": Object {
-        "Fn::GetAtt": Array [
+      "Role": {
+        "Fn::GetAtt": [
           "IamRoleLambdaExecution",
           "Arn",
         ],
@@ -313,34 +315,34 @@ Object {
     },
     "Type": "AWS::Lambda::Function",
   },
-  "ValidateIsinLambdaPermissionApiGateway": Object {
-    "Properties": Object {
+  "ValidateIsinLambdaPermissionApiGateway": {
+    "Properties": {
       "Action": "lambda:InvokeFunction",
-      "FunctionName": Object {
-        "Fn::GetAtt": Array [
+      "FunctionName": {
+        "Fn::GetAtt": [
           "ValidateIsinLambdaFunction",
           "Arn",
         ],
       },
       "Principal": "apigateway.amazonaws.com",
-      "SourceArn": Object {
-        "Fn::Join": Array [
+      "SourceArn": {
+        "Fn::Join": [
           "",
-          Array [
+          [
             "arn:",
-            Object {
+            {
               "Ref": "AWS::Partition",
             },
             ":execute-api:",
-            Object {
+            {
               "Ref": "AWS::Region",
             },
             ":",
-            Object {
+            {
               "Ref": "AWS::AccountId",
             },
             ":",
-            Object {
+            {
               "Ref": "ApiGatewayRestApi",
             },
             "/*/*",
@@ -350,8 +352,8 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLogGroup": Object {
-    "Properties": Object {
+  "ValidateIsinLogGroup": {
+    "Properties": {
       "LogGroupName": "/aws/lambda/complete-example-dev-validateIsin",
     },
     "Type": "AWS::Logs::LogGroup",
@@ -359,13 +361,13 @@ Object {
 }
 `;
 
-exports[`complete 5`] = `
-Object {
-  "DependsOn": Array [
+exports[`complete 6`] = `
+{
+  "DependsOn": [
     "ApiGatewayMethodValidateDashisinIsinVarGet",
   ],
-  "Properties": Object {
-    "RestApiId": Object {
+  "Properties": {
+    "RestApiId": {
       "Ref": "ApiGatewayRestApi",
     },
     "StageName": "dev",
@@ -374,12 +376,12 @@ Object {
 }
 `;
 
-exports[`complete 6`] = `
-Object {
+exports[`complete 7`] = `
+{
   "DeletionPolicy": "Retain",
-  "Properties": Object {
+  "Properties": {
     "CodeSha256": Any<String>,
-    "FunctionName": Object {
+    "FunctionName": {
       "Ref": "ValidateIsinLambdaFunction",
     },
   },

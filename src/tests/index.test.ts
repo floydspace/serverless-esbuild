@@ -1,6 +1,7 @@
-import Serverless from 'serverless';
-import Service from 'serverless/classes/Service';
 import EsbuildServerlessPlugin from '../index';
+
+import type Serverless from 'serverless';
+import type Service from 'serverless/classes/Service';
 
 import fs from 'fs-extra';
 
@@ -79,7 +80,7 @@ describe('Move Artifacts', () => {
 
   describe('function option', () => {
     it('should update the selected functions base path to the serverless folder', async () => {
-      mockGetFunction.mockReturnValue(packageIndividuallyService.functions.hello1);
+      mockGetFunction.mockReturnValue(packageIndividuallyService.functions?.hello1);
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), {
         ...mockOptions,
         function: 'hello1',
@@ -89,11 +90,11 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
@@ -110,18 +111,18 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
-          "hello2": Object {
-            "events": Array [],
+          "hello2": {
+            "events": [],
             "handler": "hello2.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello2",
             },
           },
@@ -144,18 +145,18 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.functions).toMatchInlineSnapshot(`
-        Object {
-          "hello1": Object {
-            "events": Array [],
+        {
+          "hello1": {
+            "events": [],
             "handler": "hello1.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello1",
             },
           },
-          "hello2": Object {
-            "events": Array [],
+          "hello2": {
+            "events": [],
             "handler": "hello2.handler",
-            "package": Object {
+            "package": {
               "artifact": ".serverless/hello2",
             },
           },

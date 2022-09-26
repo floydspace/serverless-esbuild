@@ -10,15 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [16.x, 18.x]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm test
       - run: npm run test:e2e
+      - name: Upload e2e test artifacts
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: e2e-test-artifact
+          path: |
+            e2e/**/.serverless/*.json
+            e2e/**/.serverless/*.zip
+          retention-days: 7
       - run: npm run build --if-present

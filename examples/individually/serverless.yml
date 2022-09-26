@@ -27,12 +27,12 @@ functions:
     handler: hello1.handler
     events:
       - http:
-          path: hello
+          path: hello1
           method: get
 
   hello2:
     handler: hello2.handler
     events:
       - http:
-          path: hello
+          path: hello2
           method: get

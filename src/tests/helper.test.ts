@@ -1,7 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { mocked } from 'ts-jest/utils';
 
 import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM } from '../helper';
 
@@ -20,7 +19,7 @@ describe('extractFunctionEntries', () => {
 
   describe('aws', () => {
     it('should return entries for handlers which reference files in the working directory', () => {
-      mocked(fs.existsSync).mockReturnValue(true);
+      jest.mocked(fs.existsSync).mockReturnValue(true);
       const functionDefinitions = {
         function1: {
           events: [],
@@ -49,7 +48,7 @@ describe('extractFunctionEntries', () => {
     });
 
     it('should return entries for handlers which reference files in folders in the working directory', () => {
-      mocked(fs.existsSync).mockReturnValue(true);
+      jest.mocked(fs.existsSync).mockReturnValue(true);
       const functionDefinitions = {
         function1: {
           events: [],
@@ -78,7 +77,7 @@ describe('extractFunctionEntries', () => {
     });
 
     it('should return entries for handlers which reference files using a relative path in the working directory', () => {
-      mocked(fs.existsSync).mockReturnValue(true);
+      jest.mocked(fs.existsSync).mockReturnValue(true);
       const functionDefinitions = {
         function1: {
           events: [],
@@ -107,7 +106,7 @@ describe('extractFunctionEntries', () => {
     });
 
     it('should return entries for handlers on a Windows platform', () => {
-      mocked(fs.existsSync).mockReturnValue(true);
+      jest.mocked(fs.existsSync).mockReturnValue(true);
       jest.spyOn(path, 'relative').mockReturnValueOnce('src\\file1.ts');
       jest.spyOn(os, 'platform').mockReturnValueOnce('win32');
       const functionDefinitions = {
@@ -129,7 +128,7 @@ describe('extractFunctionEntries', () => {
     });
 
     it('should throw an error if the handlers reference a file which does not exist', () => {
-      mocked(fs.existsSync).mockReturnValue(false);
+      jest.mocked(fs.existsSync).mockReturnValue(false);
       const functionDefinitions = {
         function1: {
           events: [],
@@ -152,7 +151,7 @@ describe('getDepsFromBundle', () => {
 
   describe('require statements', () => {
     it('should extract deps from a string', () => {
-      mocked(fs).readFileSync.mockReturnValue(`
+      jest.mocked(fs).readFileSync.mockReturnValue(`
         require("@scope/package1");
         require("package2");
         function req3() {
@@ -163,9 +162,11 @@ describe('getDepsFromBundle', () => {
     });
 
     it('should extract the base dep from a string', () => {
-      mocked(fs).readFileSync.mockReturnValue(
-        'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath");require("package4/subpath/subpath")'
-      );
+      jest
+        .mocked(fs)
+        .readFileSync.mockReturnValue(
+          'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath");require("package4/subpath/subpath")'
+        );
       expect(getDepsFromBundle(path, false)).toStrictEqual([
         '@scope/package1',
         'package2',
@@ -175,14 +176,16 @@ describe('getDepsFromBundle', () => {
     });
 
     it('should remove duplicate package requires', () => {
-      mocked(fs).readFileSync.mockReturnValue('require("package1/subpath");require("package1");require("package1")');
+      jest
+        .mocked(fs)
+        .readFileSync.mockReturnValue('require("package1/subpath");require("package1");require("package1")');
       expect(getDepsFromBundle(path, false)).toStrictEqual(['package1']);
     });
   });
 
   describe('import statements', () => {
     it('should extract deps from a string', () => {
-      mocked(fs).readFileSync.mockReturnValue(
+      jest.mocked(fs).readFileSync.mockReturnValue(
         `
         import * as n from "package1";
         import "package2";
@@ -197,9 +200,9 @@ describe('getDepsFromBundle', () => {
     });
 
     it('should extract deps from a minified string', () => {
-      mocked(fs).readFileSync.mockReturnValue(
-        'import*as n from"package1";import"package2";import{hello as r}from"package3";'
-      );
+      jest
+        .mocked(fs)
+        .readFileSync.mockReturnValue('import*as n from"package1";import"package2";import{hello as r}from"package3";');
       expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
   });

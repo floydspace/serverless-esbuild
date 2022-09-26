@@ -1,10 +1,11 @@
-import { PartialDeep } from 'type-fest';
-import EsbuildServerlessPlugin from '..';
-import { bundle } from '../bundle';
 import { build } from 'esbuild';
-import { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
 import pMap from 'p-map';
-import { mocked } from 'ts-jest/utils';
+
+import { bundle } from '../bundle';
+
+import type { PartialDeep } from 'type-fest';
+import type { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
+import type EsbuildServerlessPlugin from '../index';
 
 jest.mock('esbuild');
 jest.mock('p-map');
@@ -51,7 +52,7 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
   } as PartialDeep<EsbuildServerlessPlugin> as EsbuildServerlessPlugin);
 
 beforeEach(() => {
-  mocked(pMap).mockImplementation((entries, mapper) => {
+  jest.mocked(pMap).mockImplementation((entries, mapper) => {
     return Promise.all((entries as string[]).map((entry, index) => mapper(entry, index)));
   });
 });

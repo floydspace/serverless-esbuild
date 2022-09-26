@@ -103,7 +103,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
 
     // remove prefixes from individual extra files
-    const filesPathList = pipe<IFiles, IFiles, IFiles>(
+    const filesPathList = pipe(
       reject(test(/^__only_[^/]+$/)) as (x: IFiles) => IFiles,
       map(over(lensProp('localPath'), replace(/^__only_[^/]+\//, '')))
     )(files);

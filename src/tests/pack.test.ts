@@ -3,8 +3,8 @@ import * as utils from '../utils';
 
 import fs from 'fs-extra';
 import globby from 'globby';
-import { mocked } from 'ts-jest/utils';
-import { FunctionBuildResult } from '../types';
+
+import type { FunctionBuildResult } from '../types';
 
 jest.mock('globby');
 jest.mock('fs-extra');
@@ -23,12 +23,14 @@ describe('filterFilesForZipPackage', () => {
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
+
           {
             localPath: '__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
               '/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
           },
         ],
+
         depWhiteList: [],
         functionAlias: 'fnAlias',
         isGoogleProvider: false,
@@ -37,8 +39,8 @@ describe('filterFilesForZipPackage', () => {
         excludedFiles: [],
       })
     ).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "localPath": "__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
           "rootPath": "/home/capaj/repos/google/search/.esbuild/.build/__only_fnAlias/bin/imagemagick/include/ImageMagick/magick/method-attribute.h",
         },
@@ -55,9 +57,9 @@ describe('pack', () => {
   describe('individually', () => {
     it('should create zips with the functionAlias as the name', async () => {
       const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
-      mocked(globby, true).sync.mockReturnValue(['hello1.js', 'hello2.js']);
-      mocked(globby).mockResolvedValue([]);
-      mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
+      jest.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
+      jest.mocked(globby).mockResolvedValue([]);
+      jest.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
 
       const buildResults: FunctionBuildResult[] = [
         {
