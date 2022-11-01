@@ -205,6 +205,14 @@ export class Yarn implements Packager {
     await spawnProcess(command, args, { cwd });
   }
 
+  async link(cwd: string, packages: string[] = []) {
+    const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
+
+    const args = ['link', ...packages];
+
+    await spawnProcess(command, args, { cwd });
+  }
+
   // "Yarn install" prunes automatically
   prune(cwd) {
     return this.install(cwd, []);

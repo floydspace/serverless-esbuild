@@ -28,6 +28,7 @@ Serverless plugin for zero-config JavaScript and TypeScript code bundling using 
 - [Advanced Configuration](#advanced-configuration)
   - [Including Extra Files](#including-extra-files)
   - [External Dependencies](#external-dependencies)
+  - [Linking External Dependencies](#linking-external-dependencies)
   - [Esbuild Plugins](#esbuild-plugins)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
@@ -88,6 +89,7 @@ See [example folder](examples) for some example configurations.
 | `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
 | `packagerOptions`     | Extra options for packagers for `external` dependency resolution.                                                                                                          | [Packager Options](#packager-options)               |
 | `watch`               | Watch options for `serverless-offline`.                                                                                                                                    | [Watch Options](#watch-options)                     |
+| `link`                | An array of `external` dependencies to link into the Lambda. The list is passed to the `link` command for the `packager` listed above.                                     | `[]`                                                |
 
 #### Default Esbuild Options
 
@@ -185,6 +187,19 @@ custom:
     external:
       - 'my-package-name'
       - 'another-package-name'
+```
+
+### Linking External Dependencies
+
+As stated above in the [External Dependencies](#external-dependencies) section, some dependencies will be installed and included with your build under `node_modules`. If you wish to link some or all of these dependencies into your Lambda rather than install them, you can utilize the `link` option.
+
+```yml
+custom:
+  esbuild:
+    external:
+      - lodash
+    link:
+      - lodash
 ```
 
 ### Esbuild Plugins

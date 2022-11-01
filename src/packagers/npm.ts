@@ -262,6 +262,14 @@ export class NPM implements Packager {
     await spawnProcess(command, args, { cwd });
   }
 
+  async link(cwd: string, packages: string[] = []) {
+    const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
+
+    for (const pkg of packages) {
+      await spawnProcess(command, ['link', pkg], { cwd });
+    }
+  }
+
   async prune(cwd) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = ['prune'];

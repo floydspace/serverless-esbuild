@@ -312,6 +312,13 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   await packager.install(compositeModulePath, installExtraArgs, exists);
   this.log.debug(`Package took [${Date.now() - start} ms]`);
 
+  if (this.buildOptions.link?.length) {
+    const startLink = Date.now();
+    this.log.verbose('Linking external modules: ' + this.buildOptions.link.join(', '));
+    await packager.link(compositeModulePath, this.buildOptions.link);
+    this.log.debug(`Linking took [${Date.now() - startLink} ms]`);
+  }
+
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
   await packager.prune(compositeModulePath);
