@@ -49,7 +49,7 @@ export function extractFunctionEntries(
     // replace only last instance to allow the same name for file and handler
     const fileName = h.substring(0, fnNameLastAppearanceIndex);
 
-    const extensions = ['.ts', '.js'];
+    const extensions = ['.ts', '.js', '.jsx', '.tsx'];
     for (const extension of extensions) {
       // Check if the .{extension} files exists. If so return that to watch
       if (fs.existsSync(path.join(cwd, fileName + extension))) {
