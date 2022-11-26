@@ -28,6 +28,11 @@ import {
 import { getPackager } from './packagers';
 import { findProjectRoot, findUp } from './utils';
 
+import type {
+  findDependencies as FindDependenciesFn,
+  findPackagePaths as FindPackagePathsFn,
+} from 'esbuild-node-externals/dist/utils';
+
 import type EsbuildServerlessPlugin from './index';
 import type { JSONObject } from './types';
 
@@ -164,6 +169,18 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
   return prodModules;
 }
 
+export function nodeExternalsPluginUtilsPath(): string | undefined {
+  try {
+    const resolvedPackage = require.resolve('esbuild-node-externals/dist/utils', {
+      paths: [process.cwd()],
+    });
+
+    return resolvedPackage;
+  } catch {
+    // No-op
+  }
+}
+
 /**
  * We need a performant algorithm to install the packages for each single
  * function (in case we package individually).
@@ -180,20 +197,27 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
 export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const plugins = this.plugins;
 
-  if (
-    plugins &&
-    plugins.map((plugin) => plugin.name).includes('node-externals') &&
-    fse.existsSync(path.resolve(__dirname, '../../esbuild-node-externals/dist/utils.js'))
-  ) {
-    const { findDependencies, findPackagePaths } = require('esbuild-node-externals/dist/utils');
+  if (plugins && plugins.map((plugin) => plugin.name).includes('node-externals')) {
+    const utilsPath = nodeExternalsPluginUtilsPath();
 
-    const allowList = this.buildOptions?.nodeExternals?.allowList ? this.buildOptions.nodeExternals.allowList : [];
+    if (utilsPath) {
+      const {
+        findDependencies,
+        findPackagePaths,
+      }: {
+        findDependencies: typeof FindDependenciesFn;
+        findPackagePaths: typeof FindPackagePathsFn;
+      } = require(utilsPath);
 
-    this.buildOptions.external = findDependencies({
-      dependencies: true,
-      packagePaths: findPackagePaths(),
-      allowList,
-    });
+      this.buildOptions.external = findDependencies({
+        packagePaths: findPackagePaths(),
+        dependencies: true,
+        devDependencies: false,
+        peerDependencies: false,
+        optionalDependencies: false,
+        allowList: this.buildOptions.nodeExternals?.allowList ?? [],
+      });
+    }
   }
 
   let externals = [];
