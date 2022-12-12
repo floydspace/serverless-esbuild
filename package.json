@@ -80,8 +80,8 @@
     "@types/serverless": "^3.12.8",
     "@typescript-eslint/eslint-plugin": "^5.34.0",
     "@typescript-eslint/parser": "^5.34.0",
-    "esbuild": "^0.15.9",
-    "esbuild-node-externals": "^1.5.0",
+    "esbuild": "^0.16.4",
+    "esbuild-node-externals": "^1.6.0",
     "eslint": "^8.20.0",
     "husky": "^8.0.1",
     "jest": "^29.0.3",
@@ -94,7 +94,7 @@
     "typescript": "^4.8.3"
   },
   "peerDependencies": {
-    "esbuild": ">=0.8 <0.16",
+    "esbuild": ">=0.8 <0.17",
     "esbuild-node-externals": "^1.0.0"
   },
   "peerDependenciesMeta": {
