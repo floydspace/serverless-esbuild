@@ -37,6 +37,7 @@ export interface Configuration extends EsbuildOptions {
   outputBuildFolder?: string;
   outputFileExtension: '.js' | '.cjs' | '.mjs';
   nodeExternals?: NodeExternalsOptions;
+  link?: string[];
 }
 
 export interface FunctionEntry {

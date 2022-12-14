@@ -100,6 +100,16 @@ export class Pnpm implements Packager {
     await spawnProcess(command, args, { cwd });
   }
 
+  async link(cwd: string, packages: string[] = []) {
+    const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
+
+    for (const pkg of packages) {
+      const args = pkg.startsWith('.') ? ['link', pkg] : ['link', '--global', pkg];
+
+      await spawnProcess(command, args, { cwd });
+    }
+  }
+
   async prune(cwd) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
     const args = ['prune'];

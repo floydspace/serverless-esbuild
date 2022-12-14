@@ -61,6 +61,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   delete config['outputBuildFolder'];
   delete config['outputWorkFolder'];
   delete config['nodeExternals'];
+  delete config['link'];
 
   /** Build the files */
   const bundleMapper = async (entry: string): Promise<FileBuildResult> => {
