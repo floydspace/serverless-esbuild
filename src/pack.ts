@@ -27,31 +27,29 @@ function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPa
   }
 }
 
-const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'package.json'];
+const excludedFilesDefault = [
+  '!package-lock.json',
+  '!pnpm-lock.yaml',
+  '!yarn.lock',
+  '!package.json',
+];
 
 export const filterFilesForZipPackage = ({
-  files,
+  allPatternFilesToIncludedFiles,
   functionAlias,
-  includedFiles,
   excludedFiles,
   hasExternals,
   isGoogleProvider,
   depWhiteList,
 }: {
-  files: IFiles;
+  allPatternFilesToIncludedFiles: IFiles;
   functionAlias: string;
-  includedFiles: string[];
   excludedFiles: string[];
   hasExternals: boolean;
   isGoogleProvider: boolean;
   depWhiteList: string[];
 }) => {
-  return files.filter(({ localPath }) => {
-    // if file is present in patterns it must be included
-    if (includedFiles.find((file) => file === localPath)) {
-      return true;
-    }
-
+  return allPatternFilesToIncludedFiles.filter(({ localPath }) => {
     // exclude non individual files based on file path (and things that look derived, e.g. foo.js => foo.js.map)
     if (excludedFiles.find((p) => localPath.startsWith(`${p}.`))) return false;
 
@@ -82,17 +80,16 @@ export async function pack(this: EsbuildServerlessPlugin) {
   if (isGoogleProvider && this.serverless?.service?.package?.individually)
     throw new Error('Packaging failed: cannot package function individually when using Google provider');
 
-  // get a list of all path in build
-  const files: IFiles = globby
-    .sync('**', {
+  // get a list of all paths in build that we want
+  const patternBasedFilesToIncluded: IFiles = globby
+    .sync(['**', ...excludedFiles, ...(this.serverless.service.package.patterns ?? [])], {
       cwd: this.buildDirPath,
       dot: true,
       onlyFiles: true,
     })
-    .filter((p) => !excludedFiles.includes(p))
     .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
-  if (isEmpty(files)) {
+  if (isEmpty(patternBasedFilesToIncluded)) {
     console.log('Packaging: No files found. Skipping esbuild.');
     return;
   }
@@ -106,7 +103,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     const filesPathList = pipe(
       reject(test(/^__only_[^/]+$/)) as (x: IFiles) => IFiles,
       map(over(lensProp('localPath'), replace(/^__only_[^/]+\//, '')))
-    )(files);
+    )(patternBasedFilesToIncluded);
 
     const startZip = Date.now();
     await zip(artifactPath, filesPathList, this.buildOptions.nativeZip);
@@ -139,16 +136,16 @@ export async function pack(this: EsbuildServerlessPlugin) {
   // get a tree of all production dependencies
   const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(this.buildDirPath) : {};
 
-  const packageFiles = await globby(this.serverless.service.package.patterns);
-
   // package each function
   await Promise.all(
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
       const excludedFiles = bundlePathList.filter((p) => !bundlePath.startsWith(p)).map(trimExtension);
 
-      const functionFiles = await globby(func.package.patterns);
+      const functionFiles = globby
+        .sync(func.package.patterns)
+        .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
 
-      const includedFiles = [...packageFiles, ...functionFiles];
+      const allPatternFilesToIncludedFiles = [...patternBasedFilesToIncluded, ...functionFiles];
 
       // allowed external dependencies in the final zip
       let depWhiteList = [];
@@ -164,9 +161,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
       // filter files
       const filesPathList = filterFilesForZipPackage({
-        files,
+        allPatternFilesToIncludedFiles,
         functionAlias,
-        includedFiles,
         excludedFiles,
         hasExternals,
         isGoogleProvider,

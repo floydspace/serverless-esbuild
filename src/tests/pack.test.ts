@@ -17,7 +17,7 @@ describe('filterFilesForZipPackage', () => {
   it('should filter out files for another zip package', () => {
     expect(
       filterFilesForZipPackage({
-        files: [
+        allPatternFilesToIncludedFiles: [
           {
             localPath: '__only_service-otherFnName/bin/imagemagick/include/ImageMagick/magick/method-attribute.h',
             rootPath:
@@ -35,7 +35,6 @@ describe('filterFilesForZipPackage', () => {
         functionAlias: 'fnAlias',
         isGoogleProvider: false,
         hasExternals: false,
-        includedFiles: [],
         excludedFiles: [],
       })
     ).toMatchInlineSnapshot(`
