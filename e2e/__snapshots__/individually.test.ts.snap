@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`individually 1`] = `
-"var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,d=Object.prototype.hasOwnProperty;var u=(e,s)=>n(e,"name",{value:s,configurable:!0});var p=(e,s)=>{for(var o in s)n(e,o,{get:s[o],enumerable:!0})},c=(e,s,o,r)=>{if(s&&typeof s=="object"||typeof s=="function")for(let t of f(s))!d.call(e,t)&&t!==o&&n(e,t,{get:()=>s[t],enumerable:!(r=a(s,t))||r.enumerable});return e};var y=(e,s,o)=>(o=e!=null?l(m(e)):{},c(s||!e||!e.__esModule?n(o,"default",{value:e,enumerable:!0}):o,e)),g=e=>c(n({},"__esModule",{value:!0}),e);var S={};p(S,{handler:()=>x});module.exports=g(S);var i=y(require("lodash"));async function x(e,s,o){console.log(i.VERSION),await new Promise(t=>setTimeout(t,500));let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};o(null,r)}u(x,"handler");0&&(module.exports={handler});
+""use strict";var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,d=Object.prototype.hasOwnProperty;var u=(e,s)=>n(e,"name",{value:s,configurable:!0});var p=(e,s)=>{for(var o in s)n(e,o,{get:s[o],enumerable:!0})},c=(e,s,o,r)=>{if(s&&typeof s=="object"||typeof s=="function")for(let t of f(s))!d.call(e,t)&&t!==o&&n(e,t,{get:()=>s[t],enumerable:!(r=a(s,t))||r.enumerable});return e};var y=(e,s,o)=>(o=e!=null?l(m(e)):{},c(s||!e||!e.__esModule?n(o,"default",{value:e,enumerable:!0}):o,e)),g=e=>c(n({},"__esModule",{value:!0}),e);var S={};p(S,{handler:()=>x});module.exports=g(S);var i=y(require("lodash"));async function x(e,s,o){console.log(i.VERSION),await new Promise(t=>setTimeout(t,500));let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};o(null,r)}u(x,"handler");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 2`] = `
-"var u=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var r=Object.getOwnPropertyNames;var a=Object.prototype.hasOwnProperty;var c=(s,e)=>u(s,"name",{value:e,configurable:!0});var l=(s,e)=>{for(var n in e)u(s,n,{get:e[n],enumerable:!0})},d=(s,e,n,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let t of r(e))!a.call(s,t)&&t!==n&&u(s,t,{get:()=>e[t],enumerable:!(o=i(e,t))||o.enumerable});return s};var f=s=>d(u({},"__esModule",{value:!0}),s);var m={};l(m,{handler:()=>y});module.exports=f(m);async function y(s,e,n){await new Promise(t=>setTimeout(t,500));let o={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:s})};n(null,o)}c(y,"handler");0&&(module.exports={handler});
+""use strict";var u=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var r=Object.getOwnPropertyNames;var a=Object.prototype.hasOwnProperty;var c=(s,e)=>u(s,"name",{value:e,configurable:!0});var l=(s,e)=>{for(var n in e)u(s,n,{get:e[n],enumerable:!0})},d=(s,e,n,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let t of r(e))!a.call(s,t)&&t!==n&&u(s,t,{get:()=>e[t],enumerable:!(o=i(e,t))||o.enumerable});return s};var f=s=>d(u({},"__esModule",{value:!0}),s);var m={};l(m,{handler:()=>y});module.exports=f(m);async function y(s,e,n){await new Promise(t=>setTimeout(t,500));let o={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:s})};n(null,o)}c(y,"handler");0&&(module.exports={handler});
 "
 `;
 
@@ -267,7 +267,7 @@ exports[`individually 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionp3wHp8JuRi4SmdELmNVzjQvueXFr127Qn2aIb5O9YHU": {
+  "Hello1LambdaVersionCSwh1ndXXWK0PuziFcAZEvHblwz5E8ZASq6DpWhA": {
     "DeletionPolicy": "Retain",
     "Properties": {
       "CodeSha256": Any<String>,
@@ -345,7 +345,7 @@ exports[`individually 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello2LambdaVersionongx6o4TBoQbh3kyG4cSG0Bj7rT3CNaL1NNKJ5gGiI": {
+  "Hello2LambdaVersionwMMe1vFJ1KSlA5MihlkJVM5uJp72R4R6u5Vtbnz3NSY": {
     "DeletionPolicy": "Retain",
     "Properties": {
       "CodeSha256": Any<String>,
