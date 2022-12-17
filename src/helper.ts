@@ -227,9 +227,6 @@ export const providerRuntimeMatcher = Object.freeze<Record<string, NodeMatcher>>
 export const isNodeMatcherKey = (input: unknown): input is NodeMatcherKey =>
   typeof input === 'string' && Object.keys(nodeMatcher).includes(input);
 
-// export const isNodeMatcherValue = (input: unknown): input is NodeMatcherValue =>
-//   typeof input === 'string' && Object.values<unknown>(nodeMatcher).includes(input);
-
 export function assertIsSupportedRuntime(input: unknown): asserts input is NodeMatcherKey {
   if (!isNodeMatcherKey(input)) {
     throw new AssertionError({ actual: input, message: 'not a supported runtime' });
