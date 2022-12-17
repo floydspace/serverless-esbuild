@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import globby from 'globby';
 
 import type { FunctionBuildResult } from '../types';
+import type EsbuildServerlessPlugin from '../index';
 
 jest.mock('globby');
 jest.mock('fs-extra');
@@ -115,7 +116,7 @@ describe('pack', () => {
         },
       };
 
-      await pack.call(esbuildPlugin);
+      await pack.call(esbuildPlugin as unknown as EsbuildServerlessPlugin);
 
       expect(zipSpy).toBeCalledWith(
         '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/hello1.zip',

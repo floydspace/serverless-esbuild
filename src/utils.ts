@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { join } from 'ramda';
-import { IFiles } from './types';
+import type { IFiles } from './types';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {

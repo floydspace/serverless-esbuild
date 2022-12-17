@@ -1,5 +1,5 @@
 import { Yarn, YarnDeps } from '../../packagers/yarn';
-import { DependenciesResult } from '../../types';
+import type { DependenciesResult } from '../../types';
 
 import * as utils from '../../utils';
 

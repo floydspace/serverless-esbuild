@@ -6,18 +6,25 @@ import { intersection, isEmpty, lensProp, map, over, pipe, reject, replace, test
 import semver from 'semver';
 
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
-import { doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
+import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
 import { getPackager } from './packagers';
 import { humanSize, zip, trimExtension } from './utils';
 
 import type EsbuildServerlessPlugin from './index';
 import type { IFiles } from './types';
+import type Serverless from 'serverless';
+import assert from 'assert';
 
-function setFunctionArtifactPath(this: EsbuildServerlessPlugin, func, artifactPath) {
+function setFunctionArtifactPath(
+  this: EsbuildServerlessPlugin,
+  func: Serverless.FunctionDefinitionHandler,
+  artifactPath: string
+) {
   const version = this.serverless.getVersion();
   // Serverless changed the artifact path location in version 1.18
   if (semver.lt(version, '1.18.0')) {
-    func.artifact = artifactPath;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (func as any).artifact = artifactPath;
     func.package = Object.assign({}, func.package, { disable: true });
     this.log.verbose(`${func.name} is packaged by the esbuild plugin. Ignore messages from SLS.`);
   } else {
@@ -79,18 +86,24 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
 
   // Google provider cannot use individual packaging for now - this could be built in a future release
-  if (isGoogleProvider && this.serverless?.service?.package?.individually)
+  if (isGoogleProvider && this.serverless?.service?.package?.individually) {
     throw new Error('Packaging failed: cannot package function individually when using Google provider');
+  }
+
+  const { buildDirPath, workDirPath } = this;
+
+  assertIsString(buildDirPath, 'buildDirPath is not a string');
+  assertIsString(workDirPath, 'workDirPath is not a string');
 
   // get a list of all path in build
   const files: IFiles = globby
     .sync('**', {
-      cwd: this.buildDirPath,
+      cwd: buildDirPath,
       dot: true,
       onlyFiles: true,
     })
     .filter((p) => !excludedFiles.includes(p))
-    .map((localPath) => ({ localPath, rootPath: path.join(this.buildDirPath, localPath) }));
+    .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
     console.log('Packaging: No files found. Skipping esbuild.');
@@ -100,7 +113,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   // 1) If individually is not set, just zip the all build dir and return
   if (!this.serverless?.service?.package?.individually) {
     const zipName = `${this.serverless.service.service}.zip`;
-    const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
+    const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
 
     // remove prefixes from individual extra files
     const filesPathList = pipe(
@@ -109,7 +122,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     )(files);
 
     const startZip = Date.now();
-    await zip(artifactPath, filesPathList, this.buildOptions.nativeZip);
+    await zip(artifactPath, filesPathList, this.buildOptions?.nativeZip);
     const { size } = fs.statSync(artifactPath);
 
     this.log.verbose(
@@ -120,24 +133,31 @@ export async function pack(this: EsbuildServerlessPlugin) {
     return;
   }
 
+  assertIsString(this.buildOptions?.packager, 'packager is not a string');
+
   // 2) If individually is set, we'll optimize files and zip per-function
   const packager = await getPackager.call(this, this.buildOptions.packager);
 
   // get a list of every function bundle
-  const buildResults = this.buildResults;
+  const { buildResults } = this;
+
+  assert(buildResults, 'buildResults is not an array');
+
   const bundlePathList = buildResults.map((b) => b.bundlePath);
 
-  let externals = [];
+  let externals: string[] = [];
 
   // get the list of externals to include only if exclude is not set to *
   if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
-    externals = without<string>(this.buildOptions.exclude, this.buildOptions.external);
+    externals = without<string>(this.buildOptions.exclude, this.buildOptions.external ?? []);
   }
 
   const hasExternals = !!externals?.length;
 
+  const { buildOptions } = this;
+
   // get a tree of all production dependencies
-  const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(this.buildDirPath) : {};
+  const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(buildDirPath) : {};
 
   const packageFiles = await globby(this.serverless.service.package.patterns);
 
@@ -146,21 +166,23 @@ export async function pack(this: EsbuildServerlessPlugin) {
     buildResults.map(async ({ func, functionAlias, bundlePath }) => {
       const excludedFiles = bundlePathList.filter((p) => !bundlePath.startsWith(p)).map(trimExtension);
 
+      assert(func.package?.patterns);
+
       const functionFiles = await globby(func.package.patterns);
 
       const includedFiles = [...packageFiles, ...functionFiles];
 
       // allowed external dependencies in the final zip
-      let depWhiteList = [];
+      let depWhiteList: string[] = [];
 
-      if (hasExternals) {
-        const bundleDeps = getDepsFromBundle(path.join(this.buildDirPath, bundlePath), isESM(this.buildOptions));
+      if (hasExternals && packagerDependenciesList.dependencies) {
+        const bundleDeps = getDepsFromBundle(path.join(buildDirPath, bundlePath), isESM(buildOptions));
         const bundleExternals = intersection(bundleDeps, externals);
         depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
       }
 
       const zipName = `${functionAlias}.zip`;
-      const artifactPath = path.join(this.workDirPath, SERVERLESS_FOLDER, zipName);
+      const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
 
       // filter files
       const filesPathList = filterFilesForZipPackage({
@@ -179,7 +201,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
         }));
 
       const startZip = Date.now();
-      await zip(artifactPath, filesPathList, this.buildOptions.nativeZip);
+      await zip(artifactPath, filesPathList, buildOptions.nativeZip);
 
       const { size } = fs.statSync(artifactPath);
 

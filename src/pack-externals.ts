@@ -1,3 +1,4 @@
+import assert from 'assert';
 import path from 'path';
 
 import fse from 'fs-extra';
@@ -34,7 +35,8 @@ import type {
 } from 'esbuild-node-externals/dist/utils';
 
 import type EsbuildServerlessPlugin from './index';
-import type { JSONObject } from './types';
+import type { JSONObject, PackageJSON } from './types';
+import { assertIsString } from './helper';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
@@ -56,11 +58,17 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
       splitModule.splice(0, 1);
       splitModule[0] = '@' + splitModule[0];
     }
-    let moduleVersion = join('@', tail(splitModule));
+
+    const dependencyName = head(splitModule);
+
+    if (!dependencyName) {
+      return;
+    }
+
     // We have to rebase file references to the target package.json
-    moduleVersion = rebaseFileReferences(pathToPackageRoot, moduleVersion);
+    const moduleVersion = rebaseFileReferences(pathToPackageRoot, join('@', tail(splitModule)));
     packageJson.dependencies = packageJson.dependencies || {};
-    packageJson.dependencies[head(splitModule)] = moduleVersion;
+    packageJson.dependencies[dependencyName] = moduleVersion;
   }, externalModules);
 }
 
@@ -68,19 +76,28 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
  * Resolve the needed versions of production dependencies for external modules.
  * @this - The active plugin instance
  */
-function getProdModules(externalModules: { external: string }[], packageJsonPath: string, rootPackageJsonPath: string) {
-  const packageJson = this.serverless.utils.readFileSync(packageJsonPath);
-  const prodModules = [];
+function getProdModules(
+  this: EsbuildServerlessPlugin,
+  externalModules: { external: string }[],
+  packageJsonPath: string,
+  rootPackageJsonPath: string
+) {
+  const packageJson = this.serverless.utils.readFileSync(packageJsonPath) as PackageJSON;
 
   // only process the module stated in dependencies section
   if (!packageJson.dependencies) {
     return [];
   }
 
+  const prodModules: string[] = [];
+
   // Get versions of all transient modules
   forEach((externalModule) => {
     // (1) If not present in Dev Dependencies or Dependencies
-    if (!packageJson.dependencies[externalModule.external] && !packageJson.devDependencies[externalModule.external]) {
+    if (
+      !packageJson.dependencies?.[externalModule.external] &&
+      !packageJson.devDependencies?.[externalModule.external]
+    ) {
       this.log.debug(
         `INFO: Runtime dependency '${externalModule.external}' not found in dependencies or devDependencies. It has been excluded automatically.`
       );
@@ -89,7 +106,10 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
     }
 
     // (2) If present in Dev Dependencies
-    if (!packageJson.dependencies[externalModule.external] && packageJson.devDependencies[externalModule.external]) {
+    if (
+      !packageJson.dependencies?.[externalModule.external] &&
+      packageJson.devDependencies?.[externalModule.external]
+    ) {
       // To minimize the chance of breaking setups we whitelist packages available on AWS here. These are due to the previously missing check
       // most likely set in devDependencies and should not lead to an error now.
       const ignoredDevDependencies = ['aws-sdk'];
@@ -97,6 +117,9 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
       if (!includes(externalModule.external, ignoredDevDependencies)) {
         // Runtime dependency found in devDependencies but not forcefully excluded
         this.log.error(`ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`);
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
         throw new this.serverless.classes.Error(`Serverless-webpack dependency error: ${externalModule.external}.`);
       }
 
@@ -106,6 +129,7 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
 
       return;
     }
+
     // (3) otherwise let's get the version
 
     // get module package - either from root or local node_modules - will be used for version and peer deps
@@ -115,6 +139,7 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
       externalModule.external,
       'package.json'
     );
+
     const localModulePackagePath = path.join(
       process.cwd(),
       path.dirname(packageJsonPath),
@@ -122,19 +147,20 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
       externalModule.external,
       'package.json'
     );
+
     const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
       ? localModulePackagePath
       : fse.pathExistsSync(rootModulePackagePath)
       ? rootModulePackagePath
       : null;
-    const modulePackage = modulePackagePath ? require(modulePackagePath) : {};
+
+    const modulePackage: Partial<PackageJSON> = modulePackagePath ? require(modulePackagePath) : {};
 
     // Get version
-    const moduleVersion = packageJson.dependencies[externalModule.external] || modulePackage.version;
+    const moduleVersion = packageJson.dependencies?.[externalModule.external] || modulePackage.version;
 
     // add dep with version if we have it - versionless otherwise
-    if (moduleVersion) prodModules.push(`${externalModule.external}@${moduleVersion}`);
-    else prodModules.push(externalModule.external);
+    prodModules.push(moduleVersion ? `${externalModule.external}@${moduleVersion}` : externalModule.external);
 
     // Check if the module has any peer dependencies and include them too
     try {
@@ -143,6 +169,9 @@ function getProdModules(externalModules: { external: string }[], packageJsonPath
       const optionalPeerDependencies = Object.keys(
         pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
       );
+
+      assert(this.buildOptions, 'buildOptions not defined');
+
       const peerDependenciesWithoutOptionals = omit(
         [...optionalPeerDependencies, ...this.buildOptions.exclude],
         peerDependencies
@@ -195,6 +224,10 @@ export function nodeExternalsPluginUtilsPath(): string | undefined {
  * and performance.
  */
 export async function packExternalModules(this: EsbuildServerlessPlugin) {
+  assert(this.buildOptions, 'buildOptions not defined');
+
+  const upperPackageJson = findUp('package.json');
+
   const plugins = this.plugins;
 
   if (plugins && plugins.map((plugin) => plugin.name).includes('node-externals')) {
@@ -220,14 +253,14 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     }
   }
 
-  let externals = [];
+  const externals: string[] =
+    Array.isArray(this.buildOptions.external) &&
+    this.buildOptions.exclude !== '*' &&
+    !this.buildOptions.exclude.includes('*')
+      ? without(this.buildOptions.exclude, this.buildOptions.external)
+      : [];
 
-  // get the list of externals only if exclude is not set to *
-  if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
-    externals = without(this.buildOptions.exclude, this.buildOptions.external);
-  }
-
-  if (!externals || !externals.length) {
+  if (!externals.length) {
     return;
   }
 
@@ -235,11 +268,13 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   // get the root package.json by looking up until we hit a lockfile
   // if this is a yarn workspace, it will be the monorepo package.json
   const rootPackageJsonPath = path.join(findProjectRoot() || '', './package.json');
-
   // get the local package.json by looking up until we hit a package.json file
   // if this is *not* a yarn workspace, it will be the same as rootPackageJsonPath
   const packageJsonPath =
-    this.buildOptions.packagePath || path.relative(process.cwd(), path.join(findUp('package.json'), './package.json'));
+    this.buildOptions.packagePath ||
+    (upperPackageJson && path.relative(process.cwd(), path.join(upperPackageJson, './package.json')));
+
+  assert(packageJsonPath, 'packageJsonPath is not defined');
 
   // Determine and create packager
   const packager = await getPackager.call(this, this.buildOptions.packager);
@@ -247,20 +282,29 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   // Fetch needed original package.json sections
   const sectionNames = packager.copyPackageSectionNames;
 
+  type ScriptsRecord = Record<`script${number}`, string>;
+
   // Get scripts from packager options
-  const packagerScripts = this.buildOptions.packagerOptions
-    ? [].concat(this.buildOptions.packagerOptions.scripts || []).reduce((scripts, script, index) => {
-        scripts[`script${index}`] = script;
-        return scripts;
-      }, {})
-    : {};
+  const packagerScripts: ScriptsRecord =
+    typeof this.buildOptions.packagerOptions?.scripts !== 'undefined'
+      ? (Array.isArray(this.buildOptions.packagerOptions.scripts)
+          ? this.buildOptions.packagerOptions.scripts
+          : [this.buildOptions.packagerOptions.scripts]
+        ).reduce<ScriptsRecord>((scripts, script, index) => {
+          scripts[`script${index}`] = script;
+
+          return scripts;
+        }, {})
+      : {};
 
   const rootPackageJson: Record<string, unknown> = this.serverless.utils.readFileSync(rootPackageJsonPath);
 
   const isWorkspace = !!rootPackageJson.workspaces;
 
   const packageJson: Record<string, unknown> = isWorkspace
-    ? this.serverless.utils.readFileSync(packageJsonPath)
+    ? packageJsonPath
+      ? this.serverless.utils.readFileSync(packageJsonPath)
+      : {}
     : rootPackageJson;
 
   const packageSections = pick(sectionNames, packageJson);
@@ -286,6 +330,9 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   // (1.a) Install all needed modules
   const compositeModulePath = this.buildDirPath;
+
+  assertIsString(compositeModulePath, 'compositeModulePath is not a string');
+
   const compositePackageJson = path.join(compositeModulePath, 'package.json');
 
   // (1.a.1) Create a package.json
@@ -319,8 +366,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
         path.join(compositeModulePath, packager.lockfileName),
         packageLockFile as string
       );
-    } catch (err) {
-      this.log.warning(`Warning: Could not read lock file: ${err.message}`);
+    } catch (error) {
+      this.log.warning(`Warning: Could not read lock file${error instanceof Error ? `: ${error.message}` : ''}`);
     }
   }
 
@@ -341,6 +388,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   await packager.prune(compositeModulePath);
 
   this.log.debug(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
+
+  assertIsString(this.buildDirPath, 'buildDirPath is not a string');
 
   // Run packager scripts
   if (Object.keys(packagerScripts).length > 0) {

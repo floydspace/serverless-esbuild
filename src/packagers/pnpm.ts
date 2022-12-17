@@ -1,8 +1,9 @@
-import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
+import { isEmpty, reduce, replace, split, startsWith } from 'ramda';
+import { isString } from '../helper';
 
-import { JSONObject } from '../types';
+import type { JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
-import { Packager } from './packager';
+import type { Packager } from './packager';
 
 /**
  * pnpm packager.
@@ -28,10 +29,13 @@ export class Pnpm implements Packager {
       '--prod', // Only prod dependencies
       '--json',
       depth ? `--depth=${depth}` : null,
-    ].filter(Boolean);
+    ].filter(isString);
 
     // If we need to ignore some errors add them here
-    const ignoredPnpmErrors = [];
+    const ignoredPnpmErrors: Array<{
+      npmError: string;
+      log: boolean;
+    }> = [];
 
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
@@ -49,7 +53,7 @@ export class Pnpm implements Packager {
             }
             return (
               !isEmpty(error) &&
-              !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredPnpmErrors)
+              !ignoredPnpmErrors.some((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error))
             );
           },
           false,
@@ -92,7 +96,7 @@ export class Pnpm implements Packager {
     return lockfile;
   }
 
-  async install(cwd, extraArgs: Array<string>, useLockfile = true) {
+  async install(cwd: string, extraArgs: string[], useLockfile = true) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
 
     const args = useLockfile ? ['install', '--frozen-lockfile', ...extraArgs] : ['install', ...extraArgs];
@@ -100,14 +104,14 @@ export class Pnpm implements Packager {
     await spawnProcess(command, args, { cwd });
   }
 
-  async prune(cwd) {
+  async prune(cwd: string) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
     const args = ['prune'];
 
     await spawnProcess(command, args, { cwd });
   }
 
-  async runScripts(cwd, scriptNames) {
+  async runScripts(cwd: string, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
 
     await Promise.all(

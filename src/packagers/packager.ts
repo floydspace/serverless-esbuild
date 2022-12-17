@@ -1,4 +1,4 @@
-import { DependenciesResult, JSONObject } from '../types';
+import type { DependenciesResult, JSONObject } from '../types';
 
 export interface Packager {
   lockfileName: string;
@@ -8,5 +8,5 @@ export interface Packager {
   rebaseLockfile(pathToPackageRoot: string, lockfile: JSONObject): JSONObject;
   install(cwd: string, extraArgs: Array<string>, useLockfile?: boolean): Promise<void>;
   prune(cwd: string): Promise<void>;
-  runScripts(cwd: string, scriptNames): Promise<void>;
+  runScripts(cwd: string, scriptNames: string[]): Promise<void>;
 }
