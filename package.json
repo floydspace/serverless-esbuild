@@ -80,6 +80,7 @@
     "@types/serverless": "^3.12.8",
     "@typescript-eslint/eslint-plugin": "^5.34.0",
     "@typescript-eslint/parser": "^5.34.0",
+    "all-contributors-cli": "^6.24.0",
     "esbuild": "^0.16.4",
     "esbuild-node-externals": "^1.6.0",
     "eslint": "^8.20.0",

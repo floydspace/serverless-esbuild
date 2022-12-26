@@ -1,0 +1,80 @@
+{
+  "projectName": "serverless-esbuild",
+  "projectOwner": "floydspace",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 70,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "floydspace",
+      "name": "Victor Korzunin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5180700?v=4",
+      "profile": "https://github.com/floydspace",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "plugin",
+        "projectManagement",
+        "review",
+        "test",
+        "tool"
+      ]
+    },
+    {
+      "login": "olup",
+      "name": "Loup Topalian",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13785588?v=4",
+      "profile": "https://github.com/olup",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "infra",
+        "maintenance",
+        "plugin"
+      ]
+    },
+    {
+      "login": "samchungy",
+      "name": "Sam Chung",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18017094?v=4",
+      "profile": "https://github.com/samchungy",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "example",
+        "infra",
+        "maintenance",
+        "plugin",
+        "review",
+        "tool"
+      ]
+    },
+    {
+      "login": "vamche",
+      "name": "Vamsi Dharmavarapu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9653338?v=4",
+      "profile": "https://github.com/vamche",
+      "contributions": [
+        "code",
+        "doc",
+        "example",
+        "infra",
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": false
+}
