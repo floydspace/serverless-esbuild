@@ -293,19 +293,13 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
 
 ## Contributors
 
-Most active, having `Collaborator` role:
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
 
-<a href="https://floydspace.github.io">
-  <img title="@floydspace" src="https://avatars.githubusercontent.com/u/5180700?s=70&v=4" width="70" height="70" alt="@floydspace">
-</a>
-<a href="https://github.com/olup">
-  <img title="@olup" src="https://avatars.githubusercontent.com/u/13785588?s=70&v=4" width="70" height="70" alt="@olup">
-</a>
-<a href="https://github.com/samchungy">
-  <img title="@samchungy" src="https://avatars.githubusercontent.com/u/18017094?s=70&v=4" width="70" height="70" alt="@samchungy">
-</a>
-<a href="https://github.com/vamche">
-  <img title="@vamche" src="https://avatars.githubusercontent.com/u/9653338?s=70&v=4" width="70" height="70" alt="@vamche">
-</a>
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 Inspired by [serverless-plugin-typescript](https://github.com/prisma-labs/serverless-plugin-typescript) and [serverless-webpack](https://github.com/serverless-heaven/serverless-webpack)
