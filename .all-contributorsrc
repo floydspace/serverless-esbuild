@@ -193,6 +193,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "capaj",
+      "name": "Jiri Spac",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1305378?v=4",
+      "profile": "https://twitter.com/capajj",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
