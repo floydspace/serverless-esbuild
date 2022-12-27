@@ -309,6 +309,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tonyt-adept"><img src="https://avatars.githubusercontent.com/u/82844324?v=4?s=70" width="70px;" alt="Tony Tyrrell"/><br /><sub><b>Tony Tyrrell</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=tonyt-adept" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://mattjennings.io/"><img src="https://avatars.githubusercontent.com/u/8703090?v=4?s=70" width="70px;" alt="Matt Jennings"/><br /><sub><b>Matt Jennings</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=mattjennings" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

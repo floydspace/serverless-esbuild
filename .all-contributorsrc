@@ -112,6 +112,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "mattjennings",
+      "name": "Matt Jennings",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8703090?v=4",
+      "profile": "https://mattjennings.io/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
