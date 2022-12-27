@@ -314,6 +314,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://www.swarmion.dev/"><img src="https://avatars.githubusercontent.com/u/29537204?v=4?s=70" width="70px;" alt="François Farge"/><br /><sub><b>François Farge</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=fargito" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://reelcrafter.com/"><img src="https://avatars.githubusercontent.com/u/12532733?v=4?s=70" width="70px;" alt="Sam Hulick"/><br /><sub><b>Sam Hulick</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=ffxsam" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/troyready"><img src="https://avatars.githubusercontent.com/u/1806418?v=4?s=70" width="70px;" alt="Troy Ready"/><br /><sub><b>Troy Ready</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=troyready" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.subash.com.au/"><img src="https://avatars.githubusercontent.com/u/1757714?v=4?s=70" width="70px;" alt="subash adhikari"/><br /><sub><b>subash adhikari</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=adikari" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
