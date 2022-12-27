@@ -94,6 +94,15 @@
         "maintenance",
         "ideas"
       ]
+    },
+    {
+      "login": "tinchoz49",
+      "name": "Martín Acosta",
+      "avatar_url": "https://avatars.githubusercontent.com/u/819446?v=4",
+      "profile": "https://geutstudio.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
