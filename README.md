@@ -322,6 +322,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nickygb"><img src="https://avatars.githubusercontent.com/u/23530107?v=4?s=70" width="70px;" alt="nickygb"/><br /><sub><b>nickygb</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=nickygb" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://twitter.com/capajj"><img src="https://avatars.githubusercontent.com/u/1305378?v=4?s=70" width="70px;" alt="Jiri Spac"/><br /><sub><b>Jiri Spac</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=capaj" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/gavynriebau"><img src="https://avatars.githubusercontent.com/u/11895736?v=4?s=70" width="70px;" alt="gavynriebau"/><br /><sub><b>gavynriebau</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=gavynriebau" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/adriencaccia"><img src="https://avatars.githubusercontent.com/u/19605940?v=4?s=70" width="70px;" alt="Adrien Cacciaguerra"/><br /><sub><b>Adrien Cacciaguerra</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=adriencaccia" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
