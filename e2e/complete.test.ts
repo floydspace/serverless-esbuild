@@ -1,11 +1,15 @@
 import fs from 'fs';
-import cloudformation from './.test-artifacts/complete/.serverless/cloudformation-template-update-stack.json';
+import path from 'path';
 
 test('complete', () => {
-  const indexContents = fs.readFileSync('e2e/.test-artifacts/complete/.serverless/src/index.js').toString();
+  const testArtifactPath = path.resolve(__dirname, '../.test-artifacts/complete/.serverless');
+
+  const cloudformation = require(path.join(testArtifactPath, 'cloudformation-template-update-stack.json'));
+
+  const indexContents = fs.readFileSync(path.join(testArtifactPath, 'src/index.js')).toString();
   expect(indexContents).toMatchSnapshot();
 
-  const nodeModules = fs.readdirSync('e2e/.test-artifacts/complete/.serverless/node_modules').toString();
+  const nodeModules = fs.readdirSync(path.join(testArtifactPath, 'node_modules')).toString();
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
