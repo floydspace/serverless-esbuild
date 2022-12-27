@@ -316,6 +316,9 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/troyready"><img src="https://avatars.githubusercontent.com/u/1806418?v=4?s=70" width="70px;" alt="Troy Ready"/><br /><sub><b>Troy Ready</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=troyready" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://www.subash.com.au/"><img src="https://avatars.githubusercontent.com/u/1757714?v=4?s=70" width="70px;" alt="subash adhikari"/><br /><sub><b>subash adhikari</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=adikari" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/danionescu"><img src="https://avatars.githubusercontent.com/u/3269359?v=4?s=70" width="70px;" alt="Dan Ionescu"/><br /><sub><b>Dan Ionescu</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=danionescu" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
