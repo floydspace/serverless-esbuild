@@ -84,6 +84,16 @@
         "ideas",
         "maintenance"
       ]
+    },
+    {
+      "login": "codingnuclei",
+      "name": "Chris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37954566?v=4",
+      "profile": "https://github.com/codingnuclei",
+      "contributions": [
+        "maintenance",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
