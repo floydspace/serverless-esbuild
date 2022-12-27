@@ -1,5 +1,5 @@
 import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
-import { DependenciesResult } from '../../types';
+import type { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 
 jest.mock('process');
@@ -48,7 +48,7 @@ describe('NPM Packager', () => {
     await npm.getProdDependencies(path);
 
     expect(spawnSpy).toBeCalledTimes(2);
-    expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '-prod', '-long', '-all'], {
+    expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '--omit=dev', '-long', '-all'], {
       cwd: './',
     });
   });
@@ -58,7 +58,7 @@ describe('NPM Packager', () => {
 
     await npm.getProdDependencies(path, 2);
 
-    expect(spawnSpy).toBeCalledTimes(1);
+    expect(spawnSpy).toBeCalledTimes(2);
     expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '-prod', '-long', '-depth=2'], {
       cwd: './',
     });

@@ -1,9 +1,10 @@
 import { any, isEmpty, replace, split, startsWith, takeWhile } from 'ramda';
 import * as path from 'path';
 
-import { DependenciesResult, DependencyMap, JSONObject } from '../types';
+import type { DependenciesResult, DependencyMap, JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
-import { Packager } from './packager';
+import type { Packager } from './packager';
+import { isString } from '../helper';
 
 type NpmV7Map = Record<string, NpmV7Tree>;
 
@@ -107,21 +108,33 @@ export class NPM implements Packager {
 
     const processOutput = await spawnProcess(command, args, { cwd });
     const version = processOutput.stdout.trim();
-    return parseInt(version.split('.')[0]);
+
+    const [major] = version.split('.');
+
+    if (major) {
+      return parseInt(major);
+    }
+
+    throw new Error('Unable to get major npm version');
   }
 
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
+    const npmMajorVersion = await this.getNpmMajorVersion(cwd);
+
     // Get first level dependency graph
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = [
       'ls',
       '-json',
-      '-prod', // Only prod dependencies
+      npmMajorVersion >= 7 ? '--omit=dev' : '-prod', // Only prod dependencies
       '-long',
-      depth ? `-depth=${depth}` : (await this.getNpmMajorVersion(cwd)) >= 7 ? '-all' : null,
-    ].filter(Boolean);
+      depth ? `-depth=${depth}` : npmMajorVersion >= 7 ? '-all' : null,
+    ].filter(isString);
 
-    const ignoredNpmErrors = [
+    const ignoredNpmErrors: Array<{
+      npmError: string;
+      log: boolean;
+    }> = [
       { npmError: 'extraneous', log: false },
       { npmError: 'missing', log: false },
       { npmError: 'peer dep missing', log: true },
@@ -129,13 +142,15 @@ export class NPM implements Packager {
     ];
 
     let parsedDeps: NpmV6Deps | NpmV7Deps;
+
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
+
       parsedDeps = JSON.parse(processOutput.stdout) as NpmV6Deps | NpmV7Deps;
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
-        // Split the stderr by \n character to get the npm ERR! plaintext lines, ignore additonal JSON blob (emitted by npm >=7)
+        // Split the stderr by \n character to get the npm ERR! plaintext lines, ignore additional JSON blob (emitted by npm >=7)
         // see https://github.com/serverless-heaven/serverless-webpack/pull/782 and https://github.com/floydspace/serverless-esbuild/issues/288
         const lines = split('\n', err.stderr);
         const npmErrors = takeWhile((line) => line !== '{', lines);
@@ -262,14 +277,14 @@ export class NPM implements Packager {
     await spawnProcess(command, args, { cwd });
   }
 
-  async prune(cwd) {
+  async prune(cwd: string) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = ['prune'];
 
     await spawnProcess(command, args, { cwd });
   }
 
-  async runScripts(cwd, scriptNames) {
+  async runScripts(cwd: string, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
 
     await Promise.all(

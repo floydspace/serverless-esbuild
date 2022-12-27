@@ -19,11 +19,11 @@ interface NodeExternalsOptions {
   allowList?: string[];
 }
 
-export type EsbuildOptions = Omit<BuildOptions, 'nativeZip' | 'watch' | 'plugins'>;
+export type EsbuildOptions = Omit<BuildOptions, 'watch' | 'plugins'>;
 
 export interface Configuration extends EsbuildOptions {
   concurrency?: number;
-  packager: 'npm' | 'yarn';
+  packager: PackagerId;
   packagePath: string;
   exclude: '*' | string[];
   nativeZip: boolean;
@@ -41,7 +41,7 @@ export interface Configuration extends EsbuildOptions {
 
 export interface FunctionEntry {
   entry: string;
-  func: Serverless.FunctionDefinitionHandler;
+  func: Serverless.FunctionDefinitionHandler | null;
   functionAlias?: string;
 }
 
@@ -81,3 +81,12 @@ export interface IFile {
 export type IFiles = readonly IFile[];
 
 export type PackagerId = 'npm' | 'pnpm' | 'yarn';
+
+export type PackageJSON = {
+  name: string;
+  version: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  [key: string]: unknown;
+};

@@ -29,15 +29,13 @@
   },
   "main": "dist/index.js",
   "files": [
-    "dist",
-    "package.json",
-    "README.md"
+    "dist"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
     "precommit": "npm run test",
     "prebuild": "npm run clean",
-    "build": "tsc",
+    "build": "tsc -p ./tsconfig.build.json",
     "dev": "npm run build -- --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist",

@@ -1,13 +1,14 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 
-import { DependenciesResult, DependencyMap } from '../types';
+import type { DependenciesResult, DependencyMap } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
-import { Packager } from './packager';
+import type { Packager } from './packager';
 import { satisfies } from 'semver';
+import { isString } from '../helper';
 
 interface YarnTree {
   name: string;
-  color: 'bold' | 'dim';
+  color: 'bold' | 'dim' | null;
   children?: YarnTree[];
   hint?: null;
   depth?: number;
@@ -52,10 +53,13 @@ export class Yarn implements Packager {
 
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(Boolean);
+    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(isString);
 
     // If we need to ignore some errors add them here
-    const ignoredYarnErrors = [];
+    const ignoredYarnErrors: Array<{
+      npmError: string;
+      log: boolean;
+    }> = [];
 
     let parsedDeps: YarnDeps;
     try {
@@ -102,9 +106,11 @@ export class Yarn implements Packager {
       return trees.reduce<DependencyMap>((deps, tree) => {
         const { name, version } = getNameAndVersion(tree.name);
 
+        const dependency = rootDependencies[name];
+
         if (tree.shadow) {
           // Package is resolved somewhere else
-          if (satisfies(rootDependencies[name].version, version)) {
+          if (dependency && satisfies(dependency.version, version)) {
             // Package is at root level
             // {
             //   "name": "samchungy-dep-a@1.0.0", <- MATCH
@@ -178,21 +184,28 @@ export class Yarn implements Packager {
     };
   }
 
-  rebaseLockfile(pathToPackageRoot, lockfile) {
+  rebaseLockfile(pathToPackageRoot: string, lockfile: string) {
     const fileVersionMatcher = /[^"/]@(?:file:)?((?:\.\/|\.\.\/).*?)[":,]/gm;
-    const replacements = [];
+    const replacements: Array<{
+      oldRef: string;
+      newRef: string;
+    }> = [];
     let match;
 
     // Detect all references and create replacement line strings
     while ((match = fileVersionMatcher.exec(lockfile)) !== null) {
       replacements.push({
-        oldRef: match[1],
+        oldRef: typeof match[1] === 'string' ? match[1] : '',
         newRef: replace(/\\/g, '/', `${pathToPackageRoot}/${match[1]}`),
       });
     }
 
     // Replace all lines in lockfile
-    return reduce((__, replacement) => replace(replacement.oldRef, replacement.newRef, __), lockfile, replacements);
+    return reduce(
+      (__, replacement) => replace(replacement.oldRef, replacement.newRef, __),
+      lockfile,
+      replacements.filter((item) => item.oldRef !== '')
+    );
   }
 
   async install(cwd: string, extraArgs: Array<string>, useLockfile = true) {
@@ -206,11 +219,11 @@ export class Yarn implements Packager {
   }
 
   // "Yarn install" prunes automatically
-  prune(cwd) {
+  prune(cwd: string) {
     return this.install(cwd, []);
   }
 
-  async runScripts(cwd, scriptNames: string[]) {
+  async runScripts(cwd: string, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     await Promise.all(scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd })));
   }

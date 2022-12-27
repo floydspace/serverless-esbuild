@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`complete 1`] = `
-"var e=Object.create;var a=Object.defineProperty;var I=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var l=Object.getPrototypeOf,u=Object.prototype.hasOwnProperty;var c=(i,n)=>{for(var s in n)a(i,s,{get:n[s],enumerable:!0})},o=(i,n,s,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let t of f(n))!u.call(i,t)&&t!==s&&a(i,t,{get:()=>n[t],enumerable:!(r=I(n,t))||r.enumerable});return i};var g=(i,n,s)=>(s=i!=null?e(l(i)):{},o(n||!i||!i.__esModule?a(s,"default",{value:i,enumerable:!0}):s,i)),m=i=>o(a({},"__esModule",{value:!0}),i);var y={};c(y,{handler:()=>p});module.exports=m(y);var d=g(require("isin-validator"));async function p(i){let n=(0,d.default)(i);return{statusCode:200,body:JSON.stringify({message:n?"ISIN is invalid!":"ISIN is fine!",input:i})}}0&&(module.exports={handler});
+""use strict";var e=Object.create;var a=Object.defineProperty;var I=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var l=Object.getPrototypeOf,u=Object.prototype.hasOwnProperty;var c=(i,n)=>{for(var s in n)a(i,s,{get:n[s],enumerable:!0})},o=(i,n,s,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let t of f(n))!u.call(i,t)&&t!==s&&a(i,t,{get:()=>n[t],enumerable:!(r=I(n,t))||r.enumerable});return i};var g=(i,n,s)=>(s=i!=null?e(l(i)):{},o(n||!i||!i.__esModule?a(s,"default",{value:i,enumerable:!0}):s,i)),m=i=>o(a({},"__esModule",{value:!0}),i);var y={};c(y,{handler:()=>p});module.exports=m(y);var d=g(require("isin-validator"));async function p(i){let n=(0,d.default)(i);return{statusCode:200,body:JSON.stringify({message:n?"ISIN is invalid!":"ISIN is fine!",input:i})}}0&&(module.exports={handler});
 "
 `;
 

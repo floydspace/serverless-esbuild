@@ -3,11 +3,24 @@
     "module": "commonjs",
     "target": "es2020",
     "skipLibCheck": true,
-    "outDir": "dist",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "rootDirs": ["e2e"]
+    "rootDirs": ["e2e"],
+    "allowJs": true,
+    "noEmit": true,
+    "strict": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "importsNotUsedAsValues": "error",
+    "noErrorTruncation": true,
+    "noUncheckedIndexedAccess": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "src/tests"]
+  "include": ["./*.js", "src"],
+  "exclude": ["node_modules"]
 }

@@ -1,7 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`minimal 1`] = `
-"var __getOwnPropNames = Object.getOwnPropertyNames;
+""use strict";
+var __getOwnPropNames = Object.getOwnPropertyNames;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -14265,7 +14266,7 @@ exports[`minimal 4`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersionGmMQZiArm4DPeKSFh1p52LaTpYXcVfaCai5ZLRw": {
+  "ValidateIsinLambdaVersionEpft2h1OOZyD03CU8JMaqcj3Xcth3KeWrSuKw8G2UQ": {
     "DeletionPolicy": "Retain",
     "Properties": {
       "CodeSha256": Any<String>,
