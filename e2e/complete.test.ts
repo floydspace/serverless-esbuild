@@ -1,11 +1,11 @@
 import fs from 'fs';
-import cloudformation from './.test-artifacts/complete/.serverless/cloudformation-template-update-stack.json';
+import cloudformation from '../.test-artifacts/complete/.serverless/cloudformation-template-update-stack.json';
 
 test('complete', () => {
-  const indexContents = fs.readFileSync('e2e/.test-artifacts/complete/.serverless/src/index.js').toString();
+  const indexContents = fs.readFileSync('.test-artifacts/complete/.serverless/src/index.js').toString();
   expect(indexContents).toMatchSnapshot();
 
-  const nodeModules = fs.readdirSync('e2e/.test-artifacts/complete/.serverless/node_modules').toString();
+  const nodeModules = fs.readdirSync('.test-artifacts/complete/.serverless/node_modules').toString();
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();

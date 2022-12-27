@@ -1,8 +1,8 @@
 import fs from 'fs';
-import cloudformation from './.test-artifacts/minimal/.serverless/cloudformation-template-update-stack.json';
+import cloudformation from '../.test-artifacts/minimal/.serverless/cloudformation-template-update-stack.json';
 
 test('minimal', () => {
-  const indexContents = fs.readFileSync('e2e/.test-artifacts/minimal/.serverless/index.js').toString();
+  const indexContents = fs.readFileSync('.test-artifacts/minimal/.serverless/index.js').toString();
   expect(indexContents).toMatchSnapshot();
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();

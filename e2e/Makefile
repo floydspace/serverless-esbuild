@@ -2,25 +2,24 @@ test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete
 
 build:
 	npm run build
-	npm link
 
 test-e2e-minimal: build
-	rm -fr ./e2e/.test-artifacts && mkdir -p ./e2e/.test-artifacts/minimal && rsync -r ./examples/minimal/ ./e2e/.test-artifacts/minimal/
-	cd ./e2e/.test-artifacts/minimal && npm install && npx sls package
-	cd ./e2e/.test-artifacts/minimal/.serverless && unzip minimal-example.zip
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/minimal && rsync -r ./examples/minimal/ ./.test-artifacts/minimal/
+	cd ./.test-artifacts/minimal && npm install && npx sls package
+	cd ./.test-artifacts/minimal/.serverless && unzip minimal-example.zip
 	npx jest -c jest.config.e2e.js --ci ./e2e/minimal.test.ts
-	rm -fr ./e2e/.test-artifacts
+	rm -fr ./.test-artifacts
 
 test-e2e-individually: build
-	rm -fr ./e2e/.test-artifacts && mkdir -p ./e2e/.test-artifacts/individually && rsync -r ./examples/individually/ ./e2e/.test-artifacts/individually/
-	cd ./e2e/.test-artifacts/individually && yarn install && npx sls package
-	cd ./e2e/.test-artifacts/individually/.serverless && unzip hello1.zip && unzip hello2.zip
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/individually && rsync -r ./examples/individually/ ./.test-artifacts/individually/
+	cd ./.test-artifacts/individually && yarn install && npx sls package
+	cd ./.test-artifacts/individually/.serverless && unzip hello1.zip && unzip hello2.zip
 	npx jest -c jest.config.e2e.js --ci ./e2e/individually.test.ts
-	rm -fr ./e2e/.test-artifacts
+	rm -fr ./.test-artifacts
 
 test-e2e-complete: build
-	rm -fr ./e2e/.test-artifacts && mkdir -p ./e2e/.test-artifacts/complete && rsync -r ./examples/complete/ ./e2e/.test-artifacts/complete/
-	cd ./e2e/.test-artifacts/complete && npm install && npx sls package
-	cd ./e2e/.test-artifacts/complete/.serverless && unzip complete-example.zip
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/complete && rsync -r ./examples/complete/ ./.test-artifacts/complete/
+	cd ./.test-artifacts/complete && npm install && npx sls package
+	cd ./.test-artifacts/complete/.serverless && unzip complete-example.zip
 	npx jest -c jest.config.e2e.js --ci ./e2e/complete.test.ts
-	rm -fr ./e2e/.test-artifacts
+	rm -fr ./.test-artifacts
