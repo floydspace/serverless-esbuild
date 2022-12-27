@@ -22,6 +22,9 @@ describe('utils/zip', () => {
     mockFs({
       '/src': {
         'test.txt': 'lorem ipsum',
+        modules: {
+          'module.txt': 'lorem ipsum 2',
+        },
       },
       '/dist': {},
     });
@@ -49,7 +52,7 @@ describe('utils/zip', () => {
   });
 
   it.each([{ useNativeZip: true }, { useNativeZip: false }])(
-    'should properly archive files.',
+    'should properly archive files when useNativeZip=$useNativeZip.',
     async ({ useNativeZip }) => {
       const source = '/src';
       const destination = '/dist';
@@ -59,6 +62,10 @@ describe('utils/zip', () => {
           rootPath: path.join(source, 'test.txt'),
           localPath: 'test.txt',
         },
+        {
+          rootPath: path.join(source, 'modules', 'module.txt'),
+          localPath: 'modules/module.txt',
+        },
       ];
 
       await zip(zipPath, filesPathList, useNativeZip);
@@ -67,15 +74,15 @@ describe('utils/zip', () => {
 
       await extract(zipPath, { dir: destination });
 
-      const files = await globby(['**/*'], { cwd: destination });
+      const files = await globby(['**/*'], { cwd: destination, dot: true });
 
-      expect(files).toEqual(['archive.zip', 'test.txt']);
+      expect(files).toEqual(['archive.zip', 'test.txt', 'modules/module.txt']);
 
       // native zip is not deterministic
       if (!useNativeZip) {
         const data = fs.readFileSync(zipPath);
         const fileHash = crypto.createHash('sha256').update(data).digest('base64');
-        expect(fileHash).toEqual('tfgMhOD8tXzhzap6rJLQJbUXK2lawANGsUcWRgNED4M=');
+        expect(fileHash).toEqual('iCZdyHJ7ON2LLwBIE6gQmRvBTzXBogSqJTMvHSenzGk=');
       }
     }
   );

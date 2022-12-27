@@ -10,7 +10,7 @@ import path from 'path';
 import os from 'os';
 
 import {
-  copyFilesTask,
+  copyTask,
   mkdirpTask,
   removeTask,
   safeFileExistsIO,
@@ -18,7 +18,7 @@ import {
   taskFromPromise,
 } from './utils/fp-fs';
 
-import type { IFiles } from './types';
+import type { IFile, IFiles } from './types';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -106,27 +106,28 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
   // create a temporary directory to hold the final zip structure
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
   const tempDirPath = path.join(os.tmpdir(), tempDirName);
-  const files = filesPathList.map((file) => file.rootPath);
 
-  const lazyZip = (): Promise<void> =>
-    useNativeZip ? bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }) : nodeZip(zipPath, files);
+  const copyFileTask = (file: IFile) => copyTask(file.rootPath, path.join(tempDirPath, file.localPath));
+  const copyFilesTask = TE.traverseArray(copyFileTask);
+  const bestZipTask = taskFromPromise(() => bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }));
+  const nodeZipTask = taskFromPromise(() => nodeZip(zipPath, filesPathList));
 
   await pipe(
     // create the random temporary folder
     mkdirpTask(tempDirPath),
     // copy all required files from origin path to (sometimes modified) target path
-    TE.chain(() => copyFilesTask(files, tempDirPath)),
+    TE.chain(() => copyFilesTask(filesPathList)),
     // prepare zip folder
     TE.chain(() => mkdirpTask(path.dirname(zipPath))),
     // zip the temporary directory
-    TE.chain(() => taskFromPromise(lazyZip)),
+    TE.chain(() => (useNativeZip ? bestZipTask : nodeZipTask)),
     // delete the temporary folder
     TE.chain(() => removeTask(tempDirPath)),
     taskEitherToPromise
   );
 };
 
-function nodeZip(zipPath: string, filesPathList: string[]): Promise<void> {
+function nodeZip(zipPath: string, filesPathList: IFiles): Promise<void> {
   const zipArchive = archiver.create('zip');
   const output = fs.createWriteStream(zipPath);
 
@@ -135,11 +136,11 @@ function nodeZip(zipPath: string, filesPathList: string[]): Promise<void> {
     zipArchive.pipe(output);
 
     filesPathList.forEach((file) => {
-      const stats = fs.statSync(file);
+      const stats = fs.statSync(file.rootPath);
       if (stats.isDirectory()) return;
 
-      zipArchive.append(fs.readFileSync(file), {
-        name: path.basename(file),
+      zipArchive.append(fs.readFileSync(file.rootPath), {
+        name: file.localPath,
         mode: stats.mode,
         date: new Date(0), // necessary to get the same hash when zipping the same content
       });

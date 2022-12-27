@@ -4,7 +4,6 @@ import * as IO from 'fp-ts/lib/IO';
 import * as IOE from 'fp-ts/lib/IOEither';
 import * as TE from 'fp-ts/lib/TaskEither';
 import fs from 'fs-extra';
-import path from 'path';
 
 export const ioFromSync = <A>(f: Lazy<A>) => IOE.tryCatch(f, E.toError);
 export const taskFromPromise = <A>(f: Lazy<Promise<A>>) => TE.tryCatch(f, E.toError);
@@ -25,8 +24,6 @@ export const copyIO = (src: string, dest: string, options?: fs.CopyOptionsSync) 
   ioFromSync(() => fs.copySync(src, dest, options));
 export const copyTask = (src: string, dest: string, options?: fs.CopyOptions) =>
   taskFromPromise(() => fs.copy(src, dest, options));
-export const copyFilesTask = (files: string[], destDir: string) =>
-  TE.traverseArray<string, void, Error>((file) => copyTask(file, path.join(destDir, path.basename(file))))(files);
 
 export const removeIO = (dir: string) => ioFromSync(() => fs.removeSync(dir));
 export const removeTask = (dir: string) => taskFromPromise(() => fs.remove(dir));
