@@ -139,6 +139,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ffxsam",
+      "name": "Sam Hulick",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12532733?v=4",
+      "profile": "https://reelcrafter.com/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

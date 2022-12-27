@@ -312,6 +312,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://mattjennings.io/"><img src="https://avatars.githubusercontent.com/u/8703090?v=4?s=70" width="70px;" alt="Matt Jennings"/><br /><sub><b>Matt Jennings</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=mattjennings" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mishabruml"><img src="https://avatars.githubusercontent.com/u/25983780?v=4?s=70" width="70px;" alt="Misha Bruml"/><br /><sub><b>Misha Bruml</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=mishabruml" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.swarmion.dev/"><img src="https://avatars.githubusercontent.com/u/29537204?v=4?s=70" width="70px;" alt="François Farge"/><br /><sub><b>François Farge</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=fargito" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://reelcrafter.com/"><img src="https://avatars.githubusercontent.com/u/12532733?v=4?s=70" width="70px;" alt="Sam Hulick"/><br /><sub><b>Sam Hulick</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=ffxsam" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
