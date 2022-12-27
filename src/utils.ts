@@ -3,18 +3,18 @@ import archiver from 'archiver';
 import childProcess from 'child_process';
 import { pipe } from 'fp-ts/lib/function';
 import * as IO from 'fp-ts/lib/IO';
+import * as IOO from 'fp-ts/lib/IOOption';
 import * as TE from 'fp-ts/lib/TaskEither';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { join } from 'ramda';
 
 import {
   copyFilesTask,
-  eitherToPromise,
   mkdirpTask,
   removeTask,
   safeFileExistsIO,
+  taskEitherToPromise,
   taskFromPromise,
 } from './utils/fp-fs';
 
@@ -59,7 +59,7 @@ export function spawnProcess(command: string, args: string[], options: childProc
     });
     child.on('close', (exitCode) => {
       if (exitCode !== 0) {
-        reject(new SpawnError(`${command} ${join(' ', args)} failed with code ${exitCode}`, stdout, stderr));
+        reject(new SpawnError(`${command} ${args.join(' ')} failed with code ${exitCode}`, stdout, stderr));
       } else {
         resolve({ stdout, stderr });
       }
@@ -69,12 +69,12 @@ export function spawnProcess(command: string, args: string[], options: childProc
 
 const rootOf = (p: string) => path.parse(path.resolve(p)).root;
 const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
-const findUpIO = (name: string, directory: string): IO.IO<string | undefined> =>
+const findUpIO = (name: string, directory = process.cwd()): IOO.IOOption<string> =>
   pipe(path.resolve(directory), (dir) =>
     pipe(
       safeFileExistsIO(path.join(dir, name)),
       IO.chain((exists: boolean) =>
-        exists ? IO.of(dir) : isPathRoot(dir) ? IO.of<undefined>(undefined) : findUpIO(name, path.dirname(dir))
+        exists ? IOO.some(dir) : isPathRoot(dir) ? IOO.none : findUpIO(name, path.dirname(dir))
       )
     )
   );
@@ -82,14 +82,18 @@ const findUpIO = (name: string, directory: string): IO.IO<string | undefined> =>
 /**
  * Find a file by walking up parent directories
  */
-export const findUp = (name: string) => findUpIO(name, process.cwd())();
+export const findUp = (name: string) => pipe(findUpIO(name), IOO.toUndefined)();
 
 /**
  * Forwards `rootDir` or finds project root folder.
  */
-export function findProjectRoot(rootDir?: string): string | undefined {
-  return rootDir ?? findUp('yarn.lock') ?? findUp('package-lock.json');
-}
+export const findProjectRoot = (rootDir?: string) =>
+  pipe(
+    IOO.fromNullable(rootDir),
+    IOO.fold(() => findUpIO('yarn.lock'), IOO.of),
+    IOO.fold(() => findUpIO('package-lock.json'), IOO.of),
+    IOO.toUndefined
+  )();
 
 export const humanSize = (size: number) => {
   const exponent = Math.floor(Math.log(size) / Math.log(1024));
@@ -107,7 +111,7 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
   const lazyZip = (): Promise<void> =>
     useNativeZip ? bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }) : nodeZip(zipPath, files);
 
-  const zipTask = pipe(
+  await pipe(
     // create the random temporary folder
     mkdirpTask(tempDirPath),
     // copy all required files from origin path to (sometimes modified) target path
@@ -117,12 +121,9 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
     // zip the temporary directory
     TE.chain(() => taskFromPromise(lazyZip)),
     // delete the temporary folder
-    TE.chain(() => removeTask(tempDirPath))
+    TE.chain(() => removeTask(tempDirPath)),
+    taskEitherToPromise
   );
-
-  const zipE = await zipTask();
-
-  return eitherToPromise(zipE);
 };
 
 function nodeZip(zipPath: string, filesPathList: string[]): Promise<void> {

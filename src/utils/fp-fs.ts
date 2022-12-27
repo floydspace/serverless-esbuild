@@ -10,6 +10,7 @@ export const ioFromSync = <A>(f: Lazy<A>) => IOE.tryCatch(f, E.toError);
 export const taskFromPromise = <A>(f: Lazy<Promise<A>>) => TE.tryCatch(f, E.toError);
 export const eitherToPromise = <E, A>(e: E.Either<E, A>) =>
   new Promise<A>((resolve, reject) => E.fold(reject, resolve)(e));
+export const taskEitherToPromise = <E, A>(te: TE.TaskEither<E, A>) => te().then(eitherToPromise);
 
 export const fileExistsIO = (path: fs.PathLike) => ioFromSync(() => fs.existsSync(path));
 export const safeFileExistsIO = flow(fileExistsIO, IOE.fold(IO.of(constFalse), IO.of));
