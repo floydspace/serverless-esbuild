@@ -148,6 +148,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "troyready",
+      "name": "Troy Ready",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1806418?v=4",
+      "profile": "https://github.com/troyready",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
