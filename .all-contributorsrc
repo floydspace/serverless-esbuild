@@ -1,0 +1,247 @@
+{
+  "projectName": "serverless-esbuild",
+  "projectOwner": "floydspace",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 70,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "floydspace",
+      "name": "Victor Korzunin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5180700?v=4",
+      "profile": "https://github.com/floydspace",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "plugin",
+        "projectManagement",
+        "review",
+        "test",
+        "tool"
+      ]
+    },
+    {
+      "login": "olup",
+      "name": "Loup Topalian",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13785588?v=4",
+      "profile": "https://github.com/olup",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "infra",
+        "maintenance",
+        "plugin"
+      ]
+    },
+    {
+      "login": "samchungy",
+      "name": "Sam Chung",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18017094?v=4",
+      "profile": "https://github.com/samchungy",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "example",
+        "infra",
+        "maintenance",
+        "plugin",
+        "review",
+        "tool"
+      ]
+    },
+    {
+      "login": "vamche",
+      "name": "Vamsi Dharmavarapu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9653338?v=4",
+      "profile": "https://github.com/vamche",
+      "contributions": [
+        "code",
+        "doc",
+        "example",
+        "infra",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "webdeveric",
+      "name": "Eric",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1823514?v=4",
+      "profile": "https://github.com/webdeveric",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance",
+        "infra",
+        "review"
+      ]
+    },
+    {
+      "login": "codingnuclei",
+      "name": "Chris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37954566?v=4",
+      "profile": "https://github.com/codingnuclei",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "tinchoz49",
+      "name": "Martín Acosta",
+      "avatar_url": "https://avatars.githubusercontent.com/u/819446?v=4",
+      "profile": "https://geutstudio.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "tonyt-adept",
+      "name": "Tony Tyrrell",
+      "avatar_url": "https://avatars.githubusercontent.com/u/82844324?v=4",
+      "profile": "https://github.com/tonyt-adept",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mattjennings",
+      "name": "Matt Jennings",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8703090?v=4",
+      "profile": "https://mattjennings.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mishabruml",
+      "name": "Misha Bruml",
+      "avatar_url": "https://avatars.githubusercontent.com/u/25983780?v=4",
+      "profile": "https://github.com/mishabruml",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "fargito",
+      "name": "François Farge",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29537204?v=4",
+      "profile": "https://www.swarmion.dev/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ffxsam",
+      "name": "Sam Hulick",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12532733?v=4",
+      "profile": "https://reelcrafter.com/",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "troyready",
+      "name": "Troy Ready",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1806418?v=4",
+      "profile": "https://github.com/troyready",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "adikari",
+      "name": "subash adhikari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1757714?v=4",
+      "profile": "http://www.subash.com.au/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "danionescu",
+      "name": "Dan Ionescu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3269359?v=4",
+      "profile": "https://github.com/danionescu",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "gurushida",
+      "name": "gurushida",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49831684?v=4",
+      "profile": "https://github.com/gurushida",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "nickygb",
+      "name": "nickygb",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23530107?v=4",
+      "profile": "https://github.com/nickygb",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "capaj",
+      "name": "Jiri Spac",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1305378?v=4",
+      "profile": "https://twitter.com/capajj",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "gavynriebau",
+      "name": "gavynriebau",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11895736?v=4",
+      "profile": "https://github.com/gavynriebau",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "adriencaccia",
+      "name": "Adrien Cacciaguerra",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19605940?v=4",
+      "profile": "https://github.com/adriencaccia",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "lulzneko",
+      "name": "lulzneko",
+      "avatar_url": "https://avatars.githubusercontent.com/u/31102213?v=4",
+      "profile": "https://riotz.works/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "uneco",
+      "name": "AOKI Yuuto",
+      "avatar_url": "https://avatars.githubusercontent.com/u/603523?v=4",
+      "profile": "https://u-ne.co/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": false
+}
