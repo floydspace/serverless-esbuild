@@ -27,7 +27,7 @@ jobs:
         with:
           name: e2e-test-artifact
           path: |
-            e2e/**/.serverless/*.json
-            e2e/**/.serverless/*.zip
+            .test-artifacts/**/.serverless/*.json
+            .test-artifacts/**/.serverless/*.zip
           retention-days: 7
       - run: npm run build --if-present

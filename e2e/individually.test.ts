@@ -1,9 +1,13 @@
 import fs from 'fs';
-import cloudformation from '../.test-artifacts/individually/.serverless/cloudformation-template-update-stack.json';
+import path from 'path';
 
 test('individually', () => {
-  const hello1indexContents = fs.readFileSync('.test-artifacts/individually/.serverless/hello1.js').toString();
-  const hello2indexContents = fs.readFileSync('.test-artifacts/individually/.serverless/hello2.js').toString();
+  const testArtifactPath = path.resolve(__dirname, '../.test-artifacts/individually/.serverless');
+
+  const cloudformation = require(path.join(testArtifactPath, 'cloudformation-template-update-stack.json'));
+
+  const hello1indexContents = fs.readFileSync(path.join(testArtifactPath, 'hello1.js')).toString();
+  const hello2indexContents = fs.readFileSync(path.join(testArtifactPath, 'hello2.js')).toString();
   expect(hello1indexContents).toMatchSnapshot();
 
   expect(hello2indexContents).toMatchSnapshot();
