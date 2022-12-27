@@ -130,6 +130,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "fargito",
+      "name": "François Farge",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29537204?v=4",
+      "profile": "https://www.swarmion.dev/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
