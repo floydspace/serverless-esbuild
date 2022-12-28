@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM } from '../helper';
 
@@ -41,6 +41,38 @@ describe('extractFunctionEntries', () => {
         },
         {
           entry: 'file2.ts',
+          func: functionDefinitions['function2'],
+          functionAlias: 'function2',
+        },
+      ]);
+    });
+
+    it('should return entries for handlers which reference directories that contain index files', () => {
+      jest.mocked(fs.existsSync).mockImplementation((fPath) => {
+        return typeof fPath !== 'string' || fPath.endsWith('/index.ts');
+      });
+
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: 'dir1.handler',
+        },
+        function2: {
+          events: [],
+          handler: 'dir2.handler',
+        },
+      };
+
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'dir1/index.ts',
+          func: functionDefinitions['function1'],
+          functionAlias: 'function1',
+        },
+        {
+          entry: 'dir2/index.ts',
           func: functionDefinitions['function2'],
           functionAlias: 'function2',
         },
