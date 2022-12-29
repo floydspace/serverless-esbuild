@@ -77,6 +77,13 @@ export function extractFunctionEntries(
           func,
           functionAlias,
         };
+      } else if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
+        const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
+        return {
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          func,
+          functionAlias,
+        };
       }
     }
 
