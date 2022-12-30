@@ -21,6 +21,6 @@
     "noErrorTruncation": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["./*.js", "src"],
+  "include": ["./*.js", "src", "e2e", "examples"],
   "exclude": ["node_modules"]
 }

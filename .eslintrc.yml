@@ -6,24 +6,41 @@ ignorePatterns:
 extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended
+  - prettier
+parserOptions:
+  project:
+    - "./tsconfig.json"
 rules:
-  semi: 'off'
-  quotes: 'off'
-  no-use-before-define: 'off'
-  '@typescript-eslint/no-var-requires': 'off'
-  '@typescript-eslint/explicit-function-return-type': 'off'
-  '@typescript-eslint/explicit-module-boundary-types': 'off'
-  '@typescript-eslint/semi': error
-  '@typescript-eslint/quotes':
+  '@typescript-eslint/consistent-type-assertions':
     - error
-    - single
+    - assertionStyle: as
+  '@typescript-eslint/explicit-function-return-type': off
+  '@typescript-eslint/explicit-module-boundary-types': off
+  '@typescript-eslint/naming-convention': off
+  '@typescript-eslint/no-floating-promises': error
   '@typescript-eslint/no-use-before-define':
     - error
     - functions: false
       classes: false
+  '@typescript-eslint/no-var-requires': off
+  '@typescript-eslint/quotes':
+    - error
+    - single
+  '@typescript-eslint/semi': error
+  '@typescript-eslint/unbound-method': error
+  '@typescript-eslint/unified-signatures': warn
+  id-length:
+    - error
+    - exceptions:
+        - _
+      min: 2
+      properties: never
+  no-shadow: error
+  quotes: off
+  semi: off
 overrides:
   - files:
     - "**/*.test.ts"
     rules:
-      '@typescript-eslint/no-explicit-any': 'off'
-
+      '@typescript-eslint/no-explicit-any': off
+      id-length: off
