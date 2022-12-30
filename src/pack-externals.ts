@@ -318,9 +318,15 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   // (1) Generate dependency composition
   const externalModules = map((external) => ({ external }), externals);
-  const compositeModules: JSONObject = uniq(
+  let compositeModules: JSONObject = uniq(
     getProdModules.call(this, externalModules, packageJsonPath, rootPackageJsonPath)
   );
+
+  if (isWorkspace) {
+    compositeModules = compositeModules.concat(
+      getProdModules.call(this, externalModules, rootPackageJsonPath, rootPackageJsonPath)
+    );
+  }
 
   if (isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
