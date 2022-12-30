@@ -210,9 +210,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     }
 
     for (const fn of Object.values(this.functions)) {
-      const patterns = asArray(fn.package?.patterns).filter(isString);
+      const fnPatterns = asArray(fn.package?.patterns).filter(isString);
 
-      for (const pattern of patterns) {
+      for (const pattern of fnPatterns) {
         if (pattern.startsWith('!')) {
           ignored.push(pattern.slice(1));
         } else {
