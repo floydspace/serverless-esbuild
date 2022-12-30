@@ -1,18 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`individually 1`] = `
-""use strict";var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,d=Object.prototype.hasOwnProperty;var u=(e,s)=>n(e,"name",{value:s,configurable:!0});var p=(e,s)=>{for(var o in s)n(e,o,{get:s[o],enumerable:!0})},c=(e,s,o,r)=>{if(s&&typeof s=="object"||typeof s=="function")for(let t of f(s))!d.call(e,t)&&t!==o&&n(e,t,{get:()=>s[t],enumerable:!(r=a(s,t))||r.enumerable});return e};var y=(e,s,o)=>(o=e!=null?l(m(e)):{},c(s||!e||!e.__esModule?n(o,"default",{value:e,enumerable:!0}):o,e)),g=e=>c(n({},"__esModule",{value:!0}),e);var S={};p(S,{handler:()=>x});module.exports=g(S);var i=y(require("lodash"));async function x(e,s,o){console.log(i.VERSION),await new Promise(t=>setTimeout(t,500));let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};o(null,r)}u(x,"handler");0&&(module.exports={handler});
+""use strict";var c=Object.create;var r=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var u=(n,o)=>r(n,"name",{value:o,configurable:!0});var p=(n,o)=>{for(var e in o)r(n,e,{get:o[e],enumerable:!0})},i=(n,o,e,t)=>{if(o&&typeof o=="object"||typeof o=="function")for(let s of d(o))!m.call(n,s)&&s!==e&&r(n,s,{get:()=>o[s],enumerable:!(t=a(o,s))||t.enumerable});return n};var w=(n,o,e)=>(e=n!=null?c(f(n)):{},i(o||!n||!n.__esModule?r(e,"default",{value:n,enumerable:!0}):e,n)),y=n=>i(r({},"__esModule",{value:!0}),n);var k={};p(k,{handler:()=>g});module.exports=y(k);var l=w(require("lodash"));async function g(n,o,e){console.log(l.VERSION),await new Promise(s=>{setTimeout(s,500)});let t={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:n})};e(null,t)}u(g,"handler");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 2`] = `
-""use strict";var u=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var r=Object.getOwnPropertyNames;var a=Object.prototype.hasOwnProperty;var c=(s,e)=>u(s,"name",{value:e,configurable:!0});var l=(s,e)=>{for(var n in e)u(s,n,{get:e[n],enumerable:!0})},d=(s,e,n,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let t of r(e))!a.call(s,t)&&t!==n&&u(s,t,{get:()=>e[t],enumerable:!(o=i(e,t))||o.enumerable});return s};var f=s=>d(u({},"__esModule",{value:!0}),s);var m={};l(m,{handler:()=>y});module.exports=f(m);async function y(s,e,n){await new Promise(t=>setTimeout(t,500));let o={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:s})};n(null,o)}c(y,"handler");0&&(module.exports={handler});
+""use strict";var t=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var c=Object.getOwnPropertyNames;var l=Object.prototype.hasOwnProperty;var u=(e,n)=>t(e,"name",{value:n,configurable:!0});var a=(e,n)=>{for(var s in n)t(e,s,{get:n[s],enumerable:!0})},d=(e,n,s,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let o of c(n))!l.call(e,o)&&o!==s&&t(e,o,{get:()=>n[o],enumerable:!(r=i(n,o))||r.enumerable});return e};var w=e=>d(t({},"__esModule",{value:!0}),e);var p={};a(p,{handler:()=>f});module.exports=w(p);async function f(e,n,s){await new Promise(o=>{setTimeout(o,500)});let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};s(null,r)}u(f,"handler");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 3`] = `"2010-09-09"`;
 
-exports[`individually 4`] = `
+exports[`individually 4`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`individually 5`] = `
 {
   "Hello1LambdaFunctionQualifiedArn": {
     "Description": "Current Lambda function version",
@@ -69,7 +71,7 @@ exports[`individually 4`] = `
 }
 `;
 
-exports[`individually 5`] = `
+exports[`individually 6`] = `
 {
   "ApiGatewayMethodHello1Get": {
     "DependsOn": [
@@ -267,7 +269,7 @@ exports[`individually 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionCSwh1ndXXWK0PuziFcAZEvHblwz5E8ZASq6DpWhA": {
+  "Hello1LambdaVersionqyTqMsAZeV1QTgSjgi7R8m22Nxwiz362dk0yxdoMxtM": {
     "DeletionPolicy": "Retain",
     "Properties": {
       "CodeSha256": Any<String>,
@@ -345,7 +347,7 @@ exports[`individually 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello2LambdaVersionwMMe1vFJ1KSlA5MihlkJVM5uJp72R4R6u5Vtbnz3NSY": {
+  "Hello2LambdaVersionaTDB2bSCKGcbvS8xC3zEaTnnva83mXQ1t1W3FG5lIuA": {
     "DeletionPolicy": "Retain",
     "Properties": {
       "CodeSha256": Any<String>,
@@ -510,7 +512,7 @@ exports[`individually 5`] = `
 }
 `;
 
-exports[`individually 6`] = `
+exports[`individually 7`] = `
 {
   "DependsOn": [
     "ApiGatewayMethodHello1Get",
