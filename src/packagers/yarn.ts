@@ -62,18 +62,21 @@ export class Yarn implements Packager {
     }> = [];
 
     let parsedDeps: YarnDeps;
+
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
+
       parsedDeps = JSON.parse(processOutput.stdout) as YarnDeps;
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
         const errors = split('\n', err.stderr);
         const failed = reduce(
-          (f, error) => {
-            if (f) {
+          (acc, error) => {
+            if (acc) {
               return true;
             }
+
             return (
               !isEmpty(error) &&
               !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredYarnErrors)
@@ -96,9 +99,11 @@ export class Yarn implements Packager {
     // Produces a version map for the modules present in our root node_modules folder
     const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
+
       deps[name] ??= {
         version: version,
       };
+
       return deps;
     }, {});
 
@@ -160,6 +165,7 @@ export class Yarn implements Packager {
             //   "depth": 0
             // }
           }
+
           return deps;
         }
 
@@ -175,6 +181,7 @@ export class Yarn implements Packager {
           version,
           ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
         };
+
         return deps;
       }, {});
     };
@@ -225,6 +232,7 @@ export class Yarn implements Packager {
 
   async runScripts(cwd: string, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
+
     await Promise.all(scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd })));
   }
 }

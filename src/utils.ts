@@ -30,6 +30,7 @@ export function spawnProcess(command: string, args: string[], options: childProc
     const child = childProcess.spawn(command, args, options);
     let stdout = '';
     let stderr = '';
+
     // Configure stream encodings
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
@@ -71,6 +72,7 @@ export function findUp(names: string | string[], directory: string = process.cwd
   }
 
   const { root } = path.parse(absoluteDirectory);
+
   if (absoluteDirectory === root) {
     return undefined;
   }
@@ -86,15 +88,17 @@ export function findProjectRoot(rootDir?: string): string | undefined {
 }
 
 export const humanSize = (size: number) => {
-  const i = Math.floor(Math.log(size) / Math.log(1024));
-  const sanitized = (size / Math.pow(1024, i)).toFixed(2);
-  return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
+  const exponent = Math.floor(Math.log(size) / Math.log(1024));
+  const sanitized = (size / Math.pow(1024, exponent)).toFixed(2);
+
+  return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][exponent]}`;
 };
 
 export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
   const tempDirPath = path.join(os.tmpdir(), tempDirName);
+
   fs.mkdirpSync(tempDirPath);
 
   // copy all required files from origin path to (sometimes modified) target path
@@ -114,25 +118,28 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
     // delete the temporary folder
     fs.removeSync(tempDirPath);
   } else {
-    const zip = archiver.create('zip');
+    const zipArchive = archiver.create('zip');
     const output = fs.createWriteStream(zipPath);
 
     // write zip
-    output.on('open', () => {
-      zip.pipe(output);
+    output.on('open', async () => {
+      zipArchive.pipe(output);
 
       filesPathList.forEach((file) => {
         const stats = fs.statSync(file.rootPath);
-        if (stats.isDirectory()) return;
 
-        zip.append(fs.readFileSync(file.rootPath), {
+        if (stats.isDirectory()) {
+          return;
+        }
+
+        zipArchive.append(fs.readFileSync(file.rootPath), {
           name: file.localPath,
           mode: stats.mode,
           date: new Date(0), // necessary to get the same hash when zipping the same content
         });
       });
 
-      zip.finalize();
+      await zipArchive.finalize();
     });
 
     return new Promise((resolve, reject) => {
@@ -142,7 +149,7 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
 
         resolve();
       });
-      zip.on('error', (err) => reject(err));
+      zipArchive.on('error', (err) => reject(err));
     });
   }
 };
@@ -153,5 +160,6 @@ export function trimExtension(entry: string) {
 
 export const isEmpty = (obj: Record<string, unknown>) => {
   for (const _i in obj) return false;
+
   return true;
 };

@@ -179,7 +179,7 @@ describe('extractFunctionEntries', () => {
 });
 
 describe('getDepsFromBundle', () => {
-  const path = './';
+  const inputPath = './';
 
   describe('require statements', () => {
     it('should extract deps from a string', () => {
@@ -190,7 +190,7 @@ describe('getDepsFromBundle', () => {
           return require('package3');
         }
       `);
-      expect(getDepsFromBundle(path, false)).toStrictEqual(['@scope/package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual(['@scope/package1', 'package2', 'package3']);
     });
 
     it('should extract the base dep from a string', () => {
@@ -199,7 +199,7 @@ describe('getDepsFromBundle', () => {
         .readFileSync.mockReturnValue(
           'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath");require("package4/subpath/subpath")'
         );
-      expect(getDepsFromBundle(path, false)).toStrictEqual([
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual([
         '@scope/package1',
         'package2',
         '@scope/package3',
@@ -211,7 +211,7 @@ describe('getDepsFromBundle', () => {
       jest
         .mocked(fs)
         .readFileSync.mockReturnValue('require("package1/subpath");require("package1");require("package1")');
-      expect(getDepsFromBundle(path, false)).toStrictEqual(['package1']);
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual(['package1']);
     });
   });
 
@@ -228,14 +228,14 @@ describe('getDepsFromBundle', () => {
         }
         `
       );
-      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3', 'package4']);
+      expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['package1', 'package2', 'package3', 'package4']);
     });
 
     it('should extract deps from a minified string', () => {
       jest
         .mocked(fs)
         .readFileSync.mockReturnValue('import*as n from"package1";import"package2";import{hello as r}from"package3";');
-      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
   });
 });

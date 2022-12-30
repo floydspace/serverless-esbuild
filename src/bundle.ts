@@ -1,4 +1,4 @@
-import { BuildOptions, build } from 'esbuild';
+import { build, BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
@@ -90,8 +90,10 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     // check cache
     if (this.buildCache) {
       const { result } = this.buildCache[entry] ?? {};
+
       if (result?.rebuild) {
         await result.rebuild();
+
         return { bundlePath, entry, result };
       }
     }
@@ -108,6 +110,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
         JSON.stringify(result.metafile, null, 2)
       );
     }
+
     return { bundlePath, entry, result };
   };
 
@@ -123,6 +126,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   // Create a cache with entry as key
   this.buildCache = fileBuildResults.reduce<Record<string, FileBuildResult>>((acc, fileBuildResult) => {
     acc[fileBuildResult.entry] = fileBuildResult;
+
     return acc;
   }, {});
 

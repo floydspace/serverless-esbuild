@@ -14,6 +14,7 @@ export function preOffline(this: EsbuildServerlessPlugin) {
       relative(this.serviceDirPath, this.buildDirPath),
       this.serverless
     );
+
     this.serverless.service.custom = newServerless.service.custom;
   }
 }

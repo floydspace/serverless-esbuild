@@ -26,7 +26,7 @@ import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { bundle } from './bundle';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-import type { Configuration, FileBuildResult, FunctionBuildResult, Plugins, ReturnPluginsFn, ConfigFn } from './types';
+import type { ConfigFn, Configuration, FileBuildResult, FunctionBuildResult, Plugins, ReturnPluginsFn } from './types';
 
 function updateFile(op: string, src: string, dest: string) {
   if (['add', 'change', 'addDir'].includes(op)) {
@@ -36,6 +36,7 @@ function updateFile(op: string, src: string, dest: string) {
       preserveTimestamps: true,
       recursive: true,
     });
+
     return;
   }
 
@@ -46,25 +47,39 @@ function updateFile(op: string, src: string, dest: string) {
 
 class EsbuildServerlessPlugin implements ServerlessPlugin {
   serviceDirPath: string;
+
   outputWorkFolder: string | undefined;
+
   workDirPath: string | undefined;
+
   outputBuildFolder: string | undefined;
+
   buildDirPath: string | undefined;
+
   log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
+
   options: Serverless.Options;
+
   hooks: ServerlessPlugin.Hooks;
+
   buildOptions: Configuration | undefined;
+
   buildResults: FunctionBuildResult[] | undefined;
+
   /** Used for storing previous esbuild build results so we can rebuild more efficiently */
   buildCache: Record<string, FileBuildResult> = {};
 
   // These are bound to imported functions.
   packExternalModules: typeof packExternalModules;
+
   pack: typeof pack;
+
   preOffline: typeof preOffline;
+
   preLocal: typeof preLocal;
+
   bundle: typeof bundle;
 
   constructor(serverless: Serverless, options: Serverless.Options, logging?: ServerlessPlugin.Logging) {
@@ -170,11 +185,13 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
+
     for (const [functionAlias, fn] of Object.entries(functions)) {
       if (this.isFunctionDefinitionHandler(fn) && this.isNodeFunction(fn)) {
         nodeFunctions[functionAlias] = fn;
       }
     }
+
     return nodeFunctions;
   }
 
@@ -270,7 +287,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return extractFunctionEntries(this.serviceDirPath, this.serverless.service.provider.name, this.functions);
   }
 
-  async watch(): Promise<void> {
+  watch(): void {
     assert(this.buildOptions, 'buildOptions is not defined');
 
     const defaultPatterns = asArray(this.buildOptions.watch.pattern).filter(isString);
@@ -338,12 +355,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     if (
       patterns.length > 0 &&
       anymatch(
-        patterns.filter((p) => !p.startsWith('!')),
+        patterns.filter((pattern) => !pattern.startsWith('!')),
         filename
       )
     ) {
       const destFileName = path.resolve(path.join(this.buildDirPath, filename));
+
       updateFile(op, path.resolve(filename), destFileName);
+
       return;
     }
 
@@ -356,12 +375,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         anymatch(
           asArray(fn.package?.patterns)
             .filter(isString)
-            .filter((p) => !p.startsWith('!')),
+            .filter((pattern) => !pattern.startsWith('!')),
           filename
         )
       ) {
         const destFileName = path.resolve(path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename));
+
         updateFile(op, path.resolve(filename), destFileName);
+
         return;
       }
     }
@@ -421,6 +442,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
           func.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(func.package.artifact));
         }
       });
+
       return;
     }
 

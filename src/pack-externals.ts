@@ -5,6 +5,7 @@ import fse from 'fs-extra';
 import {
   compose,
   forEach,
+  path as get,
   head,
   includes,
   is,
@@ -14,7 +15,6 @@ import {
   map,
   mergeRight,
   omit,
-  path as get,
   pick,
   pickBy,
   replace,
@@ -41,6 +41,7 @@ import { assertIsString } from './helper';
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
     const filePath = replace(/^file:/, '', moduleVersion);
+
     return replace(/\\/g, '/', `${startsWith('file:', moduleVersion) ? 'file:' : ''}${pathToPackageRoot}/${filePath}`);
   }
 
@@ -53,6 +54,7 @@ function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) 
 function addModulesToPackageJson(externalModules: string[], packageJson: JSONObject, pathToPackageRoot: string) {
   forEach((externalModule) => {
     const splitModule = split('@', externalModule);
+
     // If we have a scoped module we have to re-add the @
     if (startsWith('@', externalModule)) {
       splitModule.splice(0, 1);
@@ -67,6 +69,7 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
 
     // We have to rebase file references to the target package.json
     const moduleVersion = rebaseFileReferences(pathToPackageRoot, join('@', tail(splitModule)));
+
     packageJson.dependencies = packageJson.dependencies || {};
     packageJson.dependencies[dependencyName] = moduleVersion;
   }, externalModules);
@@ -188,9 +191,10 @@ function getProdModules(
           packageJsonPath,
           rootPackageJsonPath
         );
+
         Array.prototype.push.apply(prodModules, peerModules);
       }
-    } catch (e) {
+    } catch (error) {
       this.log.warning(`WARNING: Could not check for peer dependencies of ${externalModule.external}`);
     }
   }, externalModules);
@@ -325,6 +329,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   if (isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
     this.log.warning('No external modules needed');
+
     return;
   }
 
@@ -347,16 +352,19 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     packageSections
   );
   const relativePath = path.relative(compositeModulePath, path.dirname(packageJsonPath));
+
   addModulesToPackageJson(compositeModules, compositePackage, relativePath);
   this.serverless.utils.writeFileSync(compositePackageJson, JSON.stringify(compositePackage, null, 2));
 
   // (1.a.2) Copy package-lock.json if it exists, to prevent unwanted upgrades
   const packageLockPath = path.join(process.cwd(), path.dirname(packageJsonPath), packager.lockfileName);
   const exists = await fse.pathExists(packageLockPath);
+
   if (exists) {
     this.log.verbose('Package lock found - Using locked versions');
     try {
       let packageLockFile = this.serverless.utils.readFileSync(packageLockPath);
+
       packageLockFile = packager.rebaseLockfile(relativePath, packageLockFile);
       if (is(Object)(packageLockFile)) {
         packageLockFile = JSON.stringify(packageLockFile, null, 2);
@@ -378,13 +386,16 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   }
 
   const start = Date.now();
+
   this.log.verbose('Packing external modules: ' + compositeModules.join(', '));
   const installExtraArgs = this.buildOptions.installExtraArgs;
+
   await packager.install(compositeModulePath, installExtraArgs, exists);
   this.log.debug(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
+
   await packager.prune(compositeModulePath);
 
   this.log.debug(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
@@ -394,6 +405,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   // Run packager scripts
   if (Object.keys(packagerScripts).length > 0) {
     const startScripts = Date.now();
+
     await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
 
     this.log.debug(

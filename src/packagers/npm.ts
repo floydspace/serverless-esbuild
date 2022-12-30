@@ -217,6 +217,7 @@ export class NPM implements Packager {
                 }),
             };
           }
+
           return deps;
         }
 
@@ -228,6 +229,7 @@ export class NPM implements Packager {
               dependencies: convertTrees(tree.dependencies, rootDeps, {}),
             }),
         };
+
         return deps;
       }, currentDeps);
     };
@@ -243,6 +245,7 @@ export class NPM implements Packager {
   _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
     if (/^file:[^/]{2}/.test(moduleVersion)) {
       const filePath = replace(/^file:/, '', moduleVersion);
+
       return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
     }
 

@@ -47,10 +47,11 @@ export class Pnpm implements Packager {
         // Only exit with an error if we have critical npm errors for 2nd level inside
         const errors = split('\n', err.stderr);
         const failed = reduce(
-          (f, error) => {
-            if (f) {
+          (acc, error) => {
+            if (acc) {
               return true;
             }
+
             return (
               !isEmpty(error) &&
               !ignoredPnpmErrors.some((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error))
@@ -72,6 +73,7 @@ export class Pnpm implements Packager {
   _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
     if (/^file:[^/]{2}/.test(moduleVersion)) {
       const filePath = replace(/^file:/, '', moduleVersion);
+
       return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
     }
 

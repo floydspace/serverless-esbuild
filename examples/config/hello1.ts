@@ -1,12 +1,18 @@
 import * as _ from 'lodash';
 
 // modern module syntax
-export async function handler(event, context, callback) {
+export async function handler(
+  event: unknown,
+  _context: unknown,
+  callback: (error: null | Error, response: unknown) => void
+) {
   // dependencies work as expected
   console.log(_.VERSION);
 
   // async/await also works out of the box
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => {
+    setTimeout(resolve, 500);
+  });
 
   const response = {
     statusCode: 200,
