@@ -1,9 +1,8 @@
-import { filterFilesForZipPackage, pack } from '../pack';
-import * as utils from '../utils';
-
 import fs from 'fs-extra';
 import globby from 'globby';
 
+import { filterFilesForZipPackage, pack } from '../pack';
+import * as utils from '../utils';
 import type { FunctionBuildResult } from '../types';
 import type EsbuildServerlessPlugin from '../index';
 
@@ -87,6 +86,7 @@ describe('pack', () => {
       ];
 
       const esbuildPlugin = {
+        buildResults,
         serverless: {
           service: {
             package: {
@@ -105,7 +105,6 @@ describe('pack', () => {
         buildDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/.build',
         workDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/',
         serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
-        buildResults,
         log: {
           error: jest.fn(),
           warning: jest.fn(),

@@ -1,9 +1,11 @@
+import assert from 'assert';
 import path from 'path';
 
 import fs from 'fs-extra';
 import globby from 'globby';
 import { intersection, isEmpty, lensProp, map, over, pipe, reject, replace, test, without } from 'ramda';
 import semver from 'semver';
+import type Serverless from 'serverless';
 
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
 import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
@@ -12,8 +14,6 @@ import { humanSize, trimExtension, zip } from './utils';
 
 import type EsbuildServerlessPlugin from './index';
 import type { IFiles } from './types';
-import type Serverless from 'serverless';
-import assert from 'assert';
 
 function setFunctionArtifactPath(
   this: EsbuildServerlessPlugin,
@@ -24,11 +24,13 @@ function setFunctionArtifactPath(
 
   // Serverless changed the artifact path location in version 1.18
   if (semver.lt(version, '1.18.0')) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line no-param-reassign
     (func as any).artifact = artifactPath;
+    // eslint-disable-next-line no-param-reassign, prefer-object-spread
     func.package = Object.assign({}, func.package, { disable: true });
     this.log.verbose(`${func.name} is packaged by the esbuild plugin. Ignore messages from SLS.`);
   } else {
+    // eslint-disable-next-line no-param-reassign
     func.package = {
       artifact: artifactPath,
     };
@@ -74,7 +76,7 @@ export const filterFilesForZipPackage = ({
       if (!hasExternals || isGoogleProvider) return false;
       if (
         // this is needed for dependencies that maps to a path (like scoped ones)
-        !depWhiteList.find((dep) => doSharePath(localPath, 'node_modules/' + dep))
+        !depWhiteList.find((dep) => doSharePath(localPath, `node_modules/${dep}`))
       )
         return false;
     }
@@ -83,6 +85,7 @@ export const filterFilesForZipPackage = ({
   });
 };
 
+// eslint-disable-next-line max-statements
 export async function pack(this: EsbuildServerlessPlugin) {
   // GOOGLE Provider requires a package.json and NO node_modules
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
@@ -196,10 +199,10 @@ export async function pack(this: EsbuildServerlessPlugin) {
         files,
         functionAlias,
         includedFiles,
-        excludedFiles: bundleExcludedFiles,
         hasExternals,
         isGoogleProvider,
         depWhiteList,
+        excludedFiles: bundleExcludedFiles,
       })
         // remove prefix from individual function extra files
         .map(({ localPath, ...rest }) => ({

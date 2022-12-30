@@ -1,46 +1,14 @@
 root: true
-env:
-  node: true
-ignorePatterns:
-  - dist
 extends:
-  - eslint:recommended
-  - plugin:@typescript-eslint/recommended
-  - prettier
-parserOptions:
-  project:
-    - "./tsconfig.json"
+  - '@floydspace/eslint-config/lib'
+  - '@floydspace/eslint-config/jest'
 rules:
-  '@typescript-eslint/consistent-type-assertions':
-    - error
-    - assertionStyle: as
-  '@typescript-eslint/explicit-function-return-type': off
-  '@typescript-eslint/explicit-module-boundary-types': off
   '@typescript-eslint/naming-convention': off
-  '@typescript-eslint/no-floating-promises': error
-  '@typescript-eslint/no-use-before-define':
-    - error
-    - functions: false
-      classes: false
-  '@typescript-eslint/no-var-requires': off
-  '@typescript-eslint/quotes':
-    - error
-    - single
-  '@typescript-eslint/semi': error
-  '@typescript-eslint/unbound-method': error
-  '@typescript-eslint/unified-signatures': warn
-  id-length:
-    - error
-    - exceptions:
-        - _
-      min: 2
-      properties: never
-  no-shadow: error
-  quotes: off
-  semi: off
+  jest/no-conditional-expect: off
 overrides:
   - files:
-    - "**/*.test.ts"
+      - 'examples/**/*.[tj]s'
     rules:
-      '@typescript-eslint/no-explicit-any': off
-      id-length: off
+      import/no-unresolved: off
+      no-promise-executor-return: off
+      no-console: off

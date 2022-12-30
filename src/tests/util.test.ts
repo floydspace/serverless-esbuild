@@ -1,5 +1,5 @@
-import { findProjectRoot } from '../utils';
 import path from 'path';
+import { findProjectRoot } from '../utils';
 
 describe('utils/findProjectRoot', () => {
   it('should properly Find a Project Root.', () => {

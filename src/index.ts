@@ -439,6 +439,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     if (service.package.individually === true || this.options.function) {
       Object.values(this.functions).forEach((func) => {
         if (func.package?.artifact) {
+          // eslint-disable-next-line no-param-reassign
           func.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(func.package.artifact));
         }
       });

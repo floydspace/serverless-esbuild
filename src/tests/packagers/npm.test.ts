@@ -1,4 +1,5 @@
-import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
+import { NPM } from '../../packagers/npm';
+import type { NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
 import type { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 

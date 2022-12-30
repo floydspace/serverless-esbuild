@@ -25,15 +25,13 @@ import {
   uniq,
   without,
 } from 'ramda';
-
-import { getPackager } from './packagers';
-import { findProjectRoot, findUp } from './utils';
-
 import type {
   findDependencies as FindDependenciesFn,
   findPackagePaths as FindPackagePathsFn,
 } from 'esbuild-node-externals/dist/utils';
 
+import { getPackager } from './packagers';
+import { findProjectRoot, findUp } from './utils';
 import type EsbuildServerlessPlugin from './index';
 import type { JSONObject, PackageJSON } from './types';
 import { assertIsString } from './helper';
@@ -58,7 +56,7 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
     // If we have a scoped module we have to re-add the @
     if (startsWith('@', externalModule)) {
       splitModule.splice(0, 1);
-      splitModule[0] = '@' + splitModule[0];
+      splitModule[0] = `@${splitModule[0]}`;
     }
 
     const dependencyName = head(splitModule);
@@ -70,7 +68,9 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
     // We have to rebase file references to the target package.json
     const moduleVersion = rebaseFileReferences(pathToPackageRoot, join('@', tail(splitModule)));
 
+    // eslint-disable-next-line no-param-reassign
     packageJson.dependencies = packageJson.dependencies || {};
+    // eslint-disable-next-line no-param-reassign
     packageJson.dependencies[dependencyName] = moduleVersion;
   }, externalModules);
 }
@@ -95,6 +95,7 @@ function getProdModules(
   const prodModules: string[] = [];
 
   // Get versions of all transient modules
+  // eslint-disable-next-line max-statements
   forEach((externalModule) => {
     // (1) If not present in Dev Dependencies or Dependencies
     if (
@@ -151,6 +152,7 @@ function getProdModules(
       'package.json'
     );
 
+    // eslint-disable-next-line no-nested-ternary
     const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
       ? localModulePackagePath
       : fse.pathExistsSync(rootModulePackagePath)
@@ -227,12 +229,13 @@ export function nodeExternalsPluginUtilsPath(): string | undefined {
  * This will utilize the npm cache at its best and give us the needed results
  * and performance.
  */
+// eslint-disable-next-line max-statements
 export async function packExternalModules(this: EsbuildServerlessPlugin) {
   assert(this.buildOptions, 'buildOptions not defined');
 
   const upperPackageJson = findUp('package.json');
 
-  const plugins = this.plugins;
+  const { plugins } = this;
 
   if (plugins && plugins.map((plugin) => plugin.name).includes('node-externals')) {
     const utilsPath = nodeExternalsPluginUtilsPath();
@@ -295,6 +298,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
           ? this.buildOptions.packagerOptions.scripts
           : [this.buildOptions.packagerOptions.scripts]
         ).reduce<ScriptsRecord>((scripts, script, index) => {
+          // eslint-disable-next-line no-param-reassign
           scripts[`script${index}`] = script;
 
           return scripts;
@@ -306,9 +310,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const isWorkspace = !!rootPackageJson.workspaces;
 
   const packageJson: Record<string, unknown> = isWorkspace
-    ? packageJsonPath
-      ? this.serverless.utils.readFileSync(packageJsonPath)
-      : {}
+    ? (packageJsonPath && this.serverless.utils.readFileSync(packageJsonPath)) || {}
     : rootPackageJson;
 
   const packageSections = pick(sectionNames, packageJson);
@@ -387,8 +389,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   const start = Date.now();
 
-  this.log.verbose('Packing external modules: ' + compositeModules.join(', '));
-  const installExtraArgs = this.buildOptions.installExtraArgs;
+  this.log.verbose(`Packing external modules: ${compositeModules.join(', ')}`);
+  const { installExtraArgs } = this.buildOptions;
 
   await packager.install(compositeModulePath, installExtraArgs, exists);
   this.log.debug(`Package took [${Date.now() - start} ms]`);

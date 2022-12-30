@@ -1,9 +1,8 @@
-import EsbuildServerlessPlugin from '../index';
-
+import fs from 'fs-extra';
 import type Serverless from 'serverless';
 import type Service from 'serverless/classes/Service';
 
-import fs from 'fs-extra';
+import EsbuildServerlessPlugin from '../index';
 
 jest.mock('fs-extra');
 

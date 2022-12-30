@@ -70,22 +70,13 @@ export class Pnpm implements Packager {
     }
   }
 
-  _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
-    if (/^file:[^/]{2}/.test(moduleVersion)) {
-      const filePath = replace(/^file:/, '', moduleVersion);
-
-      return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
-    }
-
-    return moduleVersion;
-  }
-
   /**
    * We should not be modifying 'pnpm-lock.yaml'
    * because this file should be treated as internal to pnpm.
    */
   rebaseLockfile(pathToPackageRoot: string, lockfile: JSONObject) {
     if (lockfile.version) {
+      // eslint-disable-next-line no-param-reassign
       lockfile.version = this._rebaseFileReferences(pathToPackageRoot, lockfile.version);
     }
 
@@ -123,5 +114,15 @@ export class Pnpm implements Packager {
         return spawnProcess(command, args, { cwd });
       })
     );
+  }
+
+  private _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
+    if (/^file:[^/]{2}/.test(moduleVersion)) {
+      const filePath = replace(/^file:/, '', moduleVersion);
+
+      return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
+    }
+
+    return moduleVersion;
   }
 }

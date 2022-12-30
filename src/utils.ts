@@ -61,6 +61,7 @@ export function findUp(names: string | string[], directory: string = process.cwd
   const absoluteDirectory = path.resolve(directory);
 
   if (typeof names === 'string') {
+    // eslint-disable-next-line no-param-reassign
     names = [names];
   }
 
@@ -89,7 +90,7 @@ export function findProjectRoot(rootDir?: string): string | undefined {
 
 export const humanSize = (size: number) => {
   const exponent = Math.floor(Math.log(size) / Math.log(1024));
-  const sanitized = (size / Math.pow(1024, exponent)).toFixed(2);
+  const sanitized = (size / 1024 ** exponent).toFixed(2);
 
   return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][exponent]}`;
 };
@@ -159,6 +160,7 @@ export function trimExtension(entry: string) {
 }
 
 export const isEmpty = (obj: Record<string, unknown>) => {
+  // eslint-disable-next-line no-unreachable-loop
   for (const _i in obj) return false;
 
   return true;

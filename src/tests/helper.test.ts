@@ -36,12 +36,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -68,12 +68,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'dir1/index.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'dir2/index.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -97,12 +97,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'folder/file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'folder/file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -126,12 +126,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -153,7 +153,7 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'src/file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
       ]);

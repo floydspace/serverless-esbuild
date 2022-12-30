@@ -19,7 +19,7 @@ export const isString = (input: unknown): input is string => typeof input === 's
 
 export function assertIsString(input: unknown, message = 'input is not a string'): asserts input is string {
   if (!isString(input)) {
-    throw new AssertionError({ actual: input, message });
+    throw new AssertionError({ message, actual: input });
   }
 }
 
@@ -75,17 +75,18 @@ export function extractFunctionEntries(
         const entry = path.relative(cwd, fileName + extension);
 
         return {
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
           func,
           functionAlias,
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
         };
-      } else if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
+      }
+      if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
         const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
 
         return {
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
           func,
           functionAlias,
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
         };
       }
     }
@@ -183,17 +184,14 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
   // I'm using `node: any` since the type definition is not accurate.
   // There are properties at runtime that do not exist in the `acorn.Node` type.
   simpleWalk(ast, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CallExpression(node: any) {
       if (node.callee.name === 'require') {
         deps.push(node.arguments[0].value);
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImportExpression(node: any) {
       deps.push(node.source.value);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImportDeclaration(node: any) {
       deps.push(node.source.value);
     },

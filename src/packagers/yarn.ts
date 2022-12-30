@@ -1,9 +1,9 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
+import { satisfies } from 'semver';
 
 import type { DependenciesResult, DependencyMap } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
-import { satisfies } from 'semver';
 import { isString } from '../helper';
 
 interface YarnTree {
@@ -100,8 +100,9 @@ export class Yarn implements Packager {
     const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
 
+      // eslint-disable-next-line no-param-reassign
       deps[name] ??= {
-        version: version,
+        version,
       };
 
       return deps;
@@ -137,6 +138,7 @@ export class Yarn implements Packager {
             //   "color": "bold",
             //   "depth": 0
             // }
+            // eslint-disable-next-line no-param-reassign
             deps[name] ??= {
               version,
               isRootDep: true,
@@ -177,6 +179,7 @@ export class Yarn implements Packager {
         //       "color": "bold",
         //       "depth": 0
         //     }
+        // eslint-disable-next-line no-param-reassign
         deps[name] ??= {
           version,
           ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
@@ -200,6 +203,7 @@ export class Yarn implements Packager {
     let match;
 
     // Detect all references and create replacement line strings
+    // eslint-disable-next-line no-cond-assign
     while ((match = fileVersionMatcher.exec(lockfile)) !== null) {
       replacements.push({
         oldRef: typeof match[1] === 'string' ? match[1] : '',

@@ -1,13 +1,7 @@
 // modern module syntax
-export async function handler(
-  event: unknown,
-  _context: unknown,
-  callback: (error: null | Error, response: unknown) => void
-) {
+export async function handler(event, context, callback) {
   // async/await also works out of the box
-  await new Promise((resolve) => {
-    setTimeout(resolve, 500);
-  });
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const response = {
     statusCode: 200,
