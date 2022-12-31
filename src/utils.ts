@@ -73,9 +73,11 @@ const findUpIO = (name: string, directory = process.cwd()): IOO.IOOption<string>
   pipe(path.resolve(directory), (dir) =>
     pipe(
       safeFileExistsIO(path.join(dir, name)),
-      IO.chain((exists: boolean) =>
-        exists ? IOO.some(dir) : isPathRoot(dir) ? IOO.none : findUpIO(name, path.dirname(dir))
-      )
+      IO.chain((exists: boolean) => {
+        if (exists) return IOO.some(dir);
+        if (isPathRoot(dir)) return IOO.none;
+        return findUpIO(name, path.dirname(dir));
+      })
     )
   );
 

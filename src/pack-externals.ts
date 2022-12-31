@@ -1,12 +1,7 @@
 import assert from 'assert';
 import path from 'path';
-
 import fse from 'fs-extra';
 import * as R from 'ramda';
-
-import { getPackager } from './packagers';
-import { findProjectRoot, findUp } from './utils';
-
 import type {
   findDependencies as FindDependenciesFn,
   findPackagePaths as FindPackagePathsFn,
