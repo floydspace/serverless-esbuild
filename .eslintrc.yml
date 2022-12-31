@@ -1,29 +1,14 @@
 root: true
-env:
-  node: true
-ignorePatterns:
-  - dist
 extends:
-  - eslint:recommended
-  - plugin:@typescript-eslint/recommended
+  - '@floydspace/eslint-config/lib'
+  - '@floydspace/eslint-config/jest'
 rules:
-  semi: 'off'
-  quotes: 'off'
-  no-use-before-define: 'off'
-  '@typescript-eslint/no-var-requires': 'off'
-  '@typescript-eslint/explicit-function-return-type': 'off'
-  '@typescript-eslint/explicit-module-boundary-types': 'off'
-  '@typescript-eslint/semi': error
-  '@typescript-eslint/quotes':
-    - error
-    - single
-  '@typescript-eslint/no-use-before-define':
-    - error
-    - functions: false
-      classes: false
+  '@typescript-eslint/naming-convention': off
+  jest/no-conditional-expect: off
 overrides:
   - files:
-    - "**/*.test.ts"
+      - 'examples/**/*.[tj]s'
     rules:
-      '@typescript-eslint/no-explicit-any': 'off'
-
+      import/no-unresolved: off
+      no-promise-executor-return: off
+      no-console: off

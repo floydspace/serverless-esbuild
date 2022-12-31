@@ -112,7 +112,7 @@ export class NPM implements Packager {
     const [major] = version.split('.');
 
     if (major) {
-      return parseInt(major);
+      return parseInt(major, 10);
     }
 
     throw new Error('Unable to get major npm version');
@@ -120,15 +120,17 @@ export class NPM implements Packager {
 
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const npmMajorVersion = await this.getNpmMajorVersion(cwd);
+    const prodFlag = npmMajorVersion >= 7 ? '--omit=dev' : '-prod';
+    const noDepthFlag = npmMajorVersion >= 7 ? '-all' : null;
 
     // Get first level dependency graph
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
     const args = [
       'ls',
       '-json',
-      npmMajorVersion >= 7 ? '--omit=dev' : '-prod', // Only prod dependencies
+      prodFlag, // Only prod dependencies
       '-long',
-      depth ? `-depth=${depth}` : npmMajorVersion >= 7 ? '-all' : null,
+      depth ? `-depth=${depth}` : noDepthFlag,
     ].filter(isString);
 
     const ignoredNpmErrors: Array<{
@@ -183,6 +185,7 @@ export class NPM implements Packager {
           // If this isn't the root of the tree
           if (rootDeps !== deps) {
             // Set it as resolved
+            // eslint-disable-next-line no-param-reassign
             deps[name] ??= {
               version: tree.version,
               isRootDep: true,
@@ -209,6 +212,7 @@ export class NPM implements Packager {
             // }
           } else {
             // This is a root node_modules dependency
+            // eslint-disable-next-line no-param-reassign
             rootDeps[name] ??= {
               version: tree.version,
               ...(tree.dependencies &&
@@ -217,10 +221,12 @@ export class NPM implements Packager {
                 }),
             };
           }
+
           return deps;
         }
 
         // Module is only installed within the node_modules of this dep. Iterate through it's dep tree
+        // eslint-disable-next-line no-param-reassign
         deps[name] ??= {
           version: tree.version,
           ...(tree.dependencies &&
@@ -228,6 +234,7 @@ export class NPM implements Packager {
               dependencies: convertTrees(tree.dependencies, rootDeps, {}),
             }),
         };
+
         return deps;
       }, currentDeps);
     };
@@ -240,15 +247,6 @@ export class NPM implements Packager {
     };
   }
 
-  _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
-    if (/^file:[^/]{2}/.test(moduleVersion)) {
-      const filePath = replace(/^file:/, '', moduleVersion);
-      return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
-    }
-
-    return moduleVersion;
-  }
-
   /**
    * We should not be modifying 'package-lock.json'
    * because this file should be treated as internal to npm.
@@ -258,6 +256,7 @@ export class NPM implements Packager {
    */
   rebaseLockfile(pathToPackageRoot: string, lockfile: JSONObject) {
     if (lockfile.version) {
+      // eslint-disable-next-line no-param-reassign
       lockfile.version = this._rebaseFileReferences(pathToPackageRoot, lockfile.version);
     }
 
@@ -294,5 +293,15 @@ export class NPM implements Packager {
         return spawnProcess(command, args, { cwd });
       })
     );
+  }
+
+  private _rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
+    if (/^file:[^/]{2}/.test(moduleVersion)) {
+      const filePath = replace(/^file:/, '', moduleVersion);
+
+      return replace(/\\/g, '/', `file:${pathToPackageRoot}/${filePath}`);
+    }
+
+    return moduleVersion;
   }
 }

@@ -1,4 +1,5 @@
-import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
+import { NPM } from '../../packagers/npm';
+import type { NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
 import type { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 
@@ -972,6 +973,7 @@ describe('NPM Packager', () => {
         'samchungy-dep-e': { version: '1.0.0' },
       },
     };
+
     spawnSpy
       .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
       .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v6depsList) });
@@ -1121,6 +1123,7 @@ describe('NPM Packager', () => {
       .mockRejectedValueOnce(new utils.SpawnError('a spawn error', JSON.stringify(v7depsList), npm7stderr));
 
     const result = await npm.getProdDependencies(path);
+
     expect(result).toStrictEqual({ stdout: JSON.stringify(v7depsList) });
   });
 });

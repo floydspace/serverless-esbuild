@@ -1,4 +1,6 @@
-import { BuildOptions, build } from 'esbuild';
+import assert from 'assert';
+import { build } from 'esbuild';
+import type { BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
@@ -8,7 +10,6 @@ import type EsbuildServerlessPlugin from './index';
 import { asArray, assertIsString, isESM, isString } from './helper';
 import type { EsbuildOptions, FileBuildResult } from './types';
 import { trimExtension } from './utils';
-import assert from 'assert';
 
 import type { FunctionBuildResult } from './types';
 
@@ -22,13 +23,13 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   this.log.verbose(`Compiling to ${this.buildOptions?.target} bundle with esbuild...`);
 
   if (this.buildOptions?.disableIncremental === true) {
+    // eslint-disable-next-line no-param-reassign
     incremental = false;
   }
 
   const exclude = getStringArray(this.buildOptions?.exclude);
 
   // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const esbuildOptions: EsbuildOptions = [
     'concurrency',
     'exclude',
@@ -44,9 +45,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     'outputBuildFolder',
     'outputWorkFolder',
     'nodeExternals',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ].reduce<Record<string, any>>((options, optionName) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [optionName]: _, ...rest } = options;
 
     return rest;
@@ -54,8 +53,8 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
 
   const config: Omit<BuildOptions, 'watch'> = {
     ...esbuildOptions,
-    external: [...getStringArray(this.buildOptions?.external), ...(exclude.includes('*') ? [] : exclude)],
     incremental,
+    external: [...getStringArray(this.buildOptions?.external), ...(exclude.includes('*') ? [] : exclude)],
     plugins: this.plugins,
   };
 
@@ -90,8 +89,10 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     // check cache
     if (this.buildCache) {
       const { result } = this.buildCache[entry] ?? {};
+
       if (result?.rebuild) {
         await result.rebuild();
+
         return { bundlePath, entry, result };
       }
     }
@@ -108,6 +109,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
         JSON.stringify(result.metafile, null, 2)
       );
     }
+
     return { bundlePath, entry, result };
   };
 
@@ -123,6 +125,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   // Create a cache with entry as key
   this.buildCache = fileBuildResults.reduce<Record<string, FileBuildResult>>((acc, fileBuildResult) => {
     acc[fileBuildResult.entry] = fileBuildResult;
+
     return acc;
   }, {});
 
