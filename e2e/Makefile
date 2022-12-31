@@ -1,4 +1,4 @@
-test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete
+test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config
 
 build:
 	npm run build
@@ -23,3 +23,7 @@ test-e2e-complete: build
 	cd ./.test-artifacts/complete/.serverless && unzip complete-example.zip
 	npx jest -c jest.config.e2e.js --ci ./e2e/complete.test.ts
 	rm -fr ./.test-artifacts
+
+test-e2e-config: build
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/config && rsync -r ./examples/config/ ./.test-artifacts/config/
+	cd ./.test-artifacts/config && pnpm install && npx sls package

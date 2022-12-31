@@ -41,7 +41,7 @@ export class Pnpm implements Packager {
       const processOutput = await spawnProcess(command, args, { cwd });
       const depJson = processOutput.stdout;
 
-      return JSON.parse(depJson);
+      return JSON.parse(depJson)[0];
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
@@ -89,10 +89,10 @@ export class Pnpm implements Packager {
     return lockfile;
   }
 
-  async install(cwd: string, extraArgs: string[], useLockfile = true) {
+  async install(cwd: string, extraArgs: Array<string>) {
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
 
-    const args = useLockfile ? ['install', '--frozen-lockfile', ...extraArgs] : ['install', ...extraArgs];
+    const args = ['install', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }

@@ -271,6 +271,7 @@ export class NPM implements Packager {
 
   async install(cwd: string, extraArgs: Array<string>) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
+
     const args = ['install', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });

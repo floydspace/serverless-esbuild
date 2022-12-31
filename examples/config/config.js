@@ -1,6 +1,6 @@
 module.exports = () => {
   return {
-    packager: 'npm',
+    packager: 'pnpm',
     bundle: true,
     minify: true,
     sourcemap: false,

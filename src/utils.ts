@@ -93,6 +93,7 @@ export const findProjectRoot = (rootDir?: string) =>
   pipe(
     IOO.fromNullable(rootDir),
     IOO.fold(() => findUpIO('yarn.lock'), IOO.of),
+    IOO.fold(() => findUpIO('pnpm-lock.yaml'), IOO.of),
     IOO.fold(() => findUpIO('package-lock.json'), IOO.of),
     IOO.toUndefined
   )();
