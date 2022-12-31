@@ -46,7 +46,6 @@ describe('utils/zip', () => {
     ];
 
     await expect(zip(zipPath, filesPathList)).rejects.toThrowError(
-      // eslint-disable-next-line @typescript-eslint/quotes
       "ENOENT, no such file or directory '/src/incorrect.txt'"
     );
   });
