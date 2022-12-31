@@ -18,18 +18,21 @@ export const fileExistsIO = (path: fs.PathLike) => ioFromSync(() => fs.existsSyn
 export const safeFileExistsIO = flow(fileExistsIO, IOE.fold(IO.of(constFalse), IO.of));
 
 export const mkdirpIO = (dir: string) => ioFromSync(() => fs.mkdirpSync(dir));
-export const mkdirpTask = (dir: string) => taskFromPromise(() => fs.mkdirp(dir));
+export const mkdirpTask: (dir: string) => TE.TaskEither<Error, void> = TE.taskify(fs.mkdirp);
 
 export const readFileIO = (file: fs.PathOrFileDescriptor) => ioFromSync(() => fs.readFileSync(file));
-export const readFileTask = (file: fs.PathOrFileDescriptor) => taskFromPromise(() => fs.readFile(file));
+export const readFileTask: (file: number | fs.PathLike) => TE.TaskEither<NodeJS.ErrnoException, Buffer> = TE.taskify(
+  fs.readFile
+);
 
 export const copyIO = (src: string, dest: string, options?: fs.CopyOptionsSync) =>
   ioFromSync(() => fs.copySync(src, dest, options));
-export const copyTask = (src: string, dest: string, options?: fs.CopyOptions) =>
-  taskFromPromise(() => fs.copy(src, dest, options));
+export const copyTask: (src: string, dest: string, options?: fs.CopyOptions) => TE.TaskEither<Error, void> = TE.taskify(
+  fs.copy
+);
 
 export const removeIO = (dir: string) => ioFromSync(() => fs.removeSync(dir));
-export const removeTask = (dir: string) => taskFromPromise(() => fs.remove(dir));
+export const removeTask: (dir: string) => TE.TaskEither<Error, void> = TE.taskify(fs.remove);
 
 export const statIO = (path: fs.PathLike) => ioFromSync(() => fs.statSync(path));
-export const statTask = (path: fs.PathLike) => taskFromPromise(() => fs.stat(path));
+export const statTask: (path: fs.PathLike) => TE.TaskEither<NodeJS.ErrnoException, fs.Stats> = TE.taskify(fs.stat);
