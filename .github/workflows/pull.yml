@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
       - run: npm ci
       - run: npm test
       - run: npm run test:e2e
