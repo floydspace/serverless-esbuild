@@ -1,6 +1,6 @@
 # 💨 serverless-esbuild
 
-[Serverless Framework](https://www.amazon.com/gp/search?ie=UTF8&tag=floydspace-20&linkCode=ur2&linkId=3c35aeea87e6a2d913a5f2110d6a2620&camp=1789&creative=9325&index=books&keywords=Serverless Framework) plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
+[Serverless Framework](https://www.amazon.com/gp/search?ie=UTF8&tag=floydspace-20&linkCode=ur2&linkId=3c35aeea87e6a2d913a5f2110d6a2620&camp=1789&creative=9325&index=books&keywords=Serverless%20Framework) plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
 
 [![serverless](http://public.serverless.com/badges/v3.svg)](https://www.serverless.com/plugins/serverless-esbuild)
 [![npm version](https://img.shields.io/npm/v/serverless-esbuild?color=brightgreen&label=npm%20package)](https://www.npmjs.com/package/serverless-esbuild)
