@@ -8,7 +8,7 @@ describe('NPM Packager', () => {
   const npm = new NPM();
   const path = './';
 
-  let spawnSpy = jest.spyOn(utils, 'spawnProcess');
+  let spawnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     spawnSpy = jest.spyOn(utils, 'spawnProcess');
