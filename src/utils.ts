@@ -1,6 +1,6 @@
 import { bestzip } from 'bestzip';
 import archiver from 'archiver';
-import childProcess from 'child_process';
+import execa from 'execa';
 import { pipe } from 'fp-ts/lib/function';
 import * as IO from 'fp-ts/lib/IO';
 import * as IOO from 'fp-ts/lib/IOOption';
@@ -38,33 +38,8 @@ export class SpawnError extends Error {
  * @param {string[]} [args] - Arguments
  * @param {Object} [options] - Options for child_process.spawn
  */
-export function spawnProcess(command: string, args: string[], options: childProcess.SpawnOptionsWithoutStdio) {
-  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-    const child = childProcess.spawn(command, args, options);
-    let stdout = '';
-    let stderr = '';
-
-    // Configure stream encodings
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    // Listen to stream events
-    child.stdout.on('data', (data) => {
-      stdout += data;
-    });
-    child.stderr.on('data', (data) => {
-      stderr += data;
-    });
-    child.on('error', (err) => {
-      reject(err);
-    });
-    child.on('close', (exitCode) => {
-      if (exitCode !== 0) {
-        reject(new SpawnError(`${command} ${args.join(' ')} failed with code ${exitCode}`, stdout, stderr));
-      } else {
-        resolve({ stdout, stderr });
-      }
-    });
-  });
+export function spawnProcess(command: string, args: string[], options: execa.Options) {
+  return execa(command, args, options);
 }
 
 const rootOf = (p: string) => path.parse(path.resolve(p)).root;

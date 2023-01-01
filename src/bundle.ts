@@ -8,10 +8,8 @@ import { uniq } from 'ramda';
 
 import type EsbuildServerlessPlugin from './index';
 import { asArray, assertIsString, isESM, isString } from './helper';
-import type { EsbuildOptions, FileBuildResult } from './types';
+import type { EsbuildOptions, FileBuildResult, FunctionBuildResult } from './types';
 import { trimExtension } from './utils';
-
-import type { FunctionBuildResult } from './types';
 
 const getStringArray = (input: unknown): string[] => asArray(input).filter(isString);
 
