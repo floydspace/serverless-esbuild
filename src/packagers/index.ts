@@ -10,10 +10,10 @@ import { memoizeWith } from 'ramda';
 import { isPackagerId } from '../type-predicate';
 
 import type EsbuildServerlessPlugin from '../index';
-import type { PackagerId } from '../types';
+import type { PackagerId, PackagerOptions } from '../types';
 import type { Packager } from './packager';
 
-const packagerFactories: Record<PackagerId, () => Promise<Packager>> = {
+const packagerFactories: Record<PackagerId, (packgerOptions?: PackagerOptions) => Promise<Packager>> = {
   async npm() {
     const { NPM } = await import('./npm');
 
@@ -24,10 +24,10 @@ const packagerFactories: Record<PackagerId, () => Promise<Packager>> = {
 
     return new Pnpm();
   },
-  async yarn() {
+  async yarn(packgerOptions) {
     const { Yarn } = await import('./yarn');
 
-    return new Yarn();
+    return new Yarn(packgerOptions);
   },
 };
 
@@ -40,7 +40,11 @@ const packagerFactories: Record<PackagerId, () => Promise<Packager>> = {
  */
 export const getPackager = memoizeWith(
   (packagerId) => packagerId,
-  async function (this: EsbuildServerlessPlugin, packagerId: PackagerId): Promise<Packager> {
+  async function (
+    this: EsbuildServerlessPlugin,
+    packagerId: PackagerId,
+    packgerOptions?: PackagerOptions
+  ): Promise<Packager> {
     this.log.debug(`Trying to create packager: ${packagerId}`);
 
     if (!isPackagerId(packagerId)) {
@@ -49,7 +53,7 @@ export const getPackager = memoizeWith(
       throw new this.serverless.classes.Error(`Could not find packager '${packagerId}'`);
     }
 
-    const packager = await packagerFactories[packagerId]();
+    const packager = await packagerFactories[packagerId](packgerOptions);
 
     this.log.debug(`Packager created: ${packagerId}`);
 

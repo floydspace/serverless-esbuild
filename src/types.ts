@@ -13,6 +13,7 @@ export interface WatchConfiguration {
 
 export interface PackagerOptions {
   scripts?: string[] | string;
+  noInstall?: boolean;
 }
 
 interface NodeExternalsOptions {

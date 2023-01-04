@@ -231,4 +231,13 @@ describe('Yarn Packager', () => {
 
     expect(result).toStrictEqual(expectedResult);
   });
+
+  it('should skip install if the noInstall option is true', async () => {
+    const yarnWithoutInstall = new Yarn({
+      noInstall: true,
+    });
+
+    await expect(yarnWithoutInstall.install(path, [], false)).resolves.toBeUndefined();
+    expect(spawnSpy).toBeCalledTimes(0);
+  });
 });

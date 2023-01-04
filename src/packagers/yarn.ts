@@ -1,7 +1,7 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 import { satisfies } from 'semver';
 
-import type { DependenciesResult, DependencyMap } from '../types';
+import type { DependenciesResult, DependencyMap, PackagerOptions } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
 import { isString } from '../helper';
@@ -39,6 +39,14 @@ const getNameAndVersion = (name: string): { name: string; version: string } => {
  *   ignoreScripts (false) - Do not execute scripts during install
  */
 export class Yarn implements Packager {
+  private packagerOptions: PackagerOptions;
+
+  constructor(packagerOptions?: PackagerOptions) {
+    this.packagerOptions = packagerOptions || {
+      noInstall: false,
+    };
+  }
+
   get lockfileName() {
     return 'yarn.lock';
   }
@@ -220,6 +228,10 @@ export class Yarn implements Packager {
   }
 
   async install(cwd: string, extraArgs: Array<string>, useLockfile = true) {
+    if (this.packagerOptions.noInstall) {
+      return;
+    }
+
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
 
     const args = useLockfile
