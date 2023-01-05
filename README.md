@@ -116,6 +116,12 @@ The following `esbuild` options are automatically set.
 | `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./\*_/_.(js\|ts)` (watches all `.js` and `.ts` files) |
 | `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `'.esbuild', 'dist', 'node_modules', '.build']`        |
 
+#### Function Options
+
+| Option        | Description                                                          | Default     |
+| ------------- | -------------------------------------------------------------------- | ----------- |
+| `skipEsbuild` | Set this property to `true` on a function definition to skip esbuild | `undefined` |
+
 ## Supported Runtimes
 
 This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes

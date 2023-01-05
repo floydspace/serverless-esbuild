@@ -54,6 +54,14 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
     config: {
       servicePath: '/workDir',
     },
+    configSchemaHandler: {
+      defineCustomProperties: jest.fn(),
+      defineFunctionEvent: jest.fn(),
+      defineFunctionEventProperties: jest.fn(),
+      defineFunctionProperties: jest.fn(),
+      defineProvider: jest.fn(),
+      defineTopLevelProperty: jest.fn(),
+    },
     cli: mockCli,
   } as Partial<Serverless> as Serverless;
 };
@@ -143,6 +151,41 @@ describe('Move Artifacts', () => {
         mockOptions
       );
 
+      plugin.hooks.initialize?.();
+
+      await plugin.moveArtifacts();
+
+      expect(plugin.functions).toMatchInlineSnapshot(`
+        {
+          "hello1": {
+            "events": [],
+            "handler": "hello1.handler",
+            "package": {
+              "artifact": ".serverless/hello1",
+            },
+          },
+          "hello2": {
+            "events": [],
+            "handler": "hello2.handler",
+            "package": {
+              "artifact": ".serverless/hello2",
+            },
+          },
+        }
+      `);
+    });
+
+    it('should skip function if skipEsbuild is set to true', async () => {
+      const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
+      const plugin = new EsbuildServerlessPlugin(
+        mockServerlessConfig({
+          functions: {
+            ...packageIndividuallyService.functions,
+            hello3,
+          },
+        }),
+        mockOptions
+      );
       plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
