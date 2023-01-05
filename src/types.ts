@@ -39,6 +39,10 @@ export interface Configuration extends EsbuildOptions {
   nodeExternals?: NodeExternalsOptions;
 }
 
+export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
+  skipEsbuild: boolean;
+}
+
 export interface FunctionEntry {
   entry: string;
   func: Serverless.FunctionDefinitionHandler | null;
