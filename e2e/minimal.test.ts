@@ -7,15 +7,19 @@ test('minimal', () => {
   const cloudformation = require(path.join(testArtifactPath, 'cloudformation-template-update-stack.json'));
 
   const indexContents = fs.readFileSync(path.join(testArtifactPath, 'index.js')).toString();
+
   expect(indexContents).toMatchSnapshot();
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
-  expect(cloudformation.Description).toMatchSnapshot;
+
+  expect(cloudformation.Description).toMatchSnapshot();
+
   expect(cloudformation.Outputs).toMatchSnapshot({
     ValidateIsinLambdaFunctionQualifiedArn: {
       Value: { Ref: expect.any(String) },
     },
   });
+
   expect(cloudformation.Outputs.ValidateIsinLambdaFunctionQualifiedArn.Value.Ref).toMatch(/^ValidateIsinLambdaVersion/);
 
   const apiGatewayDeploymentPropertyKey = Object.keys(cloudformation.Resources).find((s) =>

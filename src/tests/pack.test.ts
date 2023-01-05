@@ -1,9 +1,8 @@
-import { filterFilesForZipPackage, pack } from '../pack';
-import * as utils from '../utils';
-
 import fs from 'fs-extra';
 import globby from 'globby';
 
+import { filterFilesForZipPackage, pack } from '../pack';
+import * as utils from '../utils';
 import type { FunctionBuildResult } from '../types';
 import type EsbuildServerlessPlugin from '../index';
 
@@ -58,6 +57,7 @@ describe('pack', () => {
   describe('individually', () => {
     it('should create zips with the functionAlias as the name', async () => {
       const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+
       jest.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
       jest.mocked(globby).mockResolvedValue([]);
       jest.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
@@ -86,6 +86,7 @@ describe('pack', () => {
       ];
 
       const esbuildPlugin = {
+        buildResults,
         serverless: {
           service: {
             package: {
@@ -104,7 +105,6 @@ describe('pack', () => {
         buildDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/.build',
         workDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/',
         serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
-        buildResults,
         log: {
           error: jest.fn(),
           warning: jest.fn(),

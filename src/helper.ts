@@ -19,7 +19,7 @@ export const isString = (input: unknown): input is string => typeof input === 's
 
 export function assertIsString(input: unknown, message = 'input is not a string'): asserts input is string {
   if (!isString(input)) {
-    throw new AssertionError({ actual: input, message });
+    throw new AssertionError({ message, actual: input });
   }
 }
 
@@ -61,21 +61,32 @@ export function extractFunctionEntries(
 
     assert(func, `${functionAlias} not found in functions`);
 
-    const h = func.handler;
-    const fnName = path.extname(h);
-    const fnNameLastAppearanceIndex = h.lastIndexOf(fnName);
+    const { handler } = func;
+    const fnName = path.extname(handler);
+    const fnNameLastAppearanceIndex = handler.lastIndexOf(fnName);
     // replace only last instance to allow the same name for file and handler
-    const fileName = h.substring(0, fnNameLastAppearanceIndex);
+    const fileName = handler.substring(0, fnNameLastAppearanceIndex);
 
     const extensions = ['.ts', '.js', '.jsx', '.tsx'];
+
     for (const extension of extensions) {
       // Check if the .{extension} files exists. If so return that to watch
       if (fs.existsSync(path.join(cwd, fileName + extension))) {
         const entry = path.relative(cwd, fileName + extension);
+
         return {
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
           func,
           functionAlias,
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+        };
+      }
+      if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
+        const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
+
+        return {
+          func,
+          functionAlias,
+          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
         };
       }
     }
@@ -142,10 +153,10 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
  * @example getBaseDep('@scope/package/register') returns '@scope/package'
  * @example getBaseDep('package/register') returns 'package'
  * @example getBaseDep('package') returns 'package'
- * @param path
+ * @param input
  */
-const getBaseDep = (path: string): string | undefined => {
-  const result = /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path);
+const getBaseDep = (input: string): string | undefined => {
+  const result = /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(input);
 
   if (Array.isArray(result) && result[0]) {
     return result[0];
@@ -173,17 +184,14 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
   // I'm using `node: any` since the type definition is not accurate.
   // There are properties at runtime that do not exist in the `acorn.Node` type.
   simpleWalk(ast, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CallExpression(node: any) {
       if (node.callee.name === 'require') {
         deps.push(node.arguments[0].value);
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImportExpression(node: any) {
       deps.push(node.source.value);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImportDeclaration(node: any) {
       deps.push(node.source.value);
     },

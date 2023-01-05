@@ -13923,7 +13923,9 @@ module.exports.handler = (event, context, callback) => {
 
 exports[`minimal 2`] = `"2010-09-09"`;
 
-exports[`minimal 3`] = `
+exports[`minimal 3`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`minimal 4`] = `
 {
   "ServerlessDeploymentBucketName": {
     "Export": {
@@ -13971,7 +13973,7 @@ exports[`minimal 3`] = `
 }
 `;
 
-exports[`minimal 4`] = `
+exports[`minimal 5`] = `
 {
   "ApiGatewayMethodValidateDashisinIsinVarGet": {
     "DependsOn": [
@@ -14285,7 +14287,7 @@ exports[`minimal 4`] = `
 }
 `;
 
-exports[`minimal 5`] = `
+exports[`minimal 6`] = `
 {
   "DependsOn": [
     "ApiGatewayMethodValidateDashisinIsinVarGet",

@@ -1,11 +1,11 @@
 # 💨 serverless-esbuild
 
-Serverless plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
+[Serverless Framework](https://www.amazon.com/gp/search?ie=UTF8&tag=floydspace-20&linkCode=ur2&linkId=3c35aeea87e6a2d913a5f2110d6a2620&camp=1789&creative=9325&index=books&keywords=Serverless%20Framework) plugin for zero-config JavaScript and TypeScript code bundling using promising fast & furious [`esbuild`](https://github.com/evanw/esbuild) bundler and minifier
 
 [![serverless](http://public.serverless.com/badges/v3.svg)](https://www.serverless.com/plugins/serverless-esbuild)
 [![npm version](https://img.shields.io/npm/v/serverless-esbuild?color=brightgreen&label=npm%20package)](https://www.npmjs.com/package/serverless-esbuild)
 [![npm downloads](https://img.shields.io/npm/dm/serverless-esbuild)](https://www.npmjs.com/package/serverless-esbuild)
-[![build status](https://img.shields.io/github/workflow/status/floydspace/serverless-esbuild/release)](https://github.com/floydspace/serverless-esbuild/actions)
+[![build status](https://img.shields.io/github/actions/workflow/status/floydspace/serverless-esbuild/release.yml?branch=master)](https://github.com/floydspace/serverless-esbuild/actions)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 ## Features
@@ -333,6 +333,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://u-ne.co/"><img src="https://avatars.githubusercontent.com/u/603523?v=4?s=70" width="70px;" alt="AOKI Yuuto"/><br /><sub><b>AOKI Yuuto</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=uneco" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ThomasAribart"><img src="https://avatars.githubusercontent.com/u/38014240?v=4?s=70" width="70px;" alt="Thomas Aribart"/><br /><sub><b>Thomas Aribart</b></sub></a><br /><a href="#ideas-ThomasAribart" title="Ideas, Planning, & Feedback">🤔</a></td>
     </tr>
   </tbody>
 </table>

@@ -12,7 +12,9 @@ exports[`individually 2`] = `
 
 exports[`individually 3`] = `"2010-09-09"`;
 
-exports[`individually 4`] = `
+exports[`individually 4`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`individually 5`] = `
 {
   "Hello1LambdaFunctionQualifiedArn": {
     "Description": "Current Lambda function version",
@@ -69,7 +71,7 @@ exports[`individually 4`] = `
 }
 `;
 
-exports[`individually 5`] = `
+exports[`individually 6`] = `
 {
   "ApiGatewayMethodHello1Get": {
     "DependsOn": [
@@ -510,7 +512,7 @@ exports[`individually 5`] = `
 }
 `;
 
-exports[`individually 6`] = `
+exports[`individually 7`] = `
 {
   "DependsOn": [
     "ApiGatewayMethodHello1Get",

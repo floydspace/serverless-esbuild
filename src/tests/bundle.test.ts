@@ -1,9 +1,9 @@
 import { build } from 'esbuild';
 import pMap from 'p-map';
+import type { PartialDeep } from 'type-fest';
 
 import { bundle } from '../bundle';
 
-import type { PartialDeep } from 'type-fest';
 import type { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
 import type EsbuildServerlessPlugin from '../index';
 
@@ -18,7 +18,7 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
         log: jest.fn(),
       },
       classes: {
-        Error: Error,
+        Error,
       },
     },
     buildOptions: {

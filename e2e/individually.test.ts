@@ -8,12 +8,15 @@ test('individually', () => {
 
   const hello1indexContents = fs.readFileSync(path.join(testArtifactPath, 'hello1.js')).toString();
   const hello2indexContents = fs.readFileSync(path.join(testArtifactPath, 'hello2.js')).toString();
+
   expect(hello1indexContents).toMatchSnapshot();
 
   expect(hello2indexContents).toMatchSnapshot();
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
-  expect(cloudformation.Description).toMatchSnapshot;
+
+  expect(cloudformation.Description).toMatchSnapshot();
+
   expect(cloudformation.Outputs).toMatchSnapshot({
     Hello1LambdaFunctionQualifiedArn: {
       Value: { Ref: expect.any(String) },
@@ -22,7 +25,9 @@ test('individually', () => {
       Value: { Ref: expect.any(String) },
     },
   });
+
   expect(cloudformation.Outputs.Hello1LambdaFunctionQualifiedArn.Value.Ref).toMatch(/^Hello1LambdaVersion/);
+
   expect(cloudformation.Outputs.Hello2LambdaFunctionQualifiedArn.Value.Ref).toMatch(/^Hello2LambdaVersion/);
 
   const apiGatewayDeploymentPropertyKey = Object.keys(cloudformation.Resources).find((s) =>

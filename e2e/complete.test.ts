@@ -7,9 +7,11 @@ test('complete', () => {
   const cloudformation = require(path.join(testArtifactPath, 'cloudformation-template-update-stack.json'));
 
   const indexContents = fs.readFileSync(path.join(testArtifactPath, 'src/index.js')).toString();
+
   expect(indexContents).toMatchSnapshot();
 
   const nodeModules = fs.readdirSync(path.join(testArtifactPath, 'node_modules')).toString();
+
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();

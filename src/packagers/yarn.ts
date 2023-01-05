@@ -1,9 +1,9 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
+import { satisfies } from 'semver';
 
 import type { DependenciesResult, DependencyMap } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
-import { satisfies } from 'semver';
 import { isString } from '../helper';
 
 interface YarnTree {
@@ -62,18 +62,21 @@ export class Yarn implements Packager {
     }> = [];
 
     let parsedDeps: YarnDeps;
+
     try {
       const processOutput = await spawnProcess(command, args, { cwd });
+
       parsedDeps = JSON.parse(processOutput.stdout) as YarnDeps;
     } catch (err) {
       if (err instanceof SpawnError) {
         // Only exit with an error if we have critical npm errors for 2nd level inside
         const errors = split('\n', err.stderr);
         const failed = reduce(
-          (f, error) => {
-            if (f) {
+          (acc, error) => {
+            if (acc) {
               return true;
             }
+
             return (
               !isEmpty(error) &&
               !any((ignoredError) => startsWith(`npm ERR! ${ignoredError.npmError}`, error), ignoredYarnErrors)
@@ -96,9 +99,12 @@ export class Yarn implements Packager {
     // Produces a version map for the modules present in our root node_modules folder
     const rootDependencies = rootTree.reduce<DependencyMap>((deps, tree) => {
       const { name, version } = getNameAndVersion(tree.name);
+
+      // eslint-disable-next-line no-param-reassign
       deps[name] ??= {
-        version: version,
+        version,
       };
+
       return deps;
     }, {});
 
@@ -132,6 +138,7 @@ export class Yarn implements Packager {
             //   "color": "bold",
             //   "depth": 0
             // }
+            // eslint-disable-next-line no-param-reassign
             deps[name] ??= {
               version,
               isRootDep: true,
@@ -160,6 +167,7 @@ export class Yarn implements Packager {
             //   "depth": 0
             // }
           }
+
           return deps;
         }
 
@@ -171,10 +179,12 @@ export class Yarn implements Packager {
         //       "color": "bold",
         //       "depth": 0
         //     }
+        // eslint-disable-next-line no-param-reassign
         deps[name] ??= {
           version,
           ...(tree?.children?.length && { dependencies: convertTrees(tree.children) }),
         };
+
         return deps;
       }, {});
     };
@@ -193,6 +203,7 @@ export class Yarn implements Packager {
     let match;
 
     // Detect all references and create replacement line strings
+    // eslint-disable-next-line no-cond-assign
     while ((match = fileVersionMatcher.exec(lockfile)) !== null) {
       replacements.push({
         oldRef: typeof match[1] === 'string' ? match[1] : '',
@@ -225,6 +236,7 @@ export class Yarn implements Packager {
 
   async runScripts(cwd: string, scriptNames: string[]) {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
+
     await Promise.all(scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd })));
   }
 }

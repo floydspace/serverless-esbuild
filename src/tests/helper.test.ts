@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM } from '../helper';
 
@@ -36,12 +36,44 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
+          functionAlias: 'function2',
+        },
+      ]);
+    });
+
+    it('should return entries for handlers which reference directories that contain index files', () => {
+      jest.mocked(fs.existsSync).mockImplementation((fPath) => {
+        return typeof fPath !== 'string' || fPath.endsWith('/index.ts');
+      });
+
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: 'dir1.handler',
+        },
+        function2: {
+          events: [],
+          handler: 'dir2.handler',
+        },
+      };
+
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'dir1/index.ts',
+          func: functionDefinitions.function1,
+          functionAlias: 'function1',
+        },
+        {
+          entry: 'dir2/index.ts',
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -65,12 +97,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'folder/file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'folder/file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -94,12 +126,12 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
         {
           entry: 'file2.ts',
-          func: functionDefinitions['function2'],
+          func: functionDefinitions.function2,
           functionAlias: 'function2',
         },
       ]);
@@ -121,7 +153,7 @@ describe('extractFunctionEntries', () => {
       expect(fileNames).toStrictEqual([
         {
           entry: 'src/file1.ts',
-          func: functionDefinitions['function1'],
+          func: functionDefinitions.function1,
           functionAlias: 'function1',
         },
       ]);
@@ -147,7 +179,7 @@ describe('extractFunctionEntries', () => {
 });
 
 describe('getDepsFromBundle', () => {
-  const path = './';
+  const inputPath = './';
 
   describe('require statements', () => {
     it('should extract deps from a string', () => {
@@ -158,7 +190,7 @@ describe('getDepsFromBundle', () => {
           return require('package3');
         }
       `);
-      expect(getDepsFromBundle(path, false)).toStrictEqual(['@scope/package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual(['@scope/package1', 'package2', 'package3']);
     });
 
     it('should extract the base dep from a string', () => {
@@ -167,7 +199,7 @@ describe('getDepsFromBundle', () => {
         .readFileSync.mockReturnValue(
           'require("@scope/package1/subpath");require("package2/subpath");require("@scope/package3/subpath/subpath");require("package4/subpath/subpath")'
         );
-      expect(getDepsFromBundle(path, false)).toStrictEqual([
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual([
         '@scope/package1',
         'package2',
         '@scope/package3',
@@ -179,7 +211,7 @@ describe('getDepsFromBundle', () => {
       jest
         .mocked(fs)
         .readFileSync.mockReturnValue('require("package1/subpath");require("package1");require("package1")');
-      expect(getDepsFromBundle(path, false)).toStrictEqual(['package1']);
+      expect(getDepsFromBundle(inputPath, false)).toStrictEqual(['package1']);
     });
   });
 
@@ -196,14 +228,14 @@ describe('getDepsFromBundle', () => {
         }
         `
       );
-      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3', 'package4']);
+      expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['package1', 'package2', 'package3', 'package4']);
     });
 
     it('should extract deps from a minified string', () => {
       jest
         .mocked(fs)
         .readFileSync.mockReturnValue('import*as n from"package1";import"package2";import{hello as r}from"package3";');
-      expect(getDepsFromBundle(path, true)).toStrictEqual(['package1', 'package2', 'package3']);
+      expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
   });
 });

@@ -61,7 +61,6 @@ export interface FileBuildResult {
   result: BuildResult;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JSONObject = any;
 
 export interface DependenciesResult {

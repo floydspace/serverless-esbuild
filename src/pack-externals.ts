@@ -1,47 +1,27 @@
 import assert from 'assert';
 import path from 'path';
-
 import fse from 'fs-extra';
-import {
-  compose,
-  forEach,
-  head,
-  includes,
-  is,
-  isEmpty,
-  join,
-  keys,
-  map,
-  mergeRight,
-  omit,
-  path as get,
-  pick,
-  pickBy,
-  replace,
-  split,
-  startsWith,
-  tail,
-  toPairs,
-  uniq,
-  without,
-} from 'ramda';
-
-import { getPackager } from './packagers';
-import { findProjectRoot, findUp } from './utils';
-
+import * as R from 'ramda';
 import type {
   findDependencies as FindDependenciesFn,
   findPackagePaths as FindPackagePathsFn,
 } from 'esbuild-node-externals/dist/utils';
 
+import { getPackager } from './packagers';
+import { findProjectRoot, findUp } from './utils';
 import type EsbuildServerlessPlugin from './index';
 import type { JSONObject, PackageJSON } from './types';
 import { assertIsString } from './helper';
 
 function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) {
   if (/^(?:file:[^/]{2}|\.\/|\.\.\/)/.test(moduleVersion)) {
-    const filePath = replace(/^file:/, '', moduleVersion);
-    return replace(/\\/g, '/', `${startsWith('file:', moduleVersion) ? 'file:' : ''}${pathToPackageRoot}/${filePath}`);
+    const filePath = R.replace(/^file:/, '', moduleVersion);
+
+    return R.replace(
+      /\\/g,
+      '/',
+      `${R.startsWith('file:', moduleVersion) ? 'file:' : ''}${pathToPackageRoot}/${filePath}`
+    );
   }
 
   return moduleVersion;
@@ -51,23 +31,27 @@ function rebaseFileReferences(pathToPackageRoot: string, moduleVersion: string) 
  * Add the given modules to a package json's dependencies.
  */
 function addModulesToPackageJson(externalModules: string[], packageJson: JSONObject, pathToPackageRoot: string) {
-  forEach((externalModule) => {
-    const splitModule = split('@', externalModule);
+  R.forEach((externalModule) => {
+    const splitModule = R.split('@', externalModule);
+
     // If we have a scoped module we have to re-add the @
-    if (startsWith('@', externalModule)) {
+    if (R.startsWith('@', externalModule)) {
       splitModule.splice(0, 1);
-      splitModule[0] = '@' + splitModule[0];
+      splitModule[0] = `@${splitModule[0]}`;
     }
 
-    const dependencyName = head(splitModule);
+    const dependencyName = R.head(splitModule);
 
     if (!dependencyName) {
       return;
     }
 
     // We have to rebase file references to the target package.json
-    const moduleVersion = rebaseFileReferences(pathToPackageRoot, join('@', tail(splitModule)));
+    const moduleVersion = rebaseFileReferences(pathToPackageRoot, R.join('@', R.tail(splitModule)));
+
+    // eslint-disable-next-line no-param-reassign
     packageJson.dependencies = packageJson.dependencies || {};
+    // eslint-disable-next-line no-param-reassign
     packageJson.dependencies[dependencyName] = moduleVersion;
   }, externalModules);
 }
@@ -92,7 +76,8 @@ function getProdModules(
   const prodModules: string[] = [];
 
   // Get versions of all transient modules
-  forEach((externalModule) => {
+  // eslint-disable-next-line max-statements
+  R.forEach((externalModule) => {
     // (1) If not present in Dev Dependencies or Dependencies
     if (
       !packageJson.dependencies?.[externalModule.external] &&
@@ -114,7 +99,7 @@ function getProdModules(
       // most likely set in devDependencies and should not lead to an error now.
       const ignoredDevDependencies = ['aws-sdk'];
 
-      if (!includes(externalModule.external, ignoredDevDependencies)) {
+      if (!R.includes(externalModule.external, ignoredDevDependencies)) {
         // Runtime dependency found in devDependencies but not forcefully excluded
         this.log.error(`ERROR: Runtime dependency '${externalModule.external}' found in devDependencies.`);
 
@@ -148,6 +133,7 @@ function getProdModules(
       'package.json'
     );
 
+    // eslint-disable-next-line no-nested-ternary
     const modulePackagePath = fse.pathExistsSync(localModulePackagePath)
       ? localModulePackagePath
       : fse.pathExistsSync(rootModulePackagePath)
@@ -167,30 +153,31 @@ function getProdModules(
       // find peer dependencies but remove optional ones and excluded ones
       const peerDependencies = modulePackage.peerDependencies as Record<string, string>;
       const optionalPeerDependencies = Object.keys(
-        pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
+        R.pickBy((val) => val.optional, modulePackage.peerDependenciesMeta || {})
       );
 
       assert(this.buildOptions, 'buildOptions not defined');
 
-      const peerDependenciesWithoutOptionals = omit(
+      const peerDependenciesWithoutOptionals = R.omit(
         [...optionalPeerDependencies, ...this.buildOptions.exclude],
         peerDependencies
       );
 
-      if (!isEmpty(peerDependenciesWithoutOptionals)) {
+      if (!R.isEmpty(peerDependenciesWithoutOptionals)) {
         this.log.debug(`Adding explicit non-optionals peers for dependency ${externalModule.external}`);
         const peerModules = getProdModules.call(
           this,
-          compose(
-            map(([external]) => ({ external })),
-            toPairs
+          R.compose(
+            R.map(([external]) => ({ external })),
+            R.toPairs
           )(peerDependenciesWithoutOptionals),
           packageJsonPath,
           rootPackageJsonPath
         );
+
         Array.prototype.push.apply(prodModules, peerModules);
       }
-    } catch (e) {
+    } catch (error) {
       this.log.warning(`WARNING: Could not check for peer dependencies of ${externalModule.external}`);
     }
   }, externalModules);
@@ -223,12 +210,13 @@ export function nodeExternalsPluginUtilsPath(): string | undefined {
  * This will utilize the npm cache at its best and give us the needed results
  * and performance.
  */
+// eslint-disable-next-line max-statements
 export async function packExternalModules(this: EsbuildServerlessPlugin) {
   assert(this.buildOptions, 'buildOptions not defined');
 
   const upperPackageJson = findUp('package.json');
 
-  const plugins = this.plugins;
+  const { plugins } = this;
 
   if (plugins && plugins.map((plugin) => plugin.name).includes('node-externals')) {
     const utilsPath = nodeExternalsPluginUtilsPath();
@@ -257,7 +245,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     Array.isArray(this.buildOptions.external) &&
     this.buildOptions.exclude !== '*' &&
     !this.buildOptions.exclude.includes('*')
-      ? without(this.buildOptions.exclude, this.buildOptions.external)
+      ? R.without(this.buildOptions.exclude, this.buildOptions.external)
       : [];
 
   if (!externals.length) {
@@ -291,6 +279,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
           ? this.buildOptions.packagerOptions.scripts
           : [this.buildOptions.packagerOptions.scripts]
         ).reduce<ScriptsRecord>((scripts, script, index) => {
+          // eslint-disable-next-line no-param-reassign
           scripts[`script${index}`] = script;
 
           return scripts;
@@ -302,29 +291,28 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const isWorkspace = !!rootPackageJson.workspaces;
 
   const packageJson: Record<string, unknown> = isWorkspace
-    ? packageJsonPath
-      ? this.serverless.utils.readFileSync(packageJsonPath)
-      : {}
+    ? (packageJsonPath && this.serverless.utils.readFileSync(packageJsonPath)) || {}
     : rootPackageJson;
 
-  const packageSections = pick(sectionNames, packageJson);
+  const packageSections = R.pick(sectionNames, packageJson);
 
-  if (!isEmpty(packageSections)) {
-    this.log.debug(`Using package.json sections ${join(', ', keys(packageSections))}`);
+  if (!R.isEmpty(packageSections)) {
+    this.log.debug(`Using package.json sections ${R.join(', ', R.keys(packageSections))}`);
   }
 
   // Get first level dependency graph
   this.log.debug(`Fetch dependency graph from ${packageJson}`);
 
   // (1) Generate dependency composition
-  const externalModules = map((external) => ({ external }), externals);
-  const compositeModules: JSONObject = uniq(
+  const externalModules = R.map((external) => ({ external }), externals);
+  const compositeModules: JSONObject = R.uniq(
     getProdModules.call(this, externalModules, packageJsonPath, rootPackageJsonPath)
   );
 
-  if (isEmpty(compositeModules)) {
+  if (R.isEmpty(compositeModules)) {
     // The compiled code does not reference any external modules at all
     this.log.warning('No external modules needed');
+
     return;
   }
 
@@ -336,7 +324,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   const compositePackageJson = path.join(compositeModulePath, 'package.json');
 
   // (1.a.1) Create a package.json
-  const compositePackage = mergeRight(
+  const compositePackage = R.mergeRight(
     {
       name: this.serverless.service.service,
       version: '1.0.0',
@@ -347,18 +335,21 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
     packageSections
   );
   const relativePath = path.relative(compositeModulePath, path.dirname(packageJsonPath));
+
   addModulesToPackageJson(compositeModules, compositePackage, relativePath);
   this.serverless.utils.writeFileSync(compositePackageJson, JSON.stringify(compositePackage, null, 2));
 
   // (1.a.2) Copy package-lock.json if it exists, to prevent unwanted upgrades
   const packageLockPath = path.join(process.cwd(), path.dirname(packageJsonPath), packager.lockfileName);
   const exists = await fse.pathExists(packageLockPath);
+
   if (exists) {
     this.log.verbose('Package lock found - Using locked versions');
     try {
       let packageLockFile = this.serverless.utils.readFileSync(packageLockPath);
+
       packageLockFile = packager.rebaseLockfile(relativePath, packageLockFile);
-      if (is(Object)(packageLockFile)) {
+      if (R.is(Object)(packageLockFile)) {
         packageLockFile = JSON.stringify(packageLockFile, null, 2);
       }
 
@@ -373,18 +364,21 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
 
   // GOOGLE: Copy modules only if not google-cloud-functions
   // GCF Auto installs the package json
-  if (get(['service', 'provider', 'name'], this.serverless) === 'google') {
+  if (R.path(['service', 'provider', 'name'], this.serverless) === 'google') {
     return;
   }
 
   const start = Date.now();
-  this.log.verbose('Packing external modules: ' + compositeModules.join(', '));
-  const installExtraArgs = this.buildOptions.installExtraArgs;
+
+  this.log.verbose(`Packing external modules: ${compositeModules.join(', ')}`);
+  const { installExtraArgs } = this.buildOptions;
+
   await packager.install(compositeModulePath, installExtraArgs, exists);
   this.log.debug(`Package took [${Date.now() - start} ms]`);
 
   // Prune extraneous packages - removes not needed ones
   const startPrune = Date.now();
+
   await packager.prune(compositeModulePath);
 
   this.log.debug(`Prune: ${compositeModulePath} [${Date.now() - startPrune} ms]`);
@@ -394,6 +388,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   // Run packager scripts
   if (Object.keys(packagerScripts).length > 0) {
     const startScripts = Date.now();
+
     await packager.runScripts(this.buildDirPath, Object.keys(packagerScripts));
 
     this.log.debug(
