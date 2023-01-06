@@ -336,6 +336,7 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center"><a href="https://u-ne.co/"><img src="https://avatars.githubusercontent.com/u/603523?v=4?s=70" width="70px;" alt="AOKI Yuuto"/><br /><sub><b>AOKI Yuuto</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=uneco" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/ThomasAribart"><img src="https://avatars.githubusercontent.com/u/38014240?v=4?s=70" width="70px;" alt="Thomas Aribart"/><br /><sub><b>Thomas Aribart</b></sub></a><br /><a href="#ideas-ThomasAribart" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center"><a href="https://github.com/koryhutchison"><img src="https://avatars.githubusercontent.com/u/22381273?v=4?s=70" width="70px;" alt="Kory Hutchison"/><br /><sub><b>Kory Hutchison</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=koryhutchison" title="Code">💻</a> <a href="#ideas-koryhutchison" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center"><a href="https://www.chrishutchinson.me"><img src="https://avatars.githubusercontent.com/u/1573022?v=4?s=70" width="70px;" alt="Chris Hutchinson"/><br /><sub><b>Chris Hutchinson</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=chrishutchinson" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
