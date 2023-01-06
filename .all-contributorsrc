@@ -249,6 +249,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "koryhutchison",
+      "name": "Kory Hutchison",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22381273?v=4",
+      "profile": "https://github.com/koryhutchison",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
