@@ -108,6 +108,7 @@ The following `esbuild` options are automatically set.
 | Option    | Description                                                                                           | Default     |
 | --------- | ----------------------------------------------------------------------------------------------------- | ----------- |
 | `scripts` | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn | `undefined` |
+| `noInstall` | [Yarn only] A boolean that deactivates the install step | `false` |
 
 #### Watch Options
 

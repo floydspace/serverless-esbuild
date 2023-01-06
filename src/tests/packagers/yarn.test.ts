@@ -6,7 +6,7 @@ import * as utils from '../../utils';
 
 jest.mock('process');
 describe('Yarn Packager', () => {
-  const yarn = new Yarn();
+  const yarn = new Yarn({});
   const path = './';
 
   let spawnSpy: jest.SpyInstance;
@@ -230,5 +230,14 @@ describe('Yarn Packager', () => {
     const result = await yarn.getProdDependencies(path, 2);
 
     expect(result).toStrictEqual(expectedResult);
+  });
+
+  it('should skip install if the noInstall option is true', async () => {
+    const yarnWithoutInstall = new Yarn({
+      noInstall: true,
+    });
+
+    await expect(yarnWithoutInstall.install(path, [], false)).resolves.toBeUndefined();
+    expect(spawnSpy).toBeCalledTimes(0);
   });
 });

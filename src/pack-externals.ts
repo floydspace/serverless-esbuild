@@ -265,7 +265,7 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
   assert(packageJsonPath, 'packageJsonPath is not defined');
 
   // Determine and create packager
-  const packager = await getPackager.call(this, this.buildOptions.packager);
+  const packager = await getPackager.call(this, this.buildOptions.packager, this.buildOptions.packagerOptions);
 
   // Fetch needed original package.json sections
   const sectionNames = packager.copyPackageSectionNames;

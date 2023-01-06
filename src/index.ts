@@ -270,13 +270,15 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       exclude: ['aws-sdk'],
       nativeZip: false,
       packager: 'npm',
+      packagerOptions: {
+        noInstall: false,
+      },
       installExtraArgs: [],
       watch: {
         pattern: './**/*.(js|ts)',
         ignore: [WORK_FOLDER, 'dist', 'node_modules', BUILD_FOLDER],
       },
       keepOutputDirectory: false,
-      packagerOptions: {},
       platform: 'node',
       outputFileExtension: '.js',
     };
