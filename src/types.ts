@@ -25,6 +25,7 @@ export type EsbuildOptions = Omit<BuildOptions, 'watch' | 'plugins'>;
 export interface Configuration extends EsbuildOptions {
   concurrency?: number;
   packager: PackagerId;
+  packagerOptions: PackagerOptions;
   packagePath: string;
   exclude: '*' | string[];
   nativeZip: boolean;
@@ -32,7 +33,6 @@ export interface Configuration extends EsbuildOptions {
   installExtraArgs: string[];
   plugins?: string | Plugin[];
   keepOutputDirectory?: boolean;
-  packagerOptions?: PackagerOptions;
   disableIncremental?: boolean;
   outputWorkFolder?: string;
   outputBuildFolder?: string;

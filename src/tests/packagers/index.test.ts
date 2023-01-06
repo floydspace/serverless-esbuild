@@ -10,7 +10,7 @@ describe('getPackager()', () => {
   } as unknown as EsbuildServerlessPlugin;
 
   it('Returns a Packager instance', async () => {
-    const npm = await getPackager.call(mockPlugin, 'npm');
+    const npm = await getPackager.call(mockPlugin, 'npm', {});
 
     expect(npm).toEqual(expect.any(Object));
   });

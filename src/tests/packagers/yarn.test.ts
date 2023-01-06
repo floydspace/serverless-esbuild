@@ -6,7 +6,7 @@ import * as utils from '../../utils';
 
 jest.mock('process');
 describe('Yarn Packager', () => {
-  const yarn = new Yarn();
+  const yarn = new Yarn({});
   const path = './';
 
   let spawnSpy: jest.SpyInstance;

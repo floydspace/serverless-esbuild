@@ -13,7 +13,7 @@ import type EsbuildServerlessPlugin from '../index';
 import type { PackagerId, PackagerOptions } from '../types';
 import type { Packager } from './packager';
 
-const packagerFactories: Record<PackagerId, (packgerOptions?: PackagerOptions) => Promise<Packager>> = {
+const packagerFactories: Record<PackagerId, (packgerOptions: PackagerOptions) => Promise<Packager>> = {
   async npm() {
     const { NPM } = await import('./npm');
 
@@ -43,7 +43,7 @@ export const getPackager = memoizeWith(
   async function (
     this: EsbuildServerlessPlugin,
     packagerId: PackagerId,
-    packgerOptions?: PackagerOptions
+    packgerOptions: PackagerOptions
   ): Promise<Packager> {
     this.log.debug(`Trying to create packager: ${packagerId}`);
 

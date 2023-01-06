@@ -41,10 +41,8 @@ const getNameAndVersion = (name: string): { name: string; version: string } => {
 export class Yarn implements Packager {
   private packagerOptions: PackagerOptions;
 
-  constructor(packagerOptions?: PackagerOptions) {
-    this.packagerOptions = packagerOptions || {
-      noInstall: false,
-    };
+  constructor(packagerOptions: PackagerOptions) {
+    this.packagerOptions = packagerOptions;
   }
 
   get lockfileName() {

@@ -145,7 +145,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   assertIsString(this.buildOptions?.packager, 'packager is not a string');
 
   // 2) If individually is set, we'll optimize files and zip per-function
-  const packager = await getPackager.call(this, this.buildOptions.packager);
+  const packager = await getPackager.call(this, this.buildOptions.packager, this.buildOptions.packagerOptions);
 
   // get a list of every function bundle
   const { buildResults } = this;
