@@ -26,7 +26,15 @@ import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { bundle } from './bundle';
 import { BUILD_FOLDER, ONLY_PREFIX, SERVERLESS_FOLDER, WORK_FOLDER } from './constants';
-import type { ConfigFn, Configuration, FileBuildResult, FunctionBuildResult, Plugins, ReturnPluginsFn } from './types';
+import type {
+  ConfigFn,
+  Configuration,
+  EsbuildFunctionDefinitionHandler,
+  FileBuildResult,
+  FunctionBuildResult,
+  Plugins,
+  ReturnPluginsFn,
+} from './types';
 
 function updateFile(op: string, src: string, dest: string) {
   if (['add', 'change', 'addDir'].includes(op)) {
@@ -95,6 +103,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
     this.bundle = bundle.bind(this);
+
+    // This tells serverless that this skipEsbuild property can exist in a function definition, but isn't required.
+    // That way a user could skip a function if they have defined their own artifact, for example.
+    this.serverless.configSchemaHandler.defineFunctionProperties(this.serverless.service.provider.name, {
+      properties: {
+        skipEsbuild: { type: 'boolean' },
+      },
+    });
 
     this.hooks = {
       initialize: () => this.init(),
@@ -187,7 +203,11 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
 
     for (const [functionAlias, fn] of Object.entries(functions)) {
-      if (this.isFunctionDefinitionHandler(fn) && this.isNodeFunction(fn)) {
+      if (
+        this.isFunctionDefinitionHandler(fn) &&
+        this.isNodeFunction(fn) &&
+        !(fn as EsbuildFunctionDefinitionHandler).skipEsbuild
+      ) {
         nodeFunctions[functionAlias] = fn;
       }
     }
