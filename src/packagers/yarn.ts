@@ -230,13 +230,25 @@ export class Yarn implements Packager {
       return;
     }
 
+    const version = await this.getVersion(cwd);
+    const isBerry = this.isBerryVersion(version);
+
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
+    const args = ['install'];
 
-    const args = useLockfile
-      ? ['install', '--frozen-lockfile', '--non-interactive', ...extraArgs]
-      : ['install', '--non-interactive', ...extraArgs];
+    if (!isBerry) {
+      args.push('--non-interactive');
+    }
 
-    await spawnProcess(command, args, { cwd });
+    if (useLockfile) {
+      if (isBerry) {
+        args.push('--immutable');
+      } else {
+        args.push('--frozen-lockfile');
+      }
+    }
+
+    await spawnProcess(command, [...args, ...extraArgs], { cwd });
   }
 
   // "Yarn install" prunes automatically
@@ -248,5 +260,17 @@ export class Yarn implements Packager {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
 
     await Promise.all(scriptNames.map((scriptName) => spawnProcess(command, ['run', scriptName], { cwd })));
+  }
+
+  async getVersion(cwd: string) {
+    const { stdout: version } = await spawnProcess('yarn', ['--version'], { cwd });
+
+    return version;
+  }
+
+  isBerryVersion(version: string) {
+    const versionNumber = version.charAt(0);
+    const mainVersion = parseInt(versionNumber, 10);
+    return mainVersion > 1;
   }
 }

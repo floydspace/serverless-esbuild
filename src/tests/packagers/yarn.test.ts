@@ -240,4 +240,20 @@ describe('Yarn Packager', () => {
     await expect(yarnWithoutInstall.install(path, [], false)).resolves.toBeUndefined();
     expect(spawnSpy).toBeCalledTimes(0);
   });
+
+  it('should install with the Yarn berry lockfile flags if the current yarn version is >=2', async () => {
+    // Mock first call for getting Yarn version
+    spawnSpy
+      .mockResolvedValueOnce({
+        stderr: '',
+        stdout: '3.1.0',
+      })
+      .mockResolvedValueOnce({
+        stderr: '',
+        stdout: '',
+      });
+
+    await expect(yarn.install(path, [], true)).resolves.toBeUndefined();
+    expect(spawnSpy).toHaveBeenNthCalledWith(2, 'yarn', ['install', '--immutable'], { cwd: './' });
+  });
 });
