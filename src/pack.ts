@@ -177,9 +177,13 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
       assert(func.package?.patterns);
 
-      const functionFiles = await globby(func.package.patterns);
+      const functionExclusionPatterns = func.package.patterns.filter((pattern) => pattern.charAt(0) === '!');
+
+      const functionFiles = await globby(func.package.patterns, { cwd: buildDirPath });
+      const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
 
       const includedFiles = [...packageFiles, ...functionFiles];
+      const excludedPackageFiles = [...bundleExcludedFiles, ...functionExcludedFiles];
 
       // allowed external dependencies in the final zip
       let depWhiteList: string[] = [];
@@ -202,7 +206,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
         hasExternals,
         isGoogleProvider,
         depWhiteList,
-        excludedFiles: bundleExcludedFiles,
+        excludedFiles: excludedPackageFiles,
       })
         // remove prefix from individual function extra files
         .map(({ localPath, ...rest }) => ({
