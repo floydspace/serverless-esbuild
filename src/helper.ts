@@ -213,23 +213,45 @@ export const doSharePath = (child: string, parent: string): boolean => {
   return parentTokens.every((token, index) => childToken[index] === token);
 };
 
-export type NodeProviderRuntimeMatcher<Versions extends number> = {
+export type AwsNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `nodejs${Version}.x`]: `node${Version}`;
 };
 
-export type NodeMatcher = NodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+export type GoogleNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `nodejs${Version}`]: `node${Version}`;
+};
 
-export type NodeMatcherKey = keyof NodeMatcher;
+export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-const nodeMatcher: NodeMatcher = {
+export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+
+export type NodeMatcher = AwsNodeMatcher & GoogleNodeMatcher;
+
+export type AwsNodeMatcherKey = keyof AwsNodeMatcher;
+
+export type GoogleNodeMatcherKey = keyof GoogleNodeMatcher;
+
+export type NodeMatcherKey = AwsNodeMatcherKey | GoogleNodeMatcherKey;
+
+const awsNodeMatcher: AwsNodeMatcher = {
   'nodejs18.x': 'node18',
   'nodejs16.x': 'node16',
   'nodejs14.x': 'node14',
   'nodejs12.x': 'node12',
 };
 
+const googleNodeMatcher: GoogleNodeMatcher = {
+  nodejs18: 'node18',
+  nodejs16: 'node16',
+  nodejs14: 'node14',
+  nodejs12: 'node12',
+};
+
+const nodeMatcher: NodeMatcher = { ...googleNodeMatcher, ...awsNodeMatcher };
+
 export const providerRuntimeMatcher = Object.freeze<Record<string, NodeMatcher>>({
-  aws: nodeMatcher,
+  aws: awsNodeMatcher as NodeMatcher,
+  google: googleNodeMatcher as NodeMatcher,
 });
 
 export const isNodeMatcherKey = (input: unknown): input is NodeMatcherKey =>
