@@ -56,10 +56,24 @@ export interface FunctionBuildResult {
   functionAlias: string;
 }
 
+interface BuildInvalidate {
+  (): Promise<BuildIncremental>;
+  dispose(): void;
+}
+
+interface BuildIncremental extends BuildResult {
+  rebuild: BuildInvalidate;
+}
+
+interface OldAPIResult extends BuildResult {
+  rebuild?: BuildInvalidate;
+  stop?: () => void;
+}
+
 export interface FileBuildResult {
   bundlePath: string;
   entry: string;
-  result: BuildResult;
+  result: OldAPIResult;
 }
 
 export type JSONObject = any;
