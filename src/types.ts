@@ -74,6 +74,45 @@ export interface FileBuildResult {
   bundlePath: string;
   entry: string;
   result: OldAPIResult;
+  context?: BuildContext | null;
+}
+
+interface ServeOptions {
+  port?: number;
+  host?: string;
+  servedir?: string;
+  keyfile?: string;
+  certfile?: string;
+  onRequest?: (args: ServeOnRequestArgs) => void;
+}
+
+interface ServeOnRequestArgs {
+  remoteAddress: string;
+  method: string;
+  path: string;
+  status: number;
+  /** The time to generate the response, not to send it */
+  timeInMS: number;
+}
+
+export interface BuildContext {
+  /** Documentation: https://esbuild.github.io/api/#rebuild */
+  rebuild(): Promise<BuildResult>;
+
+  /** Documentation: https://esbuild.github.io/api/#watch */
+  watch(options?: {}): Promise<void>;
+
+  /** Documentation: https://esbuild.github.io/api/#serve */
+  serve(options?: ServeOptions): Promise<ServeResult>;
+
+  cancel(): Promise<void>;
+  dispose(): Promise<void>;
+}
+
+/** Documentation: https://esbuild.github.io/api/#serve-return-values */
+interface ServeResult {
+  port: number;
+  host: string;
 }
 
 export type JSONObject = any;

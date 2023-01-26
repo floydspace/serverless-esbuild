@@ -195,9 +195,8 @@ it('should filter out non esbuild options', async () => {
   const plugin = esbuildPlugin({ functionEntries });
 
   await bundle.call(plugin);
-  const proxy = await getBuild();
 
-  expect(proxy).toBeCalledWith({
+  const config: any = {
     bundle: true,
     entryPoints: ['file1.ts'],
     external: ['aws-sdk'],
@@ -206,7 +205,13 @@ it('should filter out non esbuild options', async () => {
     platform: 'node',
     plugins: [],
     target: 'node12',
-  });
+  };
+
+  const proxy = await getBuild();
+  const pkg: any = await import('esbuild');
+  if (pkg.context) delete config.incremental;
+
+  expect(proxy).toBeCalledWith(config);
 });
 
 describe('buildOption platform node', () => {
