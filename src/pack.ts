@@ -177,7 +177,9 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
       assert(func.package?.patterns);
 
-      const functionExclusionPatterns = func.package.patterns.filter((pattern) => pattern.charAt(0) === '!');
+      const functionExclusionPatterns = func.package.patterns
+        .filter((pattern) => pattern.charAt(0) === '!')
+        .map((pattern) => pattern.slice(1));
 
       const functionFiles = await globby(func.package.patterns, { cwd: buildDirPath });
       const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
