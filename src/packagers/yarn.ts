@@ -57,6 +57,18 @@ export class Yarn implements Packager {
     return false;
   }
 
+  async getVersion(cwd: string) {
+    const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
+    const args = ['-v'];
+
+    const output = await spawnProcess(command, args, { cwd });
+
+    return {
+      version: output.stdout,
+      isBerry: parseInt(output.stdout.charAt(0), 10) > 1,
+    };
+  }
+
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
     const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(isString);
