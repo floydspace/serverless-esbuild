@@ -242,11 +242,12 @@ export class Yarn implements Packager {
       return;
     }
 
+    const version = await this.getVersion(cwd);
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
 
     const args = useLockfile
-      ? ['install', '--frozen-lockfile', '--non-interactive', ...extraArgs]
-      : ['install', '--non-interactive', ...extraArgs];
+      ? ['install', ...(version.isBerry ? ['--immutable'] : ['--frozen-lockfile', '--non-interactive']), ...extraArgs]
+      : ['install', ...(version.isBerry ? [] : ['--non-interactive']), ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }
