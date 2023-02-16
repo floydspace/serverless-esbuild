@@ -237,7 +237,7 @@ export class Yarn implements Packager {
     );
   }
 
-  async install(cwd: string, extraArgs: Array<string>, useLockfile = true) {
+  async install(cwd: string, extraArgs: Array<string>, hasLockfile = true) {
     if (this.packagerOptions.noInstall) {
       return;
     }
@@ -245,9 +245,10 @@ export class Yarn implements Packager {
     const version = await this.getVersion(cwd);
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
 
-    const args = useLockfile
-      ? ['install', ...(version.isBerry ? ['--immutable'] : ['--frozen-lockfile', '--non-interactive']), ...extraArgs]
-      : ['install', ...(version.isBerry ? [] : ['--non-interactive']), ...extraArgs];
+    const args =
+      !this.packagerOptions.ignoreLockfile && hasLockfile
+        ? ['install', ...(version.isBerry ? ['--immutable'] : ['--frozen-lockfile', '--non-interactive']), ...extraArgs]
+        : ['install', ...(version.isBerry ? [] : ['--non-interactive']), ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }

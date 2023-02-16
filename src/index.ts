@@ -272,6 +272,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       packager: 'npm',
       packagerOptions: {
         noInstall: false,
+        ignoreLockfile: false,
       },
       installExtraArgs: [],
       watch: {
