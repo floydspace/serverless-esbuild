@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { build } from 'esbuild';
+import { build, BuildResult } from 'esbuild';
 import type { BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
@@ -8,7 +8,7 @@ import { uniq } from 'ramda';
 
 import type EsbuildServerlessPlugin from './index';
 import { asArray, assertIsString, isESM, isString } from './helper';
-import type { EsbuildOptions, FileBuildResult, FunctionBuildResult } from './types';
+import type { EsbuildOptions, FileBuildResult, FunctionBuildResult, BuildContext } from './types';
 import { trimExtension } from './utils';
 
 const getStringArray = (input: unknown): string[] => asArray(input).filter(isString);
@@ -49,7 +49,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     return rest;
   }, this.buildOptions);
 
-  const config: Omit<BuildOptions, 'watch'> = {
+  const config: Omit<BuildOptions, 'watch'> & { incremental?: boolean } = {
     ...esbuildOptions,
     incremental,
     external: [...getStringArray(this.buildOptions?.external), ...(exclude.includes('*') ? [] : exclude)],
@@ -86,20 +86,41 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
 
     // check cache
     if (this.buildCache) {
-      const { result } = this.buildCache[entry] ?? {};
+      const { result, context } = this.buildCache[entry] ?? {};
 
       if (result?.rebuild) {
         await result.rebuild();
-
         return { bundlePath, entry, result };
+      }
+
+      if (context?.rebuild) {
+        const rebuild = await context.rebuild();
+        return { bundlePath, entry, context, result: rebuild };
       }
     }
 
-    const result = await build({
+    const options = {
       ...config,
       entryPoints: [entry],
       outdir: path.join(buildDirPath, path.dirname(entry)),
-    });
+    };
+
+    let context!: BuildContext;
+    let result!: BuildResult;
+
+    const pkg: any = await import('esbuild');
+    if (pkg.context) {
+      if (!!options.incremental || this.buildOptions?.disableIncremental === false) {
+        delete options.incremental;
+        context = await pkg.context(options);
+        result = await context?.rebuild();
+      } else {
+        delete options.incremental;
+        result = await build(options);
+      }
+    } else {
+      result = await build(options);
+    }
 
     if (config.metafile) {
       fs.writeFileSync(
@@ -108,7 +129,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
       );
     }
 
-    return { bundlePath, entry, result };
+    return { bundlePath, entry, result, context };
   };
 
   // Files can contain multiple handlers for multiple functions, we want to get only the unique ones
@@ -139,6 +160,11 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
       return { bundlePath, func, functionAlias };
     })
     .filter((result): result is FunctionBuildResult => typeof result === 'object');
+
+  // dispose of long-running build contexts
+  Object.entries(this.buildCache).forEach((entry) => {
+    entry[1].context?.dispose();
+  });
 
   this.log.verbose('Compiling completed.');
 }

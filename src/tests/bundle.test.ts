@@ -10,6 +10,12 @@ import type EsbuildServerlessPlugin from '../index';
 jest.mock('esbuild');
 jest.mock('p-map');
 
+const getBuild = async () => {
+  const pkg: any = await import('esbuild');
+  if (pkg.context) return pkg.context;
+  return build;
+};
+
 const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServerlessPlugin =>
   ({
     prepare: jest.fn(),
@@ -83,7 +89,8 @@ it('should call esbuild only once when functions share the same entry', async ()
 
   await bundle.call(esbuildPlugin({ functionEntries }));
 
-  expect(build).toBeCalledTimes(1);
+  const proxy = await getBuild();
+  expect(proxy).toBeCalledTimes(1);
 });
 
 it('should only call esbuild multiple times when functions have different entries', async () => {
@@ -108,7 +115,8 @@ it('should only call esbuild multiple times when functions have different entrie
 
   await bundle.call(esbuildPlugin({ functionEntries }));
 
-  expect(build).toBeCalledTimes(2);
+  const proxy = await getBuild();
+  expect(proxy).toBeCalledTimes(2);
 });
 
 it('should set buildResults after compilation is complete', async () => {
@@ -188,7 +196,7 @@ it('should filter out non esbuild options', async () => {
 
   await bundle.call(plugin);
 
-  expect(build).toBeCalledWith({
+  const config: any = {
     bundle: true,
     entryPoints: ['file1.ts'],
     external: ['aws-sdk'],
@@ -197,7 +205,13 @@ it('should filter out non esbuild options', async () => {
     platform: 'node',
     plugins: [],
     target: 'node12',
-  });
+  };
+
+  const proxy = await getBuild();
+  const pkg: any = await import('esbuild');
+  if (pkg.context) delete config.incremental;
+
+  expect(proxy).toBeCalledWith(config);
 });
 
 describe('buildOption platform node', () => {
