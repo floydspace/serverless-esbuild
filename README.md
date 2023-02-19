@@ -112,10 +112,11 @@ The following `esbuild` options are automatically set.
 
 #### Watch Options
 
-| Option    | Description                                                                                          | Default                                               |
-| --------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `pattern` | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./**/*.(js\|ts)` (watches all `.js` and `.ts` files) |
-| `ignore`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.esbuild', 'dist', 'node_modules', '.build']`      |
+| Option     | Description                                                                                          | Default                                               |
+| ---------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `pattern`  | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to respond to | `./**/*.(js\|ts)` (watches all `.js` and `.ts` files) |
+| `ignore`   | An [anymatch-compatible definition](https://github.com/es128/anymatch) for the watcher to ignore     | `['.esbuild', 'dist', 'node_modules', '.build']`      |
+| `chokidar` | Any [Chokidar option](https://github.com/paulmillr/chokidar#api)                                     | `{ awaitWriteFinish: true, ignoreInitial: true }`     |
 
 #### Function Options
 
