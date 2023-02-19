@@ -277,6 +277,10 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       watch: {
         pattern: './**/*.(js|ts)',
         ignore: [WORK_FOLDER, 'dist', 'node_modules', BUILD_FOLDER],
+        chokidar: {
+          awaitWriteFinish: true,
+          ignoreInitial: true,
+        },
       },
       keepOutputDirectory: false,
       platform: 'node',
@@ -313,18 +317,17 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     assert(this.buildOptions, 'buildOptions is not defined');
 
     const defaultPatterns = asArray(this.buildOptions.watch.pattern).filter(isString);
-
-    const options = {
-      ignored: asArray(this.buildOptions.watch.ignore).filter(isString),
-      awaitWriteFinish: true,
-      ignoreInitial: true,
-    };
+    const defaultIgnored = asArray(this.buildOptions.watch.ignore).filter(isString);
 
     const { patterns, ignored } = this.packagePatterns;
 
     const allPatterns: string[] = [...defaultPatterns, ...patterns];
+    const allIgnored: string[] = [...defaultIgnored, ...ignored];
 
-    options.ignored = [...options.ignored, ...ignored];
+    const options = {
+      ignored: allIgnored,
+      ...this.buildOptions.watch.chokidar,
+    };
 
     chokidar.watch(allPatterns, options).on('all', (eventName, srcPath) =>
       this.bundle(true)

@@ -1,3 +1,4 @@
+import type { WatchOptions } from 'chokidar';
 import type { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import type Serverless from 'serverless';
 
@@ -9,6 +10,7 @@ export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 export interface WatchConfiguration {
   pattern?: string[] | string;
   ignore?: string[] | string;
+  chokidar?: WatchOptions;
 }
 
 export interface PackagerOptions {
