@@ -278,7 +278,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         pattern: './**/*.(js|ts)',
         ignore: [WORK_FOLDER, 'dist', 'node_modules', BUILD_FOLDER],
         chokidar: {
-          awaitWriteFinish: true,
           ignoreInitial: true,
         },
       },
