@@ -162,10 +162,5 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     })
     .filter((result): result is FunctionBuildResult => typeof result === 'object');
 
-  // dispose of long-running build contexts
-  Object.entries(this.buildCache).forEach((entry) => {
-    entry[1].context?.dispose();
-  });
-
   this.log.verbose('Compiling completed.');
 }
