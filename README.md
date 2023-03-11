@@ -126,9 +126,9 @@ The following `esbuild` options are automatically set.
 
 ## Supported Runtimes
 
-This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes
+This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes:
 
-AWS:
+###AWS 
 
 | Runtime      | Target   |
 | ------------ | -------- |
@@ -136,6 +136,26 @@ AWS:
 | `nodejs16.x` | `node16` |
 | `nodejs14.x` | `node14` |
 | `nodejs12.x` | `node12` |
+
+### Azure
+
+This plugin is compatible with the [serverless-azure-functions](https://github.com/serverless/serverless-azure-functions) plugin, and will set the runtimes accordingly.
+
+| Runtime      | Target   |
+| ------------ | -------- |
+| `nodejs18`   | `node18` |
+| `nodejs16`   | `node16` |
+| `nodejs14`   | `node14` |
+| `nodejs12`   | `node12` |
+
+**Please Note** When using this package in conjunction with the `serverless-azure-functions` plugin, the following additional configuration is required to ensure function apps are built correctly:
+
+```yml
+package:
+	patterns: ["host.json", "**/function.json"],
+```
+
+### Non-Node functions
 
 If you wish to use this plugin alongside non Node functions like Python or functions with images, this plugin will automatically ignore any function which does not contain a handler or use a supported Node.js runtime.
 
