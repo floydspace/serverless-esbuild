@@ -1,6 +1,7 @@
 import assert from 'assert';
 import path from 'path';
 
+import pMap from 'p-map';
 import fs from 'fs-extra';
 import globby from 'globby';
 import { intersection, isEmpty, lensProp, map, over, pipe, reject, replace, test, without } from 'ramda';
@@ -13,7 +14,7 @@ import { getPackager } from './packagers';
 import { humanSize, trimExtension, zip } from './utils';
 
 import type EsbuildServerlessPlugin from './index';
-import type { IFiles } from './types';
+import type { FunctionBuildResult, IFiles } from './types';
 
 function setFunctionArtifactPath(
   this: EsbuildServerlessPlugin,
@@ -112,8 +113,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
-    console.log('Packaging: No files found. Skipping esbuild.');
-
+    this.log.verbose('Packaging: No files found. Skipping esbuild.');
     return;
   }
 
@@ -170,62 +170,63 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   const packageFiles = await globby(this.serverless.service.package.patterns);
 
-  // package each function
-  await Promise.all(
-    buildResults.map(async ({ func, functionAlias, bundlePath }) => {
-      const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
+  const zipper = async (buildResult: FunctionBuildResult) => {
+    const { func, functionAlias, bundlePath } = buildResult;
 
-      assert(func.package?.patterns);
+    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
 
-      const functionExclusionPatterns = func.package.patterns
-        .filter((pattern) => pattern.charAt(0) === '!')
-        .map((pattern) => pattern.slice(1));
+    assert(func.package?.patterns);
 
-      const functionFiles = await globby(func.package.patterns, { cwd: buildDirPath });
-      const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
+    const functionExclusionPatterns = func.package.patterns
+      .filter((pattern) => pattern.charAt(0) === '!')
+      .map((pattern) => pattern.slice(1));
 
-      const includedFiles = [...packageFiles, ...functionFiles];
-      const excludedPackageFiles = [...bundleExcludedFiles, ...functionExcludedFiles];
+    const functionFiles = await globby(func.package.patterns, { cwd: buildDirPath });
+    const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
 
-      // allowed external dependencies in the final zip
-      let depWhiteList: string[] = [];
+    const includedFiles = [...packageFiles, ...functionFiles];
+    const excludedPackageFiles = [...bundleExcludedFiles, ...functionExcludedFiles];
 
-      if (hasExternals && packagerDependenciesList.dependencies) {
-        const bundleDeps = getDepsFromBundle(path.join(buildDirPath, bundlePath), isESM(buildOptions));
-        const bundleExternals = intersection(bundleDeps, externals);
+    // allowed external dependencies in the final zip
+    let depWhiteList: string[] = [];
 
-        depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
-      }
+    if (hasExternals && packagerDependenciesList.dependencies) {
+      const bundleDeps = getDepsFromBundle(path.join(buildDirPath, bundlePath), isESM(buildOptions));
+      const bundleExternals = intersection(bundleDeps, externals);
 
-      const zipName = `${functionAlias}.zip`;
-      const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
+      depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
+    }
 
-      // filter files
-      const filesPathList = filterFilesForZipPackage({
-        files,
-        functionAlias,
-        includedFiles,
-        hasExternals,
-        isGoogleProvider,
-        depWhiteList,
-        excludedFiles: excludedPackageFiles,
-      })
-        // remove prefix from individual function extra files
-        .map(({ localPath, ...rest }) => ({
-          localPath: localPath.replace(`${ONLY_PREFIX}${functionAlias}/`, ''),
-          ...rest,
-        }));
+    const zipName = `${functionAlias}.zip`;
+    const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
 
-      const startZip = Date.now();
-
-      await zip(artifactPath, filesPathList, buildOptions.nativeZip);
-
-      const { size } = fs.statSync(artifactPath);
-
-      this.log.verbose(`Zip function: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`);
-
-      // defined present zip as output artifact
-      setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
+    // filter files
+    const filesPathList = filterFilesForZipPackage({
+      files,
+      functionAlias,
+      includedFiles,
+      hasExternals,
+      isGoogleProvider,
+      depWhiteList,
+      excludedFiles: excludedPackageFiles,
     })
-  );
+      // remove prefix from individual function extra files
+      .map(({ localPath, ...rest }) => ({
+        localPath: localPath.replace(`${ONLY_PREFIX}${functionAlias}/`, ''),
+        ...rest,
+      }));
+
+    const startZip = Date.now();
+    this.log.verbose(`Starting to zip function: ${functionAlias}`);
+    await zip(artifactPath, filesPathList, buildOptions.nativeZip);
+    const { size } = fs.statSync(artifactPath);
+    this.log.verbose(`Function zipped: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`);
+
+    // defined present zip as output artifact
+    setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
+  };
+
+  await pMap(buildResults, zipper, { concurrency: 4 });
+
+  this.log.verbose('All functions zipped.');
 }
