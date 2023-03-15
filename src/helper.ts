@@ -217,27 +217,42 @@ export type AwsNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `nodejs${Version}.x`]: `node${Version}`;
 };
 
+export type AzureNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `nodejs${Version}`]: `node${Version}`;
+};
+
 export type GoogleNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `nodejs${Version}`]: `node${Version}`;
 };
 
 export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
+export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+
 export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-export type NodeMatcher = AwsNodeMatcher & GoogleNodeMatcher;
+export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher;
 
 export type AwsNodeMatcherKey = keyof AwsNodeMatcher;
 
+export type AzureNodeMatcherKey = keyof AzureNodeMatcher;
+
 export type GoogleNodeMatcherKey = keyof GoogleNodeMatcher;
 
-export type NodeMatcherKey = AwsNodeMatcherKey | GoogleNodeMatcherKey;
+export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey;
 
 const awsNodeMatcher: AwsNodeMatcher = {
   'nodejs18.x': 'node18',
   'nodejs16.x': 'node16',
   'nodejs14.x': 'node14',
   'nodejs12.x': 'node12',
+};
+
+const azureNodeMatcher: AzureNodeMatcher = {
+  nodejs18: 'node18',
+  nodejs16: 'node16',
+  nodejs14: 'node14',
+  nodejs12: 'node12',
 };
 
 const googleNodeMatcher: GoogleNodeMatcher = {
@@ -247,10 +262,11 @@ const googleNodeMatcher: GoogleNodeMatcher = {
   nodejs12: 'node12',
 };
 
-const nodeMatcher: NodeMatcher = { ...googleNodeMatcher, ...awsNodeMatcher };
+const nodeMatcher: NodeMatcher = { ...googleNodeMatcher, ...awsNodeMatcher, ...azureNodeMatcher };
 
 export const providerRuntimeMatcher = Object.freeze<Record<string, NodeMatcher>>({
   aws: awsNodeMatcher as NodeMatcher,
+  azure: azureNodeMatcher as NodeMatcher,
   google: googleNodeMatcher as NodeMatcher,
 });
 
