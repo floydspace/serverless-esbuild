@@ -14087,6 +14087,7 @@ exports[`minimal 5`] = `
                 "Action": [
                   "logs:CreateLogStream",
                   "logs:CreateLogGroup",
+                  "logs:TagResource",
                 ],
                 "Effect": "Allow",
                 "Resource": [

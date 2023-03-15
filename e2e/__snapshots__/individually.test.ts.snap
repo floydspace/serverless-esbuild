@@ -390,6 +390,7 @@ exports[`individually 6`] = `
                 "Action": [
                   "logs:CreateLogStream",
                   "logs:CreateLogGroup",
+                  "logs:TagResource",
                 ],
                 "Effect": "Allow",
                 "Resource": [
