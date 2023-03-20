@@ -1,6 +1,6 @@
 import assert from 'assert';
-import { build, BuildResult } from 'esbuild';
-import type { BuildOptions } from 'esbuild';
+import { build } from 'esbuild';
+import type { BuildOptions, BuildResult } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';

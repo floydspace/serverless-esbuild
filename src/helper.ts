@@ -47,9 +47,7 @@ export function extractFunctionEntries(
 
       // Check that the file indeed exists.
       if (!fs.existsSync(path.join(cwd, entry))) {
-        console.log(`Cannot locate entrypoint, ${entry} not found`);
-
-        throw new Error('Compilation failed');
+        throw new Error(`Compilation failed. Cannot locate entrypoint, ${entry} not found`);
       }
 
       return [{ entry, func: null }];
@@ -92,8 +90,6 @@ export function extractFunctionEntries(
     }
 
     // Can't find the files. Watch will have an exception anyway. So throw one with error.
-    console.log(`Cannot locate handler - ${fileName} not found`);
-
     throw new Error(
       'Compilation failed. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json'
     );
