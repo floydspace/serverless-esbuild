@@ -170,7 +170,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   const packageFiles = await globby(this.serverless.service.package.patterns);
 
-  const zipper = async (buildResult: FunctionBuildResult) => {
+  const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
 
     const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
@@ -226,7 +226,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
     setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
   };
 
-  await pMap(buildResults, zipper, { concurrency: 4 });
-
+  this.log.verbose(`Zipping with concurrency: ${buildOptions.zipConcurrency}`);
+  await pMap(buildResults, zipMapper, { concurrency: buildOptions.zipConcurrency });
   this.log.verbose('All functions zipped.');
 }
