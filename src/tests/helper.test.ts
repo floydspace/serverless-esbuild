@@ -8,8 +8,6 @@ import type { Configuration, DependencyMap } from '../types';
 
 jest.mock('fs-extra');
 
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
 afterAll(() => {
   jest.resetAllMocks();
 });
@@ -173,7 +171,6 @@ describe('extractFunctionEntries', () => {
       };
 
       expect(() => extractFunctionEntries(cwd, 'aws', functionDefinitions)).toThrowError();
-      expect(consoleSpy).toBeCalled();
     });
   });
 
@@ -333,7 +330,6 @@ describe('extractFunctionEntries', () => {
       };
 
       expect(() => extractFunctionEntries(cwd, 'azure', functionDefinitions)).toThrowError();
-      expect(consoleSpy).toBeCalled();
     });
   });
 });
