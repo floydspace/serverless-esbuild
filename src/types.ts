@@ -26,6 +26,7 @@ export type EsbuildOptions = Omit<BuildOptions, 'watch' | 'plugins'>;
 
 export interface Configuration extends EsbuildOptions {
   concurrency?: number;
+  zipConcurrency?: number;
   packager: PackagerId;
   packagerOptions: PackagerOptions;
   packagePath: string;

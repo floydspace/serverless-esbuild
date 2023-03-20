@@ -264,6 +264,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   private getBuildOptions() {
     const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
       concurrency: Infinity,
+      zipConcurrency: Infinity,
       bundle: true,
       target: 'node12',
       external: [],

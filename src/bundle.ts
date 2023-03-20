@@ -30,6 +30,7 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
   // esbuild v0.7.0 introduced config options validation, so I have to delete plugin specific options from esbuild config.
   const esbuildOptions: EsbuildOptions = [
     'concurrency',
+    'zipConcurrency',
     'exclude',
     'nativeZip',
     'packager',
