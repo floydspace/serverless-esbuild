@@ -16,6 +16,7 @@ export interface WatchConfiguration {
 export interface PackagerOptions {
   scripts?: string[] | string;
   noInstall?: boolean;
+  ignoreLockfile?: boolean;
 }
 
 interface NodeExternalsOptions {
