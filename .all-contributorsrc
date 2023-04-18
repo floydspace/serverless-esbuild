@@ -277,6 +277,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "sanderkooger",
+      "name": "Sander Kooger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19397354?v=4",
+      "profile": "https://thisisfashion.tv",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
