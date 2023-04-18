@@ -221,13 +221,19 @@ export type GoogleNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `nodejs${Version}`]: `node${Version}`;
 };
 
+export type ScalewayNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `node${Version}`]: `node${Version}`;
+};
+
 export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
 export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
 export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher;
+export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+
+export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher & ScalewayNodeMatcher;
 
 export type AwsNodeMatcherKey = keyof AwsNodeMatcher;
 
@@ -235,7 +241,9 @@ export type AzureNodeMatcherKey = keyof AzureNodeMatcher;
 
 export type GoogleNodeMatcherKey = keyof GoogleNodeMatcher;
 
-export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey;
+export type ScalewayNodeMatcherKey = keyof ScalewayNodeMatcher;
+
+export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey | ScalewayNodeMatcherKey;
 
 const awsNodeMatcher: AwsNodeMatcher = {
   'nodejs18.x': 'node18',
@@ -258,12 +266,25 @@ const googleNodeMatcher: GoogleNodeMatcher = {
   nodejs12: 'node12',
 };
 
-const nodeMatcher: NodeMatcher = { ...googleNodeMatcher, ...awsNodeMatcher, ...azureNodeMatcher };
+const scalewayNodeMatcher: ScalewayNodeMatcher = {
+  node18: 'node18',
+  node16: 'node16',
+  node14: 'node14',
+  node12: 'node12',
+};
+
+const nodeMatcher: NodeMatcher = {
+  ...googleNodeMatcher,
+  ...awsNodeMatcher,
+  ...azureNodeMatcher,
+  ...scalewayNodeMatcher,
+};
 
 export const providerRuntimeMatcher = Object.freeze<Record<string, NodeMatcher>>({
   aws: awsNodeMatcher as NodeMatcher,
   azure: azureNodeMatcher as NodeMatcher,
   google: googleNodeMatcher as NodeMatcher,
+  scaleway: scalewayNodeMatcher as NodeMatcher,
 });
 
 export const isNodeMatcherKey = (input: unknown): input is NodeMatcherKey =>
