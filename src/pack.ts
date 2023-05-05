@@ -89,12 +89,16 @@ export const filterFilesForZipPackage = ({
 // eslint-disable-next-line max-statements
 export async function pack(this: EsbuildServerlessPlugin) {
   // GOOGLE Provider requires a package.json and NO node_modules
+
+  const providerName = this.serverless?.service?.provider?.name;
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
+  const isScalewayProvider = this.serverless?.service?.provider?.name === 'scaleway'; // Scaleway can not have package: individually
   const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
 
-  // Google provider cannot use individual packaging for now - this could be built in a future release
-  if (isGoogleProvider && this.serverless?.service?.package?.individually) {
-    throw new Error('Packaging failed: cannot package function individually when using Google provider');
+  // Google and Scaleway providers cannot use individual packaging for now - this could be built in a future release
+  const isPackageIndividuallyNotSupported = isGoogleProvider || isScalewayProvider || false;
+  if (isPackageIndividuallyNotSupported && this.serverless?.service?.package?.individually) {
+    throw new Error(`Packaging failed: cannot package function individually when using ${providerName} provider`);
   }
 
   const { buildDirPath, workDirPath } = this;
