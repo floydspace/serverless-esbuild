@@ -266,7 +266,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       concurrency: Infinity,
       zipConcurrency: Infinity,
       bundle: true,
-      target: 'node12',
+      target: 'node16',
       external: [],
       exclude: ['aws-sdk'],
       nativeZip: false,
