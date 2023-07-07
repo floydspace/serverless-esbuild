@@ -39,6 +39,17 @@ const packageService: Partial<Service> = {
   getFunction: mockGetFunction,
 };
 
+const patternsService: Partial<Service> = {
+  functions: {
+    hello1: { handler: 'hello1.handler', events: [] },
+    hello2: { handler: 'hello2.handler', events: [], package: {} },
+    hello3: { handler: 'hello3.handler', events: [], package: { patterns: ['excluded-by-default.json'] } },
+  },
+  package: { patterns: ['!excluded-by-default.json'] },
+  provider: mockProvider,
+  getFunction: mockGetFunction,
+};
+
 const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless => {
   const service = {
     ...packageIndividuallyService,
@@ -220,6 +231,46 @@ describe('Move Artifacts', () => {
       await plugin.moveArtifacts();
 
       expect(plugin.serverless.service.package.artifact).toBe('.serverless/hello');
+    });
+  });
+});
+
+describe('Prepare', () => {
+  describe('function package', () => {
+    it('should set package patterns on functions only if supplied', () => {
+      const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(patternsService), mockOptions);
+
+      plugin.hooks.initialize?.();
+
+      plugin.prepare();
+
+      expect(plugin.functions).toMatchInlineSnapshot(`
+        {
+          "hello1": {
+            "events": [],
+            "handler": "hello1.handler",
+            "package": {
+              "patterns": [],
+            },
+          },
+          "hello2": {
+            "events": [],
+            "handler": "hello2.handler",
+            "package": {
+              "patterns": [],
+            },
+          },
+          "hello3": {
+            "events": [],
+            "handler": "hello3.handler",
+            "package": {
+              "patterns": [
+                "excluded-by-default.json",
+              ],
+            },
+          },
+        }
+      `);
     });
   });
 });
