@@ -249,16 +249,12 @@ describe('Prepare', () => {
           "hello1": {
             "events": [],
             "handler": "hello1.handler",
-            "package": {
-              "patterns": [],
-            },
+            "package": {},
           },
           "hello2": {
             "events": [],
             "handler": "hello2.handler",
-            "package": {
-              "patterns": [],
-            },
+            "package": {},
           },
           "hello3": {
             "events": [],
