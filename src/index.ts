@@ -358,15 +358,17 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     };
 
     for (const fn of Object.values(this.functions)) {
+      const patterns = [
+        ...new Set([
+          ...(fn.package?.include || []),
+          ...(fn.package?.exclude || []).map(concat('!')),
+          ...(fn.package?.patterns || []),
+        ]),
+      ];
+
       fn.package = {
         ...(fn.package || {}),
-        patterns: [
-          ...new Set([
-            ...(fn.package?.include || []),
-            ...(fn.package?.exclude || []).map(concat('!')),
-            ...(fn.package?.patterns || []),
-          ]),
-        ],
+        ...(patterns.length && { patterns }),
       };
     }
   }

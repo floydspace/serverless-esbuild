@@ -179,13 +179,13 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
     const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
 
-    assert(func.package?.patterns);
+    const functionPackagePatterns = func.package?.patterns || [];
 
-    const functionExclusionPatterns = func.package.patterns
+    const functionExclusionPatterns = functionPackagePatterns
       .filter((pattern) => pattern.charAt(0) === '!')
       .map((pattern) => pattern.slice(1));
 
-    const functionFiles = await globby(func.package.patterns, { cwd: buildDirPath });
+    const functionFiles = await globby(functionPackagePatterns, { cwd: buildDirPath });
     const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
 
     const includedFiles = [...packageFiles, ...functionFiles];
