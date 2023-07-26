@@ -1,5 +1,5 @@
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
-import { satisfies } from 'semver';
+import { satisfies, valid as isValidSemver } from 'semver';
 
 import type { DependenciesResult, DependencyMap, PackagerOptions } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
@@ -23,11 +23,27 @@ export interface YarnDeps {
 }
 
 const getNameAndVersion = (name: string): { name: string; version: string } => {
-  const atIndex = name.lastIndexOf('@');
+  /*
+   * This regex supports these cases:
+   * - package@version (single '@' is the separator) => returns 'package'
+   * - @org/package@version ('@' for org name and version separator) => returns '@org/package'
+   * - @org/package@git+ssh://git@github.com/org/package (last '@' is not a name / version separator) => returns '@org/package'
+   */
+  const packageNameMatch = name.match(/^(@[^@]+|[^@]+)/);
+
+  if (!packageNameMatch) {
+    return {
+      name,
+      version: '',
+    };
+  }
+
+  // Everything after the name is the version (separated by a single '@'):
+  const versionStartIndex = (packageNameMatch?.index || 0) + packageNameMatch[0].length;
 
   return {
-    name: name.slice(0, atIndex),
-    version: name.slice(atIndex + 1),
+    name: packageNameMatch[0],
+    version: name.slice(versionStartIndex),
   };
 };
 
@@ -134,7 +150,8 @@ export class Yarn implements Packager {
 
         if (tree.shadow) {
           // Package is resolved somewhere else
-          if (dependency && satisfies(dependency.version, version)) {
+          // If the version is not valid semver, include the package by default. For e.g. 'github:' references where semver doesn't apply.
+          if (dependency && (satisfies(dependency.version, version) || !isValidSemver(dependency.version))) {
             // Package is at root level
             // {
             //   "name": "samchungy-dep-a@1.0.0", <- MATCH
