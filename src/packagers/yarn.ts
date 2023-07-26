@@ -39,7 +39,7 @@ const getNameAndVersion = (name: string): { name: string; version: string } => {
   }
 
   // Everything after the name is the version (separated by a single '@'):
-  const versionStartIndex = (packageNameMatch?.index || 0) + packageNameMatch[0].length;
+  const versionStartIndex = (packageNameMatch?.index || 0) + packageNameMatch[0].length + 1;
 
   return {
     name: packageNameMatch[0],
@@ -150,8 +150,11 @@ export class Yarn implements Packager {
 
         if (tree.shadow) {
           // Package is resolved somewhere else
-          // If the version is not valid semver, include the package by default. For e.g. 'github:' references where semver doesn't apply.
-          if (dependency && (satisfies(dependency.version, version) || !isValidSemver(dependency.version))) {
+          // If either version is not valid semver, we can't compare, so include the package by default. For e.g. 'github:' references where semver doesn't apply.
+          if (
+            dependency &&
+            (satisfies(dependency.version, version) || !isValidSemver(dependency.version) || !isValidSemver(version))
+          ) {
             // Package is at root level
             // {
             //   "name": "samchungy-dep-a@1.0.0", <- MATCH
