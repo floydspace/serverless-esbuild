@@ -198,7 +198,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       const bundleDeps = getDepsFromBundle(path.join(buildDirPath, bundlePath), isESM(buildOptions));
       const bundleExternals = intersection(bundleDeps, externals);
 
-      depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals);
+      depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals, buildOptions.exclude);
     }
 
     const zipName = `${functionAlias}.zip`;
