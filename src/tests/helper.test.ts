@@ -135,6 +135,31 @@ describe('extractFunctionEntries', () => {
       ]);
     });
 
+    it('should not return entries for handlers which have skipEsbuild set to true', async () => {
+      jest.mocked(fs.existsSync).mockReturnValue(true);
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: 'file1.handler',
+        },
+        function2: {
+          events: [],
+          handler: 'file2.handler',
+          skipEsbuild: true,
+        },
+      };
+
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'file1.ts',
+          func: functionDefinitions.function1,
+          functionAlias: 'function1',
+        },
+      ]);
+    });
+
     it('should return entries for handlers on a Windows platform', () => {
       jest.mocked(fs.existsSync).mockReturnValue(true);
       jest.spyOn(path, 'relative').mockReturnValueOnce('src\\file1.ts');

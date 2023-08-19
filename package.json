@@ -79,7 +79,7 @@
     "@types/node": "^18.11.18",
     "@types/ramda": "^0.28.20",
     "@types/semver": "^7.3.13",
-    "@types/serverless": "^3.12.9",
+    "@types/serverless": "^3.12.14",
     "all-contributors-cli": "^6.24.0",
     "esbuild": "^0.16.17",
     "esbuild-node-externals": "^1.6.0",

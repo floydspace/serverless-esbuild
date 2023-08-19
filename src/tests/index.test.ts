@@ -3,6 +3,7 @@ import type Serverless from 'serverless';
 import type Service from 'serverless/classes/Service';
 
 import EsbuildServerlessPlugin from '../index';
+import type { ImprovedServerlessOptions } from '../types';
 
 jest.mock('fs-extra');
 
@@ -64,6 +65,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
     service,
     config: {
       servicePath: '/workDir',
+      serviceDir: '/workDir',
     },
     configSchemaHandler: {
       defineCustomProperties: jest.fn(),
@@ -77,7 +79,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   } as Partial<Serverless> as Serverless;
 };
 
-const mockOptions: Serverless.Options = {
+const mockOptions: ImprovedServerlessOptions = {
   region: 'us-east-1',
   stage: 'dev',
 };
@@ -216,6 +218,11 @@ describe('Move Artifacts', () => {
             "package": {
               "artifact": ".serverless/hello2",
             },
+          },
+          "hello3": {
+            "events": [],
+            "handler": "hello3.handler",
+            "skipEsbuild": true,
           },
         }
       `);
