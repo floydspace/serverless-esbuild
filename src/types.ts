@@ -47,7 +47,7 @@ export interface Configuration extends EsbuildOptions {
   outputFileExtension: '.js' | '.cjs' | '.mjs';
   nodeExternals?: NodeExternalsOptions;
   skipBuild?: boolean;
-  alwaysBuild: string[];
+  skipBuildExcludeFns: string[];
 }
 
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {

@@ -189,6 +189,8 @@ describe('Move Artifacts', () => {
     });
 
     it('should skip function if skipEsbuild is set to true', async () => {
+      // @ts-ignore
+      fs.existsSync.mockReturnValue(true);
       const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
       const plugin = new EsbuildServerlessPlugin(
         mockServerlessConfig({
@@ -226,6 +228,38 @@ describe('Move Artifacts', () => {
           },
         }
       `);
+
+      expect(plugin.functionEntries).toEqual(
+        expect.arrayContaining([
+          {
+            entry: expect.stringContaining('/hello1.ts'),
+            func: {
+              events: [],
+              handler: 'hello1.handler',
+              package: {
+                artifact: '.serverless/hello1',
+              },
+            },
+            functionAlias: 'hello1',
+          },
+          {
+            entry: expect.stringContaining('/hello2.ts'),
+            func: {
+              events: [],
+              handler: 'hello2.handler',
+              package: {
+                artifact: '.serverless/hello2',
+              },
+            },
+            functionAlias: 'hello2',
+          },
+        ])
+      );
+      expect(plugin.functionEntries).not.toContain(
+        expect.objectContaining({
+          functionAlias: 'hello3',
+        })
+      );
     });
   });
 
@@ -274,6 +308,24 @@ describe('Prepare', () => {
           },
         }
       `);
+    });
+
+    it('should copy the previous build resources if skipBuild is true', async () => {
+      const skipBuildServerlessConfig = {
+        ...patternsService,
+        custom: {
+          esbuild: {
+            skipBuild: true,
+          },
+        },
+      };
+      const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(skipBuildServerlessConfig), mockOptions);
+      const copyPreBuiltResourcesSpy = jest.spyOn(plugin, 'copyPreBuiltResources');
+      const prepareSpy = jest.spyOn(plugin, 'prepare');
+
+      plugin.hooks.initialize?.();
+      expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();
+      expect(prepareSpy).toHaveBeenCalled();
     });
   });
 });

@@ -237,22 +237,17 @@ export async function pack(this: EsbuildServerlessPlugin) {
 export async function copyPreBuiltResources(this: EsbuildServerlessPlugin) {
   this.log.verbose('Copying Prebuilt resources');
 
-  const { buildDirPath, workDirPath, packageOutputFolder } = this;
+  const { workDirPath, packageOutputPath } = this;
 
-  assertIsString(buildDirPath, 'buildDirPath is not a string');
   assertIsString(workDirPath, 'workDirPath is not a string');
+  assertIsString(packageOutputPath, 'packageOutputPath is not a string');
 
   // 1) If individually is not set, just zip the all build dir and return
   if (!this.serverless?.service?.package?.individually) {
     const zipName = `${this.serverless.service.service}.zip`;
-    await fs.copy(
-      path.join(packageOutputFolder, SERVERLESS_FOLDER, zipName),
-      path.join(workDirPath, SERVERLESS_FOLDER, zipName)
-    );
-    const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
-
+    await fs.copy(path.join(packageOutputPath, zipName), path.join(workDirPath, SERVERLESS_FOLDER, zipName));
     // defined present zip as output artifact
-    this.serverless.service.package.artifact = artifactPath;
+    this.serverless.service.package.artifact = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
 
     return;
   }
@@ -271,8 +266,7 @@ export async function copyPreBuiltResources(this: EsbuildServerlessPlugin) {
       const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
 
       // defined present zip as output artifact
-      this.log.verbose(`Setting ${func.name} (${functionAlias}) to ${artifactPath}`);
-      await fs.copy(path.join(packageOutputFolder, zipName), artifactPath);
+      await fs.copy(path.join(packageOutputPath, zipName), artifactPath);
       setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
     }
   };

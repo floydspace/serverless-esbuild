@@ -65,7 +65,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   buildDirPath: string | undefined;
 
-  packageOutputFolder: string = SERVERLESS_FOLDER;
+  packageOutputPath: string = SERVERLESS_FOLDER;
 
   log: ServerlessPlugin.Logging['log'];
 
@@ -186,7 +186,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.buildOptions = this.getBuildOptions();
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
-    this.packageOutputFolder = this.options.package || SERVERLESS_FOLDER;
+    this.packageOutputPath = this.options.package || SERVERLESS_FOLDER;
     this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
     this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
   }
@@ -229,7 +229,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     for (const [functionAlias, fn] of Object.entries(functions)) {
       const currFn = fn as EsbuildFunctionDefinitionHandler;
       if (this.isFunctionDefinitionHandler(currFn) && this.isNodeFunction(currFn)) {
-        if (buildOptions.skipBuild && !buildOptions.alwaysBuild?.includes(functionAlias)) {
+        if (buildOptions.skipBuild && !buildOptions.skipBuildExcludeFns?.includes(functionAlias)) {
           currFn.skipEsbuild = true;
         }
 
@@ -312,7 +312,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       platform: 'node',
       outputFileExtension: '.js',
       skipBuild: false,
-      alwaysBuild: [],
+      skipBuildExcludeFns: [],
     };
 
     const providerRuntime = this.serverless.service.provider.runtime;
