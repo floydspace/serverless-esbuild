@@ -7,6 +7,10 @@ export type ConfigFn = (sls: Serverless) => Configuration;
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
+export interface ImprovedServerlessOptions extends Serverless.Options {
+  package?: string;
+}
+
 export interface WatchConfiguration {
   pattern?: string[] | string;
   ignore?: string[] | string;
@@ -42,6 +46,8 @@ export interface Configuration extends EsbuildOptions {
   outputBuildFolder?: string;
   outputFileExtension: '.js' | '.cjs' | '.mjs';
   nodeExternals?: NodeExternalsOptions;
+  skipBuild?: boolean;
+  skipBuildExcludeFns: string[];
 }
 
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
@@ -54,8 +60,11 @@ export interface FunctionEntry {
   functionAlias?: string;
 }
 
-export interface FunctionBuildResult {
+export interface FunctionBuildResult extends FunctionReference {
   bundlePath: string;
+}
+
+export interface FunctionReference {
   func: Serverless.FunctionDefinitionHandler;
   functionAlias: string;
 }

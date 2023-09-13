@@ -44,6 +44,8 @@ export async function bundle(this: EsbuildServerlessPlugin, incremental = false)
     'outputBuildFolder',
     'outputWorkFolder',
     'nodeExternals',
+    'skipBuild',
+    'skipBuildExcludeFns',
   ].reduce<Record<string, any>>((options, optionName) => {
     const { [optionName]: _, ...rest } = options;
 

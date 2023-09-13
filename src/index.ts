@@ -21,7 +21,7 @@ import {
   providerRuntimeMatcher,
 } from './helper';
 import { packExternalModules } from './pack-externals';
-import { pack } from './pack';
+import { pack, copyPreBuiltResources } from './pack';
 import { preOffline } from './pre-offline';
 import { preLocal } from './pre-local';
 import { bundle } from './bundle';
@@ -32,6 +32,7 @@ import type {
   EsbuildFunctionDefinitionHandler,
   FileBuildResult,
   FunctionBuildResult,
+  ImprovedServerlessOptions,
   Plugins,
   ReturnPluginsFn,
 } from './types';
@@ -64,11 +65,13 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   buildDirPath: string | undefined;
 
+  packageOutputPath: string = SERVERLESS_FOLDER;
+
   log: ServerlessPlugin.Logging['log'];
 
   serverless: Serverless;
 
-  options: Serverless.Options;
+  options: ImprovedServerlessOptions;
 
   hooks: ServerlessPlugin.Hooks;
 
@@ -84,13 +87,15 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
   pack: typeof pack;
 
+  copyPreBuiltResources: typeof copyPreBuiltResources;
+
   preOffline: typeof preOffline;
 
   preLocal: typeof preLocal;
 
   bundle: typeof bundle;
 
-  constructor(serverless: Serverless, options: Serverless.Options, logging?: ServerlessPlugin.Logging) {
+  constructor(serverless: Serverless, options: ImprovedServerlessOptions, logging?: ServerlessPlugin.Logging) {
     this.serverless = serverless;
     this.options = options;
     this.log = logging?.log || buildServerlessV3LoggerFromLegacyLogger(this.serverless.cli, this.options.verbose);
@@ -100,6 +105,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     this.packExternalModules = packExternalModules.bind(this);
     this.pack = pack.bind(this);
+    this.copyPreBuiltResources = copyPreBuiltResources.bind(this);
     this.preOffline = preOffline.bind(this);
     this.preLocal = preLocal.bind(this);
     this.bundle = bundle.bind(this);
@@ -113,13 +119,21 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     });
 
     this.hooks = {
-      initialize: () => this.init(),
+      initialize: async () => {
+        this.init();
+        if (this.buildOptions?.skipBuild) {
+          this.prepare();
+          await this.copyPreBuiltResources();
+        }
+      },
       'before:run:run': async () => {
+        this.log.verbose('before:run:run');
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
       },
       'before:offline:start': async () => {
+        this.log.verbose('before:offline:start');
         await this.bundle(true);
         await this.packExternalModules();
         await this.copyExtras();
@@ -127,6 +141,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         this.watch();
       },
       'before:offline:start:init': async () => {
+        this.log.verbose('before:offline:start:init');
         await this.bundle(true);
         await this.packExternalModules();
         await this.copyExtras();
@@ -134,24 +149,31 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         this.watch();
       },
       'before:package:createDeploymentArtifacts': async () => {
-        await this.bundle();
-        await this.packExternalModules();
-        await this.copyExtras();
-        await this.pack();
+        this.log.verbose('before:package:createDeploymentArtifacts');
+        if (this.functionEntries?.length > 0) {
+          await this.bundle();
+          await this.packExternalModules();
+          await this.copyExtras();
+          await this.pack();
+        }
       },
       'after:package:createDeploymentArtifacts': async () => {
+        this.log.verbose('after:package:createDeploymentArtifacts');
         await this.cleanup();
       },
       'before:deploy:function:packageFunction': async () => {
+        this.log.verbose('after:deploy:function:packageFunction');
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
         await this.pack();
       },
       'after:deploy:function:packageFunction': async () => {
+        this.log.verbose('after:deploy:function:packageFunction');
         await this.cleanup();
       },
       'before:invoke:local:invoke': async () => {
+        this.log.verbose('before:invoke:local:invoke');
         await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
@@ -164,6 +186,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     this.buildOptions = this.getBuildOptions();
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
+    this.packageOutputPath = this.options.package || SERVERLESS_FOLDER;
     this.workDirPath = path.join(this.serviceDirPath, this.outputWorkFolder);
     this.buildDirPath = path.join(this.workDirPath, this.outputBuildFolder);
   }
@@ -199,16 +222,18 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         }
       : this.serverless.service.functions;
 
+    const buildOptions = this.getBuildOptions();
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
 
     for (const [functionAlias, fn] of Object.entries(functions)) {
-      if (
-        this.isFunctionDefinitionHandler(fn) &&
-        this.isNodeFunction(fn) &&
-        !(fn as EsbuildFunctionDefinitionHandler).skipEsbuild
-      ) {
-        nodeFunctions[functionAlias] = fn;
+      const currFn = fn as EsbuildFunctionDefinitionHandler;
+      if (this.isFunctionDefinitionHandler(currFn) && this.isNodeFunction(currFn)) {
+        if (buildOptions.skipBuild && !buildOptions.skipBuildExcludeFns?.includes(functionAlias)) {
+          currFn.skipEsbuild = true;
+        }
+
+        nodeFunctions[functionAlias] = currFn;
       }
     }
 
@@ -286,6 +311,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       keepOutputDirectory: false,
       platform: 'node',
       outputFileExtension: '.js',
+      skipBuild: false,
+      skipBuildExcludeFns: [],
     };
 
     const providerRuntime = this.serverless.service.provider.runtime;
