@@ -3,6 +3,7 @@ import type Serverless from 'serverless';
 import type Service from 'serverless/classes/Service';
 
 import EsbuildServerlessPlugin from '../index';
+import type { ImprovedServerlessOptions } from '../types';
 
 jest.mock('fs-extra');
 
@@ -64,6 +65,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
     service,
     config: {
       servicePath: '/workDir',
+      serviceDir: '/workDir',
     },
     configSchemaHandler: {
       defineCustomProperties: jest.fn(),
@@ -77,7 +79,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   } as Partial<Serverless> as Serverless;
 };
 
-const mockOptions: Serverless.Options = {
+const mockOptions: ImprovedServerlessOptions = {
   region: 'us-east-1',
   stage: 'dev',
 };
@@ -187,6 +189,8 @@ describe('Move Artifacts', () => {
     });
 
     it('should skip function if skipEsbuild is set to true', async () => {
+      // @ts-ignore
+      fs.existsSync.mockReturnValue(true);
       const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
       const plugin = new EsbuildServerlessPlugin(
         mockServerlessConfig({
@@ -217,8 +221,45 @@ describe('Move Artifacts', () => {
               "artifact": ".serverless/hello2",
             },
           },
+          "hello3": {
+            "events": [],
+            "handler": "hello3.handler",
+            "skipEsbuild": true,
+          },
         }
       `);
+
+      expect(plugin.functionEntries).toEqual(
+        expect.arrayContaining([
+          {
+            entry: expect.stringContaining('/hello1.ts'),
+            func: {
+              events: [],
+              handler: 'hello1.handler',
+              package: {
+                artifact: '.serverless/hello1',
+              },
+            },
+            functionAlias: 'hello1',
+          },
+          {
+            entry: expect.stringContaining('/hello2.ts'),
+            func: {
+              events: [],
+              handler: 'hello2.handler',
+              package: {
+                artifact: '.serverless/hello2',
+              },
+            },
+            functionAlias: 'hello2',
+          },
+        ])
+      );
+      expect(plugin.functionEntries).not.toContain(
+        expect.objectContaining({
+          functionAlias: 'hello3',
+        })
+      );
     });
   });
 
@@ -267,6 +308,24 @@ describe('Prepare', () => {
           },
         }
       `);
+    });
+
+    it('should copy the previous build resources if skipBuild is true', async () => {
+      const skipBuildServerlessConfig = {
+        ...patternsService,
+        custom: {
+          esbuild: {
+            skipBuild: true,
+          },
+        },
+      };
+      const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(skipBuildServerlessConfig), mockOptions);
+      const copyPreBuiltResourcesSpy = jest.spyOn(plugin, 'copyPreBuiltResources');
+      const prepareSpy = jest.spyOn(plugin, 'prepare');
+
+      plugin.hooks.initialize?.();
+      expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();
+      expect(prepareSpy).toHaveBeenCalled();
     });
   });
 });
