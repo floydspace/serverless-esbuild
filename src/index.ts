@@ -360,6 +360,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     chokidar.watch(allPatterns, options).on('all', (eventName, srcPath) =>
       this.bundle(true)
         .then(() => this.updateFile(eventName, srcPath))
+        .then(() => this.notifyServerlessOffline())
         .then(() => this.log.verbose('Watching files for changes...'))
         .catch(() => this.log.error('Bundle error, waiting for a file change to reload...'))
     );
@@ -398,6 +399,10 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         ...(patterns.length && { patterns }),
       };
     }
+  }
+
+  notifyServerlessOffline() {
+    this.serverless.pluginManager.spawn('offline:functionsUpdated');
   }
 
   async updateFile(op: string, filename: string) {
