@@ -37,7 +37,6 @@ export interface Configuration extends EsbuildOptions {
   installExtraArgs: string[];
   plugins?: string | Plugin[];
   keepOutputDirectory?: boolean;
-  disableIncremental?: boolean;
   outputWorkFolder?: string;
   outputBuildFolder?: string;
   outputFileExtension: '.js' | '.cjs' | '.mjs';

@@ -104,7 +104,7 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
     let result!: BuildResult;
 
     const pkg = await import('esbuild');
-    if (pkg.context && this.buildOptions?.disableIncremental === false) {
+    if (pkg.context) {
       context = await pkg.context(options);
       result = await context?.rebuild();
     } else {
