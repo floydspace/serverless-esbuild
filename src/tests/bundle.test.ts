@@ -11,8 +11,6 @@ jest.mock('esbuild');
 jest.mock('p-map');
 
 const getBuild = async () => {
-  const pkg = await import('esbuild');
-  if (pkg.context) return pkg.context;
   return build;
 };
 

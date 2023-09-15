@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { build } from 'esbuild';
-import type { BuildOptions, BuildResult } from 'esbuild';
+import type { BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
@@ -34,7 +34,6 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
     'keepOutputDirectory',
     'packagerOptions',
     'installExtraArgs',
-    'disableIncremental',
     'outputFileExtension',
     'outputBuildFolder',
     'outputWorkFolder',
@@ -103,15 +102,7 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
     };
 
     let context!: BuildContext;
-    let result!: BuildResult;
-
-    const pkg = await import('esbuild');
-    if (pkg.context) {
-      context = await pkg.context(options);
-      result = await context?.rebuild();
-    } else {
-      result = await build(options);
-    }
+    const result = await build(options);
 
     if (config.metafile) {
       fs.writeFileSync(
