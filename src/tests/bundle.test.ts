@@ -11,8 +11,6 @@ jest.mock('esbuild');
 jest.mock('p-map');
 
 const getBuild = async () => {
-  const pkg: any = await import('esbuild');
-  if (pkg.context) return pkg.context;
   return build;
 };
 
@@ -200,7 +198,6 @@ it('should filter out non esbuild options', async () => {
     bundle: true,
     entryPoints: ['file1.ts'],
     external: ['aws-sdk'],
-    incremental: false,
     outdir: '/workdir/.esbuild',
     platform: 'node',
     plugins: [],
@@ -208,8 +205,6 @@ it('should filter out non esbuild options', async () => {
   };
 
   const proxy = await getBuild();
-  const pkg: any = await import('esbuild');
-  if (pkg.context) delete config.incremental;
 
   expect(proxy).toBeCalledWith(config);
 });

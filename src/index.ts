@@ -134,7 +134,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'before:offline:start': async () => {
         this.log.verbose('before:offline:start');
-        await this.bundle(true);
+        await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
         await this.preOffline();
@@ -142,7 +142,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'before:offline:start:init': async () => {
         this.log.verbose('before:offline:start:init');
-        await this.bundle(true);
+        await this.bundle();
         await this.packExternalModules();
         await this.copyExtras();
         await this.preOffline();
@@ -358,7 +358,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     };
 
     chokidar.watch(allPatterns, options).on('all', (eventName, srcPath) =>
-      this.bundle(true)
+      this.bundle()
         .then(() => this.updateFile(eventName, srcPath))
         .then(() => this.notifyServerlessOffline())
         .then(() => this.log.verbose('Watching files for changes...'))
