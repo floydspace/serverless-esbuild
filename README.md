@@ -364,6 +364,9 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://thisisfashion.tv"><img src="https://avatars.githubusercontent.com/u/19397354?v=4?s=70" width="70px;" alt="Sander Kooger"/><br /><sub><b>Sander Kooger</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=sanderkooger" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://caffeinatedcoding.wordpress.com"><img src="https://avatars.githubusercontent.com/u/1588262?v=4?s=70" width="70px;" alt="Adam Swift"/><br /><sub><b>Adam Swift</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=Gleeble" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fm-sz"><img src="https://avatars.githubusercontent.com/u/119663527?v=4?s=70" width="70px;" alt="Florian Mayer"/><br /><sub><b>Florian Mayer</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=fm-sz" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
