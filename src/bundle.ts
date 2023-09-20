@@ -1,5 +1,5 @@
 import assert from 'assert';
-import type { BuildOptions, BuildResult } from 'esbuild';
+import type { BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
