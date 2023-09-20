@@ -1,5 +1,5 @@
 import assert from 'assert';
-import type { BuildOptions } from 'esbuild';
+import type { BuildOptions, BuildResult } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
@@ -102,7 +102,12 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
 
     const pkg = await import('esbuild');
     const context: BuildContext = await pkg.context(options);
-    const result = await context.rebuild();
+    let result!: BuildResult;
+    if (context) {
+      result = await context.rebuild();
+    } else {
+      result = await pkg.build(options);
+    }
 
     if (config.metafile) {
       fs.writeFileSync(
