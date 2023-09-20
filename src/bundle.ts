@@ -100,12 +100,11 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
       outdir: path.join(buildDirPath, path.dirname(entry)),
     };
 
-    const pkg = await import('esbuild');
-    const context: BuildContext = await pkg.context(options);
-    let result!: BuildResult;
-    if (context) {
-      result = await context.rebuild();
-    } else {
+    const pkg: any = await import('esbuild');
+    const context: BuildContext = await pkg?.context(options);
+    let result = await context?.rebuild();
+
+    if (!result) {
       result = await pkg.build(options);
     }
 
