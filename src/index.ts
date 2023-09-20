@@ -159,7 +159,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'after:package:createDeploymentArtifacts': async () => {
         this.log.verbose('after:package:createDeploymentArtifacts');
-        await this.disposeContexes();
+        await this.disposeContexts();
         await this.cleanup();
       },
       'before:deploy:function:packageFunction': async () => {
@@ -171,7 +171,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'after:deploy:function:packageFunction': async () => {
         this.log.verbose('after:deploy:function:packageFunction');
-        await this.disposeContexes();
+        await this.disposeContexts();
         await this.cleanup();
       },
       'before:invoke:local:invoke': async () => {
@@ -182,7 +182,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         await this.preLocal();
       },
       'after:invoke:local:invoke': async () => {
-        await this.disposeContexes();
+        await this.disposeContexts();
       },
     };
   }
@@ -515,7 +515,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     service.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(service.package.artifact));
   }
 
-  async disposeContexes(): Promise<void> {
+  async disposeContexts(): Promise<void> {
     for (const { context } of Object.values(this.buildCache)) {
       if (context) {
         await context.dispose();
