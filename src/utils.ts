@@ -47,11 +47,11 @@ const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
 const findUpIO = (names: string[], directory = process.cwd()): IOO.IOOption<string> =>
   pipe(path.resolve(directory), (dir) =>
     pipe(
-      array.some(names.map((name) => safeFileExistsIO(path.join(dir, name)))),
+      IO.of(names.map((name) => safeFileExistsIO(path.join(dir, name))).some((value) => value())),
       IO.chain((exists: boolean) => {
         if (exists) return IOO.some(dir);
         if (isPathRoot(dir)) return IOO.none;
-        return findUpIO(name, path.dirname(dir));
+        return findUpIO(names, path.dirname(dir));
       })
     )
   );
@@ -59,7 +59,7 @@ const findUpIO = (names: string[], directory = process.cwd()): IOO.IOOption<stri
 /**
  * Find a file by walking up parent directories
  */
-export const findUp = (name: string) => pipe(findUpIO(name), IOO.toUndefined)();
+export const findUp = (name: string) => pipe(findUpIO([name]), IOO.toUndefined)();
 
 /**
  * Forwards `rootDir` or finds project root folder.
