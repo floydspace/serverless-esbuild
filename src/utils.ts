@@ -47,9 +47,9 @@ const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
 const findUpIO = (names: string[], directory = process.cwd()): IOO.IOOption<string> =>
   pipe(path.resolve(directory), (dir) =>
     pipe(
-      IO.of(names.map((name) => safeFileExistsIO(path.join(dir, name))).some((value) => value())),
-      IO.chain((exists: boolean) => {
-        if (exists) return IOO.some(dir);
+      IO.sequenceArray(names.map((name) => safeFileExistsIO(path.join(dir, name)))),
+      IO.chain((exist) => {
+        if (exist.some(Boolean)) return IOO.some(dir);
         if (isPathRoot(dir)) return IOO.none;
         return findUpIO(names, path.dirname(dir));
       })
