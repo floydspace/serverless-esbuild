@@ -44,14 +44,14 @@ export function spawnProcess(command: string, args: string[], options: execa.Opt
 
 const rootOf = (p: string) => path.parse(path.resolve(p)).root;
 const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
-const findUpIO = (name: string, directory = process.cwd()): IOO.IOOption<string> =>
+const findUpIO = (names: string[], directory = process.cwd()): IOO.IOOption<string> =>
   pipe(path.resolve(directory), (dir) =>
     pipe(
-      safeFileExistsIO(path.join(dir, name)),
-      IO.chain((exists: boolean) => {
-        if (exists) return IOO.some(dir);
+      IO.sequenceArray(names.map((name) => safeFileExistsIO(path.join(dir, name)))),
+      IO.chain((exist) => {
+        if (exist.some(Boolean)) return IOO.some(dir);
         if (isPathRoot(dir)) return IOO.none;
-        return findUpIO(name, path.dirname(dir));
+        return findUpIO(names, path.dirname(dir));
       })
     )
   );
@@ -59,7 +59,7 @@ const findUpIO = (name: string, directory = process.cwd()): IOO.IOOption<string>
 /**
  * Find a file by walking up parent directories
  */
-export const findUp = (name: string) => pipe(findUpIO(name), IOO.toUndefined)();
+export const findUp = (name: string) => pipe(findUpIO([name]), IOO.toUndefined)();
 
 /**
  * Forwards `rootDir` or finds project root folder.
@@ -67,9 +67,7 @@ export const findUp = (name: string) => pipe(findUpIO(name), IOO.toUndefined)();
 export const findProjectRoot = (rootDir?: string) =>
   pipe(
     IOO.fromNullable(rootDir),
-    IOO.fold(() => findUpIO('yarn.lock'), IOO.of),
-    IOO.fold(() => findUpIO('pnpm-lock.yaml'), IOO.of),
-    IOO.fold(() => findUpIO('package-lock.json'), IOO.of),
+    IOO.fold(() => findUpIO(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json']), IOO.of),
     IOO.toUndefined
   )();
 
