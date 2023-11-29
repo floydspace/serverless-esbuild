@@ -38,8 +38,6 @@ function setFunctionArtifactPath(
   }
 }
 
-const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'package.json'];
-
 export const filterFilesForZipPackage = ({
   files,
   functionAlias,
@@ -93,7 +91,6 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const providerName = this.serverless?.service?.provider?.name;
   const isGoogleProvider = this.serverless?.service?.provider?.name === 'google';
   const isScalewayProvider = this.serverless?.service?.provider?.name === 'scaleway'; // Scaleway can not have package: individually
-  const excludedFiles = isGoogleProvider ? [] : excludedFilesDefault;
 
   // Google and Scaleway providers cannot use individual packaging for now - this could be built in a future release
   const isPackageIndividuallyNotSupported = isGoogleProvider || isScalewayProvider || false;
@@ -113,7 +110,6 @@ export async function pack(this: EsbuildServerlessPlugin) {
       dot: true,
       onlyFiles: true,
     })
-    .filter((file) => !excludedFiles.includes(file))
     .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }));
 
   if (isEmpty(files)) {
