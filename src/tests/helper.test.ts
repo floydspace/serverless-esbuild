@@ -2,9 +2,9 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM } from '../helper';
+import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM, stripResolveExtensions } from '../helper';
 
-import type { Configuration, DependencyMap } from '../types';
+import type { Configuration, DependencyMap, IFile } from '../types';
 
 jest.mock('fs-extra');
 
@@ -641,5 +641,17 @@ describe('flatDeps', () => {
 
       expect(result).toStrictEqual(expectedResult);
     });
+  });
+});
+
+describe('stripResolveExtensions', () => {
+  it('should remove custom extension prefixes', () => {
+    const result = stripResolveExtensions({ localPath: 'test.custom.js' } as IFile, ['.custom.js']);
+    expect(result.localPath).toEqual('test.js');
+  });
+
+  it('should ignore prefixes not inside the resolve extensions list', () => {
+    const result = stripResolveExtensions({ localPath: 'test.other.js' } as IFile, ['.custom.js']);
+    expect(result.localPath).toEqual('test.other.js');
   });
 });

@@ -9,6 +9,7 @@ export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
 export interface ImprovedServerlessOptions extends Serverless.Options {
   package?: string;
+  stripResolveExtensions?: boolean;
 }
 
 export interface WatchConfiguration {

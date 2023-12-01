@@ -9,7 +9,7 @@ import { uniq } from 'ramda';
 
 import type Serverless from 'serverless';
 import type ServerlessPlugin from 'serverless/classes/Plugin';
-import type { Configuration, DependencyMap, FunctionEntry } from './types';
+import type { Configuration, DependencyMap, FunctionEntry, IFile } from './types';
 import type { EsbuildFunctionDefinitionHandler } from './types';
 import { DEFAULT_EXTENSIONS } from './constants';
 
@@ -315,3 +315,18 @@ export const buildServerlessV3LoggerFromLegacyLogger = (
   verbose: legacyLogger.log.bind(legacyLogger),
   success: legacyLogger.log.bind(legacyLogger),
 });
+
+export const stripResolveExtensions = (file: IFile, extensions: string[]): IFile => {
+  const resolveExtensionMatch = file.localPath.match(extensions.map((ext) => ext).join('|'));
+
+  if (resolveExtensionMatch?.length && !DEFAULT_EXTENSIONS.includes(resolveExtensionMatch[0])) {
+    const extensionParts = resolveExtensionMatch[0].split('.');
+
+    return {
+      ...file,
+      localPath: file.localPath.replace(resolveExtensionMatch[0], `.${extensionParts[extensionParts.length - 1]}`),
+    };
+  }
+
+  return file;
+};
