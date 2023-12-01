@@ -345,7 +345,12 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   }
 
   get functionEntries() {
-    return extractFunctionEntries(this.serviceDirPath, this.serverless.service.provider.name, this.functions);
+    return extractFunctionEntries(
+      this.serviceDirPath,
+      this.serverless.service.provider.name,
+      this.functions,
+      this.buildOptions?.resolveExtensions
+    );
   }
 
   watch(): void {

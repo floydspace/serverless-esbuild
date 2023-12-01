@@ -11,6 +11,7 @@ import type Serverless from 'serverless';
 import type ServerlessPlugin from 'serverless/classes/Plugin';
 import type { Configuration, DependencyMap, FunctionEntry } from './types';
 import type { EsbuildFunctionDefinitionHandler } from './types';
+import { DEFAULT_EXTENSIONS } from './constants';
 
 export function asArray<T>(data: T | T[]): T[] {
   return Array.isArray(data) ? data : [data];
@@ -27,7 +28,8 @@ export function assertIsString(input: unknown, message = 'input is not a string'
 export function extractFunctionEntries(
   cwd: string,
   provider: string,
-  functions: Record<string, Serverless.FunctionDefinitionHandler>
+  functions: Record<string, Serverless.FunctionDefinitionHandler>,
+  resolveExtensions?: string[]
 ): FunctionEntry[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
@@ -69,7 +71,7 @@ export function extractFunctionEntries(
       // replace only last instance to allow the same name for file and handler
       const fileName = handler.substring(0, fnNameLastAppearanceIndex);
 
-      const extensions = ['.ts', '.js', '.jsx', '.tsx'];
+      const extensions = resolveExtensions ?? DEFAULT_EXTENSIONS;
 
       for (const extension of extensions) {
         // Check if the .{extension} files exists. If so return that to watch

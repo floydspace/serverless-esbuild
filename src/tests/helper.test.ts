@@ -135,6 +135,35 @@ describe('extractFunctionEntries', () => {
       ]);
     });
 
+    it('should allow resolve extensions custom Esbuild setting', () => {
+      jest.mocked(fs.existsSync).mockReturnValue(true);
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: './file1.handler',
+        },
+        function2: {
+          events: [],
+          handler: './file2.handler',
+        },
+      };
+
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions, ['.custom.ts']);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'file1.custom.ts',
+          func: functionDefinitions.function1,
+          functionAlias: 'function1',
+        },
+        {
+          entry: 'file2.custom.ts',
+          func: functionDefinitions.function2,
+          functionAlias: 'function2',
+        },
+      ]);
+    });
+
     it('should not return entries for handlers which have skipEsbuild set to true', async () => {
       jest.mocked(fs.existsSync).mockReturnValue(true);
       const functionDefinitions = {
