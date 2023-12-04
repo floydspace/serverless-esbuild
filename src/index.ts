@@ -320,6 +320,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       outputFileExtension: '.js',
       skipBuild: false,
       skipBuildExcludeFns: [],
+      stripEntryResolveExtensions: false,
     };
 
     const providerRuntime = this.serverless.service.provider.runtime;

@@ -316,7 +316,7 @@ export const buildServerlessV3LoggerFromLegacyLogger = (
   success: legacyLogger.log.bind(legacyLogger),
 });
 
-export const stripResolveExtensions = (file: IFile, extensions: string[]): IFile => {
+export const stripEntryResolveExtensions = (file: IFile, extensions: string[]): IFile => {
   const resolveExtensionMatch = file.localPath.match(extensions.map((ext) => ext).join('|'));
 
   if (resolveExtensionMatch?.length && !DEFAULT_EXTENSIONS.includes(resolveExtensionMatch[0])) {

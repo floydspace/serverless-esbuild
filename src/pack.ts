@@ -9,7 +9,7 @@ import semver from 'semver';
 import type Serverless from 'serverless';
 
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
-import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM, stripResolveExtensions } from './helper';
+import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM, stripEntryResolveExtensions } from './helper';
 import { getPackager } from './packagers';
 import { humanSize, trimExtension, zip } from './utils';
 
@@ -117,8 +117,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
     .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }))
     .map((file) => {
       if (this.buildOptions?.resolveExtensions && this.buildOptions.resolveExtensions.length > 0) {
-        if (this.options.stripResolveExtensions) {
-          return stripResolveExtensions(file, this.buildOptions.resolveExtensions);
+        if (this.buildOptions.stripEntryResolveExtensions) {
+          return stripEntryResolveExtensions(file, this.buildOptions.resolveExtensions);
         }
       }
 

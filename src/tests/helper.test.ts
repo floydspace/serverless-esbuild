@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM, stripResolveExtensions } from '../helper';
+import { extractFunctionEntries, flatDep, getDepsFromBundle, isESM, stripEntryResolveExtensions } from '../helper';
 
 import type { Configuration, DependencyMap, IFile } from '../types';
 
@@ -644,14 +644,14 @@ describe('flatDeps', () => {
   });
 });
 
-describe('stripResolveExtensions', () => {
+describe('stripEntryResolveExtensions', () => {
   it('should remove custom extension prefixes', () => {
-    const result = stripResolveExtensions({ localPath: 'test.custom.js' } as IFile, ['.custom.js']);
+    const result = stripEntryResolveExtensions({ localPath: 'test.custom.js' } as IFile, ['.custom.js']);
     expect(result.localPath).toEqual('test.js');
   });
 
   it('should ignore prefixes not inside the resolve extensions list', () => {
-    const result = stripResolveExtensions({ localPath: 'test.other.js' } as IFile, ['.custom.js']);
+    const result = stripEntryResolveExtensions({ localPath: 'test.other.js' } as IFile, ['.custom.js']);
     expect(result.localPath).toEqual('test.other.js');
   });
 });

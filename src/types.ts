@@ -9,7 +9,6 @@ export type ReturnPluginsFn = (sls: Serverless) => Plugins;
 
 export interface ImprovedServerlessOptions extends Serverless.Options {
   package?: string;
-  stripResolveExtensions?: boolean;
 }
 
 export interface WatchConfiguration {
@@ -48,6 +47,7 @@ export interface Configuration extends EsbuildOptions {
   nodeExternals?: NodeExternalsOptions;
   skipBuild?: boolean;
   skipBuildExcludeFns: string[];
+  stripEntryResolveExtensions?: boolean;
 }
 
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
