@@ -90,6 +90,7 @@ See [example folder](examples) for some example configurations.
 | `watch`                | Watch options for `serverless-offline`.                                                                                                                                                            | [Watch Options](#watch-options)                     |
 | `skipBuild`            | Avoid rebuilding lambda artifacts in favor of reusing previous build artifacts.                                                                                                                    | `false`                                             |
 | `skipBuildExcludeFns` | An array of lambda names that will always be rebuilt if `skipBuild` is set to `true` and bundling individually. This is helpful for dynamically generated functions like serverless-plugin-warmup. | `[]`                                                 |
+| `stripEntryResolveExtensions` | A boolean that determines if entrypoints using custom file extensions provided in the `resolveExtensions` ESbuild setting should be stripped of their custom extension upon packing the final bundle for that file. Example: `myLambda.custom.ts` would result in `myLambda.js` instead of `myLambda.custom.js`.
 
 #### Default Esbuild Options
 
