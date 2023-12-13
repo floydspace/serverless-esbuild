@@ -48,9 +48,11 @@ export interface Configuration extends EsbuildOptions {
   skipBuild?: boolean;
   skipBuildExcludeFns: string[];
   stripEntryResolveExtensions?: boolean;
+  disposeContext?: boolean;
 }
 
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
+  disposeContext?: boolean;
   skipEsbuild: boolean;
 }
 
