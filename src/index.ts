@@ -234,7 +234,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     for (const [functionAlias, fn] of Object.entries(functions)) {
       const currFn = fn as EsbuildFunctionDefinitionHandler;
       if (this.isFunctionDefinitionHandler(currFn) && this.isNodeFunction(currFn)) {
-        buildOptions.disposeContext = currFn.disposeContext; // disposeContext configuration can be overridden per function
+        buildOptions.disposeContext = currFn.disposeContext ? currFn.disposeContext : buildOptions.disposeContext; // disposeContext configuration can be overridden per function
         if (buildOptions.skipBuild && !buildOptions.skipBuildExcludeFns?.includes(functionAlias)) {
           currFn.skipEsbuild = true;
         }
