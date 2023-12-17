@@ -269,16 +269,6 @@ exports[`individually 6`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionCSwh1ndXXWK0PuziFcAZEvHblwz5E8ZASq6DpWhA": {
-    "DeletionPolicy": "Retain",
-    "Properties": {
-      "CodeSha256": Any<String>,
-      "FunctionName": {
-        "Ref": "Hello1LambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
   "Hello1LogGroup": {
     "Properties": {
       "LogGroupName": "/aws/lambda/serverless-example-dev-hello1",
@@ -346,16 +336,6 @@ exports[`individually 6`] = `
       },
     },
     "Type": "AWS::Lambda::Permission",
-  },
-  "Hello2LambdaVersionwMMe1vFJ1KSlA5MihlkJVM5uJp72R4R6u5Vtbnz3NSY": {
-    "DeletionPolicy": "Retain",
-    "Properties": {
-      "CodeSha256": Any<String>,
-      "FunctionName": {
-        "Ref": "Hello2LambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
   },
   "Hello2LogGroup": {
     "Properties": {
@@ -526,5 +506,31 @@ exports[`individually 7`] = `
     "StageName": "dev",
   },
   "Type": "AWS::ApiGateway::Deployment",
+}
+`;
+
+exports[`individually 8`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "Hello1LambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
+}
+`;
+
+exports[`individually 9`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "Hello2LambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
 }
 `;

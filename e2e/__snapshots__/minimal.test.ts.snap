@@ -14269,16 +14269,6 @@ exports[`minimal 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersionEpft2h1OOZyD03CU8JMaqcj3Xcth3KeWrSuKw8G2UQ": {
-    "DeletionPolicy": "Retain",
-    "Properties": {
-      "CodeSha256": Any<String>,
-      "FunctionName": {
-        "Ref": "ValidateIsinLambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
   "ValidateIsinLogGroup": {
     "Properties": {
       "LogGroupName": "/aws/lambda/minimal-example-dev-validateIsin",
@@ -14300,5 +14290,18 @@ exports[`minimal 6`] = `
     "StageName": "dev",
   },
   "Type": "AWS::ApiGateway::Deployment",
+}
+`;
+
+exports[`minimal 7`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "ValidateIsinLambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
 }
 `;
