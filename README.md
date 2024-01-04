@@ -131,7 +131,7 @@ The following `esbuild` options are automatically set.
 
 This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes:
 
-###AWS 
+### AWS 
 
 | Runtime      | Target   |
 | ------------ | -------- |
