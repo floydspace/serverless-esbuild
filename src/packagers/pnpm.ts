@@ -14,7 +14,7 @@ export class Pnpm implements Packager {
   }
 
   get copyPackageSectionNames() {
-    return [];
+    return ['type'];
   }
 
   get mustCopyModules() {

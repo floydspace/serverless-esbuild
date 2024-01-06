@@ -50,7 +50,7 @@ export class Yarn implements Packager {
   }
 
   get copyPackageSectionNames() {
-    return ['resolutions'];
+    return ['resolutions', 'type'];
   }
 
   get mustCopyModules() {

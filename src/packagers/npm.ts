@@ -95,7 +95,7 @@ export class NPM implements Packager {
   }
 
   get copyPackageSectionNames() {
-    return [];
+    return ['type'];
   }
 
   get mustCopyModules() {
