@@ -38,7 +38,7 @@ function setFunctionArtifactPath(
   }
 }
 
-const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'package.json'];
+const excludedFilesDefault = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
 
 export const filterFilesForZipPackage = ({
   files,
