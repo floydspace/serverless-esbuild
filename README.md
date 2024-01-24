@@ -141,6 +141,18 @@ This plugin will automatically set the esbuild `target` for the following suppor
 | `nodejs14.x` | `node14` |
 | `nodejs12.x` | `node12` |
 
+### Google
+
+This plugin is compatible with the [serverless-google-cloudfunctions](https://github.com/serverless/serverless-google-cloudfunctions) plugin, and will set the runtimes accordingly.
+
+| Runtime      | Target   |
+| ------------ | -------- |
+| `nodejs20`   | `node20` |
+| `nodejs18`   | `node18` |
+| `nodejs16`   | `node16` |
+| `nodejs14`   | `node14` |
+| `nodejs12`   | `node12` |
+
 ### Azure
 
 This plugin is compatible with the [serverless-azure-functions](https://github.com/serverless/serverless-azure-functions) plugin, and will set the runtimes accordingly.
