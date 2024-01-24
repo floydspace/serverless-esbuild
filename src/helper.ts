@@ -234,7 +234,7 @@ export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 2
 
 export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
 
 export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
 
@@ -266,6 +266,7 @@ const azureNodeMatcher: AzureNodeMatcher = {
 };
 
 const googleNodeMatcher: GoogleNodeMatcher = {
+  nodejs20: 'node20',
   nodejs18: 'node18',
   nodejs16: 'node16',
   nodejs14: 'node14',
