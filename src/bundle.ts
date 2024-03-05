@@ -107,7 +107,16 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
     type ContextFn = (opts: typeof options) => Promise<BuildContext>;
     type WithContext = typeof pkg & { context?: ContextFn };
     const context = await (pkg as WithContext).context?.(options);
-    const result = await pkg.build(options);
+
+    let result;
+    if (!buildOptions.skipRebuild) {
+      result = await context?.rebuild();
+      if (!result) {
+        result = await pkg.build(options);
+      }
+    } else {
+      result = await pkg.build(options);
+    }
 
     if (config.metafile) {
       fs.writeFileSync(
