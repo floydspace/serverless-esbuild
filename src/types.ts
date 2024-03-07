@@ -46,6 +46,7 @@ export interface Configuration extends EsbuildOptions {
   outputFileExtension: '.js' | '.cjs' | '.mjs';
   nodeExternals?: NodeExternalsOptions;
   skipBuild?: boolean;
+  skipRebuild?: boolean;
   skipBuildExcludeFns: string[];
   stripEntryResolveExtensions?: boolean;
   disposeContext?: boolean;
