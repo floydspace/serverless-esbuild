@@ -38,6 +38,7 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
     'outputWorkFolder',
     'nodeExternals',
     'skipBuild',
+    'skipRebuild',
     'skipBuildExcludeFns',
     'stripEntryResolveExtensions',
     'disposeContext',
