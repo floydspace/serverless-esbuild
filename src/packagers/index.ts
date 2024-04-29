@@ -13,7 +13,7 @@ import type EsbuildServerlessPlugin from '../index';
 import type { PackagerId, PackagerOptions } from '../types';
 import type { Packager } from './packager';
 
-const packagerFactories: Record<PackagerId, (packgerOptions: PackagerOptions) => Promise<Packager>> = {
+const packagerFactories: Record<PackagerId, (packagerOptions: PackagerOptions) => Promise<Packager>> = {
   async npm() {
     const { NPM } = await import('./npm');
 
@@ -24,10 +24,10 @@ const packagerFactories: Record<PackagerId, (packgerOptions: PackagerOptions) =>
 
     return new Pnpm();
   },
-  async yarn(packgerOptions) {
+  async yarn(packagerOptions) {
     const { Yarn } = await import('./yarn');
 
-    return new Yarn(packgerOptions);
+    return new Yarn(packagerOptions);
   },
 };
 
@@ -43,7 +43,7 @@ export const getPackager = memoizeWith(
   async function (
     this: EsbuildServerlessPlugin,
     packagerId: PackagerId,
-    packgerOptions: PackagerOptions
+    packagerOptions: PackagerOptions
   ): Promise<Packager> {
     this.log.debug(`Trying to create packager: ${packagerId}`);
 
@@ -53,7 +53,7 @@ export const getPackager = memoizeWith(
       throw new this.serverless.classes.Error(`Could not find packager '${packagerId}'`);
     }
 
-    const packager = await packagerFactories[packagerId](packgerOptions);
+    const packager = await packagerFactories[packagerId](packagerOptions);
 
     this.log.debug(`Packager created: ${packagerId}`);
 
