@@ -416,7 +416,7 @@ describe('NPM Packager', () => {
     expect(v7dependencies).toStrictEqual(expectedResult);
   });
 
-  it('should create the same dependency tree which handles deduping for both npmv6 and npmv7', async () => {
+  it('should create the same dependency tree which handles deduping for both npm v6 and v7', async () => {
     const v6depsList: NpmV6Deps = {
       name: 'serverless-example',
       version: '1.0.0',
