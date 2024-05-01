@@ -106,7 +106,7 @@ export function extractFunctionEntries(
  * @param root the root of the dependency tree
  * @param rootDeps array of top level root dependencies to whitelist
  */
-export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[] => {
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes: '*' | string[]): string[] => {
   const flattenedDependencies = new Set<string>();
 
   /**
@@ -114,7 +114,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
    * @param deps the current tree
    * @param filter the dependencies to get from this tree
    */
-  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[]) => {
+  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[], excludes?: '*' | string[]) => {
     if (!deps) return;
 
     Object.entries(deps).forEach(([depName, details]) => {
@@ -125,7 +125,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
 
       if (details.isRootDep || filter) {
         // We already have this root dep and it's dependencies - skip this iteration
-        if (flattenedDependencies.has(depName)) {
+        if (flattenedDependencies.has(depName) || (excludes && excludes !== '*' && excludes.includes(depName))) {
           return;
         }
 
@@ -144,7 +144,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
     });
   };
 
-  recursiveFind(root, rootDepsFilter);
+  recursiveFind(root, rootDepsFilter, excludes);
 
   return Array.from(flattenedDependencies);
 };
