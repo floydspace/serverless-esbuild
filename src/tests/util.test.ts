@@ -18,15 +18,29 @@ describe('utils/findProjectRoot', () => {
 });
 
 describe('utils/zip', () => {
+  const mtime = new Date(2024, 0, 1, 0, 0, 0, 0);
+
   beforeEach(() => {
     mockFs({
-      '/src': {
-        'test.txt': 'lorem ipsum',
-        modules: {
-          'module.txt': 'lorem ipsum 2',
+      '/src': mockFs.directory({
+        mtime,
+        items: {
+          'test.txt': mockFs.file({
+            mtime,
+            content: 'lorem ipsum',
+          }),
+          modules: mockFs.directory({
+            mtime,
+            items: {
+              'module.txt': mockFs.file({
+                mtime,
+                content: 'lorem ipsum 2',
+              }),
+            },
+          }),
         },
-      },
-      '/dist': {},
+      }),
+      '/dist': mockFs.directory({ mtime }),
     });
   });
 
@@ -67,7 +81,17 @@ describe('utils/zip', () => {
         },
       ];
 
-      await zip(zipPath, filesPathList, useNativeZip);
+      // Check the mtimes are set correctly
+      const sourceStat = fs.statSync(source);
+      expect(sourceStat.mtime).toEqual(mtime);
+
+      const testStat = fs.statSync('/src/test.txt');
+      expect(testStat.mtime).toEqual(mtime);
+
+      const moduleStat = fs.statSync('/src/modules/module.txt');
+      expect(moduleStat.mtime).toEqual(mtime);
+
+      await expect(zip(zipPath, filesPathList, useNativeZip)).resolves.toBeUndefined();
 
       expect(fs.existsSync(zipPath)).toEqual(true);
 
@@ -81,7 +105,7 @@ describe('utils/zip', () => {
       if (!useNativeZip) {
         const data = fs.readFileSync(zipPath);
         const fileHash = crypto.createHash('sha256').update(data).digest('base64');
-        expect(fileHash).toEqual('iCZdyHJ7ON2LLwBIE6gQmRvBTzXBogSqJTMvHSenzGk=');
+        expect(fileHash).toEqual('PHu2gv7OIMv+lAOCXYPNd30X8/7EKYTuV7KYJjw3Qd4=');
       }
     }
   );
