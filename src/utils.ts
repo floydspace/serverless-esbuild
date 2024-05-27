@@ -118,7 +118,7 @@ function nodeZip(zipPath: string, filesPathList: IFiles): Promise<void> {
       zipArchive.append(fs.readFileSync(file.rootPath), {
         name: file.localPath,
         mode: stats.mode,
-        date: new Date(0), // necessary to get the same hash when zipping the same content
+        date: new Date(stats.mtime),
       });
     });
 
