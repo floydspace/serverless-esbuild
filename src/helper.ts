@@ -119,7 +119,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
 
     Object.entries(deps).forEach(([depName, details]) => {
       // only for root level dependencies
-      if (filter && !filter.includes(depName)) {
+      if (details.isRootDep && filter && !filter.includes(depName)) {
         return;
       }
 
