@@ -62,14 +62,16 @@ export function extractFunctionEntries(
       return !(functions[functionAlias] as EsbuildFunctionDefinitionHandler).skipEsbuild;
     })
     .map((functionAlias) => {
-      const func = functions[functionAlias];
+      const func = functions[functionAlias] as EsbuildFunctionDefinitionHandler;
       assert(func, `${functionAlias} not found in functions`);
 
-      const { handler } = func;
-      const fnName = path.extname(handler);
-      const fnNameLastAppearanceIndex = handler.lastIndexOf(fnName);
+      const { handler, esbuildEntrypoint } = func;
+      const entrypoint = esbuildEntrypoint || handler;
+
+      const fnName = path.extname(entrypoint);
+      const fnNameLastAppearanceIndex = entrypoint.lastIndexOf(fnName);
       // replace only last instance to allow the same name for file and handler
-      const fileName = handler.substring(0, fnNameLastAppearanceIndex);
+      const fileName = entrypoint.substring(0, fnNameLastAppearanceIndex);
 
       const extensions = resolveExtensions ?? DEFAULT_EXTENSIONS;
 

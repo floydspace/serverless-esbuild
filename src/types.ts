@@ -55,6 +55,7 @@ export interface Configuration extends EsbuildOptions {
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
   disposeContext?: boolean;
   skipEsbuild: boolean;
+  esbuildEntrypoint?: string;
 }
 
 export interface FunctionEntry {
