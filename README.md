@@ -288,7 +288,7 @@ You can specify a custom entrypoint for ESBuild by specifying the `esbuildEntryp
 ```typescript
 export const myLambdaFunction = {
   handler: '/opt/nodejs/node_modules/my_custom_extension/handler.handler',
-  esbuildEntrypoint: `./handler.main`,
+  esbuildEntrypoint: './handler.main',
 };
 ```
 
