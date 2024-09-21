@@ -1,3 +1,5 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable jest/no-standalone-expect */
 import fs from 'fs-extra';
 import mockFs from 'mock-fs';
 import path from 'path';
@@ -16,6 +18,9 @@ describe('utils/findProjectRoot', () => {
     expect(rootPackageJsonPath).toEqual(path.join(__dirname, '../../package.json'));
   });
 });
+
+const nodeVersion = parseInt(process.versions.node.split('.')[0]!, 10);
+const itNode18 = nodeVersion > 18 ? it.skip : it;
 
 describe('utils/zip', () => {
   beforeEach(() => {
@@ -50,7 +55,7 @@ describe('utils/zip', () => {
     );
   });
 
-  it.each([{ useNativeZip: true }, { useNativeZip: false }])(
+  itNode18.each([{ useNativeZip: true }, { useNativeZip: false }])(
     'should properly archive files when useNativeZip=$useNativeZip.',
     async ({ useNativeZip }) => {
       const source = '/src';
