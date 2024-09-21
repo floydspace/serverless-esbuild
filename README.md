@@ -103,7 +103,7 @@ The following `esbuild` options are automatically set.
 | `entryPoints` | N/A        | Cannot be overridden                                                   |
 | `outDir`      | N/A        | Cannot be overridden                                                   |
 | `platform`    | `'node'`   | Set `format` to `esm` to enable ESM support                            |
-| `target`      | `'node16'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
+| `target`      | `'node18'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
 | `watch`       | N/A        | Cannot be overridden                                                   |
 
 #### Packager Options

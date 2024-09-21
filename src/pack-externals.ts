@@ -3,6 +3,7 @@ import path from 'path';
 import fse from 'fs-extra';
 import * as R from 'ramda';
 import type {
+  createAllowPredicate as CreateAllowPredicateFn,
   findDependencies as FindDependenciesFn,
   findPackagePaths as FindPackagePathsFn,
 } from 'esbuild-node-externals/dist/utils';
@@ -225,9 +226,11 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
       const {
         findDependencies,
         findPackagePaths,
+        createAllowPredicate,
       }: {
         findDependencies: typeof FindDependenciesFn;
         findPackagePaths: typeof FindPackagePathsFn;
+        createAllowPredicate: typeof CreateAllowPredicateFn;
       } = require(utilsPath);
 
       this.buildOptions.external = findDependencies({
@@ -236,7 +239,8 @@ export async function packExternalModules(this: EsbuildServerlessPlugin) {
         devDependencies: false,
         peerDependencies: false,
         optionalDependencies: false,
-        allowList: this.buildOptions.nodeExternals?.allowList ?? [],
+        allowWorkspaces: false,
+        allowPredicate: createAllowPredicate(this.buildOptions.nodeExternals?.allowList ?? []),
       });
     }
   }
