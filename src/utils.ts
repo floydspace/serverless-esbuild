@@ -1,22 +1,14 @@
+import type { FileSystem } from '@effect/platform';
+import { NodeFileSystem } from '@effect/platform-node';
 import { bestzip } from 'bestzip';
 import archiver from 'archiver';
 import execa from 'execa';
-import { pipe } from 'fp-ts/lib/function';
-import * as IO from 'fp-ts/lib/IO';
-import * as IOO from 'fp-ts/lib/IOOption';
-import * as TE from 'fp-ts/lib/TaskEither';
+import { type Cause, Effect, Option } from 'effect';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 
-import {
-  copyTask,
-  mkdirpTask,
-  removeTask,
-  safeFileExistsIO,
-  taskEitherToPromise,
-  taskFromPromise,
-} from './utils/fp-fs';
+import FS, { FSyncLayer, makeTempDirScoped, safeFileExists } from './utils/effect-fs';
 
 import type { IFile, IFiles } from './types';
 
@@ -44,32 +36,40 @@ export function spawnProcess(command: string, args: string[], options: execa.Opt
 
 const rootOf = (p: string) => path.parse(path.resolve(p)).root;
 const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
-const findUpIO = (names: string[], directory = process.cwd()): IOO.IOOption<string> =>
-  pipe(path.resolve(directory), (dir) =>
-    pipe(
-      IO.sequenceArray(names.map((name) => safeFileExistsIO(path.join(dir, name)))),
-      IO.chain((exist) => {
-        if (exist.some(Boolean)) return IOO.some(dir);
-        if (isPathRoot(dir)) return IOO.none;
-        return findUpIO(names, path.dirname(dir));
-      })
-    )
+const findUpEffect = (
+  names: string[],
+  directory = process.cwd()
+): Effect.Effect<string, Cause.NoSuchElementException, FileSystem.FileSystem> => {
+  const dir = path.resolve(directory);
+  return Effect.all(names.map((name) => safeFileExists(path.join(dir, name)))).pipe(
+    Effect.flatMap((exist) => {
+      if (exist.some(Boolean)) return Option.some(dir);
+      if (isPathRoot(dir)) return Option.none();
+      return findUpEffect(names, path.dirname(dir));
+    })
   );
+};
 
 /**
  * Find a file by walking up parent directories
  */
-export const findUp = (name: string) => pipe(findUpIO([name]), IOO.toUndefined)();
+export const findUp = (name: string) =>
+  findUpEffect([name]).pipe(
+    Effect.orElseSucceed(() => undefined),
+    Effect.provide(FSyncLayer),
+    Effect.runSync
+  );
 
 /**
  * Forwards `rootDir` or finds project root folder.
  */
 export const findProjectRoot = (rootDir?: string) =>
-  pipe(
-    IOO.fromNullable(rootDir),
-    IOO.fold(() => findUpIO(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json']), IOO.of),
-    IOO.toUndefined
-  )();
+  Effect.fromNullable(rootDir).pipe(
+    Effect.orElse(() => findUpEffect(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json'])),
+    Effect.orElseSucceed(() => undefined),
+    Effect.provide(FSyncLayer),
+    Effect.runSync
+  );
 
 export const humanSize = (size: number) => {
   const exponent = Math.floor(Math.log(size) / Math.log(1024));
@@ -83,24 +83,22 @@ export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip =
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
   const tempDirPath = path.join(os.tmpdir(), tempDirName);
 
-  const copyFileTask = (file: IFile) => copyTask(file.rootPath, path.join(tempDirPath, file.localPath));
-  const copyFilesTask = TE.traverseArray(copyFileTask);
-  const bestZipTask = taskFromPromise(() => bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }));
-  const nodeZipTask = taskFromPromise(() => nodeZip(zipPath, filesPathList));
+  const copyFileEffect = (file: IFile) => FS.copy(file.rootPath, path.join(tempDirPath, file.localPath));
+  const copyFilesEffect = (files: IFiles) => Effect.all(files.map(copyFileEffect));
+  const bestZipEffect = Effect.tryPromise(() => bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }));
+  const nodeZipEffect = Effect.tryPromise(() => nodeZip(zipPath, filesPathList));
 
-  await pipe(
-    // create the random temporary folder
-    mkdirpTask(tempDirPath),
+  const archiveEffect = makeTempDirScoped(tempDirPath).pipe(
     // copy all required files from origin path to (sometimes modified) target path
-    TE.chain(() => copyFilesTask(filesPathList)),
+    Effect.flatMap(() => copyFilesEffect(filesPathList)),
     // prepare zip folder
-    TE.chain(() => mkdirpTask(path.dirname(zipPath))),
+    Effect.flatMap(() => FS.makeDirectory(path.dirname(zipPath), { recursive: true })),
     // zip the temporary directory
-    TE.chain(() => (useNativeZip ? bestZipTask : nodeZipTask)),
-    // delete the temporary folder
-    TE.chain(() => removeTask(tempDirPath)),
-    taskEitherToPromise
+    Effect.flatMap(() => (useNativeZip ? bestZipEffect : nodeZipEffect)),
+    Effect.scoped
   );
+
+  await archiveEffect.pipe(Effect.provide(NodeFileSystem.layer), Effect.runPromise);
 };
 
 function nodeZip(zipPath: string, filesPathList: IFiles): Promise<void> {
