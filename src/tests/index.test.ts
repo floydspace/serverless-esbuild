@@ -11,7 +11,7 @@ const mockProvider: Service['provider'] = {
   name: 'aws',
   region: 'us-east-1',
   stage: 'dev',
-  runtime: 'nodejs12.x',
+  runtime: 'nodejs18.x',
   compiledCloudFormationTemplate: {
     Resources: {},
   },
