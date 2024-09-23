@@ -1,16 +1,13 @@
 import type { FileSystem } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
-import { bestzip } from 'bestzip';
 import archiver from 'archiver';
-import execa from 'execa';
+import { bestzip } from 'bestzip';
 import { type Cause, Effect, Option } from 'effect';
+import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
-import os from 'os';
-
-import FS, { FSyncLayer, makeTempDirScoped, safeFileExists } from './utils/effect-fs';
-
 import type { IFile, IFiles } from './types';
+import FS, { FSyncLayer, makePath, makeTempPathScoped, safeFileExists } from './utils/effect-fs';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -81,20 +78,19 @@ export const humanSize = (size: number) => {
 export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
   const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
-  const tempDirPath = path.join(os.tmpdir(), tempDirName);
 
-  const copyFileEffect = (file: IFile) => FS.copy(file.rootPath, path.join(tempDirPath, file.localPath));
-  const copyFilesEffect = (files: IFiles) => Effect.all(files.map(copyFileEffect));
-  const bestZipEffect = Effect.tryPromise(() => bestzip({ source: '*', destination: zipPath, cwd: tempDirPath }));
+  const copyFileEffect = (temp: string) => (file: IFile) => FS.copy(file.rootPath, path.join(temp, file.localPath));
+  const bestZipEffect = (temp: string) =>
+    Effect.tryPromise(() => bestzip({ source: '*', destination: zipPath, cwd: temp }));
   const nodeZipEffect = Effect.tryPromise(() => nodeZip(zipPath, filesPathList));
 
-  const archiveEffect = makeTempDirScoped(tempDirPath).pipe(
+  const archiveEffect = makeTempPathScoped(tempDirName).pipe(
     // copy all required files from origin path to (sometimes modified) target path
-    Effect.flatMap(() => copyFilesEffect(filesPathList)),
+    Effect.tap((temp) => Effect.all(filesPathList.map(copyFileEffect(temp)), { discard: true })),
     // prepare zip folder
-    Effect.flatMap(() => FS.makeDirectory(path.dirname(zipPath), { recursive: true })),
+    Effect.tap(() => makePath(path.dirname(zipPath))),
     // zip the temporary directory
-    Effect.flatMap(() => (useNativeZip ? bestZipEffect : nodeZipEffect)),
+    Effect.andThen((temp) => (useNativeZip ? bestZipEffect(temp) : nodeZipEffect)),
     Effect.scoped
   );
 
