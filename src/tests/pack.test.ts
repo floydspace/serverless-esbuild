@@ -128,12 +128,12 @@ describe('pack', () => {
 
       await pack.call(esbuildPlugin);
 
-      expect(zipSpy).toBeCalledWith(
+      expect(zipSpy).toHaveBeenCalledWith(
         '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/hello1.zip',
         expect.any(Array),
         expect.any(Boolean)
       );
-      expect(zipSpy).toBeCalledWith(
+      expect(zipSpy).toHaveBeenCalledWith(
         '/workdir/serverless-esbuild/examples/individually/.esbuild/.serverless/hello2.zip',
         expect.any(Array),
         expect.any(Boolean)
@@ -198,7 +198,7 @@ describe('pack', () => {
 
       await pack.call(esbuildPlugin);
 
-      expect(pMap).toBeCalledWith(expect.any(Array), expect.any(Function), {
+      expect(pMap).toHaveBeenCalledWith(expect.any(Array), expect.any(Function), {
         concurrency: Infinity,
       });
     });

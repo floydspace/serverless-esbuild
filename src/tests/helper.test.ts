@@ -224,7 +224,7 @@ describe('extractFunctionEntries', () => {
         },
       };
 
-      expect(() => extractFunctionEntries(cwd, 'aws', functionDefinitions)).toThrowError();
+      expect(() => extractFunctionEntries(cwd, 'aws', functionDefinitions)).toThrow();
     });
   });
 
@@ -383,7 +383,7 @@ describe('extractFunctionEntries', () => {
         },
       };
 
-      expect(() => extractFunctionEntries(cwd, 'azure', functionDefinitions)).toThrowError();
+      expect(() => extractFunctionEntries(cwd, 'azure', functionDefinitions)).toThrow();
     });
   });
 });

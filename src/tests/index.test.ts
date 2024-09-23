@@ -96,7 +96,7 @@ describe('Move Artifacts', () => {
 
     await plugin.moveArtifacts();
 
-    expect(fs.copy).toBeCalledWith('/workDir/.esbuild/.serverless', '/workDir/.serverless');
+    expect(fs.copy).toHaveBeenCalledWith('/workDir/.esbuild/.serverless', '/workDir/.serverless');
   });
 
   describe('function option', () => {
