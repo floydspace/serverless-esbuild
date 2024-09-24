@@ -77,7 +77,7 @@ export const humanSize = (size: number) => {
 
 export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
-  const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
+  const tempDirName = `${path.basename(zipPath, path.extname(zipPath))}-${Date.now().toString()}`;
 
   const copyFileEffect = (temp: string) => (file: IFile) => FS.copy(file.rootPath, path.join(temp, file.localPath));
   const bestZipEffect = (temp: string) =>

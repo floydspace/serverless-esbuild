@@ -1,6 +1,6 @@
-import assert from 'assert';
-import path from 'path';
-
+import assert from 'node:assert';
+import path from 'node:path';
+import { Predicate } from 'effect';
 import fs from 'fs-extra';
 import globby from 'globby';
 
@@ -17,7 +17,6 @@ import {
   buildServerlessV3LoggerFromLegacyLogger,
   extractFunctionEntries,
   isNodeMatcherKey,
-  isString,
   providerRuntimeMatcher,
 } from './helper';
 import { packExternalModules } from './pack-externals';
@@ -278,7 +277,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     }
 
     for (const fn of Object.values(this.functions)) {
-      const fnPatterns = asArray(fn.package?.patterns).filter(isString);
+      const fnPatterns = asArray(fn.package?.patterns).filter(Predicate.isString);
 
       for (const pattern of fnPatterns) {
         if (pattern.startsWith('!')) {
@@ -359,8 +358,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
   watch(): void {
     assert(this.buildOptions, 'buildOptions is not defined');
 
-    const defaultPatterns = asArray(this.buildOptions.watch.pattern).filter(isString);
-    const defaultIgnored = asArray(this.buildOptions.watch.ignore).filter(isString);
+    const defaultPatterns = asArray(this.buildOptions.watch.pattern).filter(Predicate.isString);
+    const defaultIgnored = asArray(this.buildOptions.watch.ignore).filter(Predicate.isString);
 
     const { patterns, ignored } = this.packagePatterns;
 
@@ -425,7 +424,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     const { service } = this.serverless;
 
-    const patterns = asArray(service.package.patterns).filter(isString);
+    const patterns = asArray(service.package.patterns).filter(Predicate.isString);
 
     if (
       patterns.length > 0 &&
@@ -449,7 +448,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       if (
         anymatch(
           asArray(fn.package?.patterns)
-            .filter(isString)
+            .filter(Predicate.isString)
             .filter((pattern) => !pattern.startsWith('!')),
           filename
         )
@@ -469,7 +468,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     const { service } = this.serverless;
 
-    const packagePatterns = asArray(service.package.patterns).filter(isString);
+    const packagePatterns = asArray(service.package.patterns).filter(Predicate.isString);
 
     // include any "extras" from the "patterns" section
     if (packagePatterns.length) {
@@ -484,7 +483,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     // include any "extras" from the individual function "patterns" section
     for (const [functionAlias, fn] of Object.entries(this.functions)) {
-      const patterns = asArray(fn.package?.patterns).filter(isString);
+      const patterns = asArray(fn.package?.patterns).filter(Predicate.isString);
 
       if (!patterns.length) {
         continue;

@@ -1,4 +1,5 @@
 import assert, { AssertionError } from 'assert';
+import { Predicate } from 'effect';
 import os from 'os';
 import path from 'path';
 
@@ -17,10 +18,8 @@ export function asArray<T>(data: T | T[]): T[] {
   return Array.isArray(data) ? data : [data];
 }
 
-export const isString = (input: unknown): input is string => typeof input === 'string';
-
 export function assertIsString(input: unknown, message = 'input is not a string'): asserts input is string {
-  if (!isString(input)) {
+  if (!Predicate.isString(input)) {
     throw new AssertionError({ message, actual: input });
   }
 }
@@ -198,7 +197,7 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
     },
   });
 
-  const baseDeps = deps.map(getBaseDep).filter(isString);
+  const baseDeps = deps.map(getBaseDep).filter(Predicate.isString);
 
   return uniq(baseDeps);
 };

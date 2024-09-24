@@ -1,10 +1,10 @@
+import { Predicate } from 'effect';
 import { any, isEmpty, replace, split, startsWith, takeWhile } from 'ramda';
 import * as path from 'path';
 
 import type { DependenciesResult, DependencyMap, JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
-import { isString } from '../helper';
 
 type NpmV7Map = Record<string, NpmV7Tree>;
 
@@ -131,7 +131,7 @@ export class NPM implements Packager {
       prodFlag, // Only prod dependencies
       '-long',
       depth ? `-depth=${depth}` : noDepthFlag,
-    ].filter(isString);
+    ].filter(Predicate.isString);
 
     const ignoredNpmErrors: Array<{
       npmError: string;
