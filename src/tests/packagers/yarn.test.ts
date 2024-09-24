@@ -28,8 +28,8 @@ describe('Yarn Packager', () => {
 
     await yarn.getProdDependencies(path);
 
-    expect(spawnSpy).toBeCalledTimes(1);
-    expect(spawnSpy).toBeCalledWith('yarn', ['list', '--json', '--production'], { cwd: './' });
+    expect(spawnSpy).toHaveBeenCalledTimes(1);
+    expect(spawnSpy).toHaveBeenCalledWith('yarn', ['list', '--json', '--production'], { cwd: './' });
   });
 
   it('should call spawnProcess with the correct arguments for listing yarn dependencies when depth is provided', async () => {
@@ -40,8 +40,8 @@ describe('Yarn Packager', () => {
 
     await yarn.getProdDependencies(path, 2);
 
-    expect(spawnSpy).toBeCalledTimes(1);
-    expect(spawnSpy).toBeCalledWith('yarn', ['list', '--depth=2', '--json', '--production'], {
+    expect(spawnSpy).toHaveBeenCalledTimes(1);
+    expect(spawnSpy).toHaveBeenCalledWith('yarn', ['list', '--depth=2', '--json', '--production'], {
       cwd: './',
     });
   });
@@ -238,6 +238,6 @@ describe('Yarn Packager', () => {
     });
 
     await expect(yarnWithoutInstall.install(path, [], false)).resolves.toBeUndefined();
-    expect(spawnSpy).toBeCalledTimes(0);
+    expect(spawnSpy).toHaveBeenCalledTimes(0);
   });
 });

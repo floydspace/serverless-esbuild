@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Predicate } from 'effect';
 import type { BuildOptions } from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
@@ -6,11 +7,11 @@ import path from 'path';
 import { uniq } from 'ramda';
 
 import type EsbuildServerlessPlugin from './index';
-import { asArray, assertIsString, isESM, isString } from './helper';
+import { asArray, assertIsString, isESM } from './helper';
 import type { EsbuildOptions, FileBuildResult, FunctionBuildResult, BuildContext } from './types';
 import { trimExtension } from './utils';
 
-const getStringArray = (input: unknown): string[] => asArray(input).filter(isString);
+const getStringArray = (input: unknown): string[] => asArray(input).filter(Predicate.isString);
 
 export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
   assert(this.buildOptions, 'buildOptions is not defined');

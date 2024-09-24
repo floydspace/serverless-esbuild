@@ -1,5 +1,5 @@
+import { Predicate } from 'effect';
 import { isEmpty, reduce, replace, split, startsWith } from 'ramda';
-import { isString } from '../helper';
 
 import type { JSONObject } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
@@ -29,7 +29,7 @@ export class Pnpm implements Packager {
       '--prod', // Only prod dependencies
       '--json',
       depth ? `--depth=${depth}` : null,
-    ].filter(isString);
+    ].filter(Predicate.isString);
 
     // If we need to ignore some errors add them here
     const ignoredPnpmErrors: Array<{
