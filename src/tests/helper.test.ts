@@ -211,6 +211,27 @@ describe('extractFunctionEntries', () => {
       ]);
     });
 
+    it('should use esbuildEntrypoint in priority', () => {
+      jest.mocked(fs.existsSync).mockReturnValue(true);
+      const functionDefinitions = {
+        function1: {
+          events: [],
+          handler: '/opt/extension/my_custom_handler',
+          esbuildEntrypoint: 'file1.handler',
+        },
+      };
+
+      const fileNames = extractFunctionEntries(cwd, 'aws', functionDefinitions);
+
+      expect(fileNames).toStrictEqual([
+        {
+          entry: 'file1.ts',
+          func: functionDefinitions.function1,
+          functionAlias: 'function1',
+        },
+      ]);
+    });
+
     it('should throw an error if the handlers reference a file which does not exist', () => {
       jest.mocked(fs.existsSync).mockReturnValue(false);
       const functionDefinitions = {

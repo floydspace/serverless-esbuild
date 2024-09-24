@@ -282,6 +282,16 @@ module.exports = (serverless) => {
 
 As long as the plugin is properly installed, all regular Serverless operations `sls package`, `sls deploy`, `sls deploy function`, `sls invoke local`, `sls offline` will automatically compile using `serverless-esbuild`.
 
+### Specify a custom entrypoint for a function
+
+You can specify a custom entrypoint for ESBuild by specifying the `esbuildEntrypoint` field in your function definition.
+```typescript
+export const myLambdaFunction = {
+  handler: '/opt/nodejs/node_modules/my_custom_extension/handler.handler',
+  esbuildEntrypoint: './handler.main',
+};
+```
+
 ### Serverless Offline
 
 The plugin integrates very well with [serverless-offline](https://github.com/dherault/serverless-offline) to
