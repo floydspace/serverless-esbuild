@@ -12,6 +12,7 @@
 
 - Zero-config: Works out of the box without the need to install any additional plugins
 - Works with Typescript and Javascript projects
+- Guaranteed to work in Node.js v18 and higher environments
 - Supports `sls package`, `sls deploy`, `sls deploy function`
 - Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
