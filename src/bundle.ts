@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { Predicate } from 'effect';
 import type { BuildOptions } from 'esbuild';
+import * as pkg from 'esbuild';
 import fs from 'fs-extra';
 import pMap from 'p-map';
 import path from 'path';
@@ -104,11 +105,9 @@ export async function bundle(this: EsbuildServerlessPlugin): Promise<void> {
       outdir: path.join(buildDirPath, path.dirname(entry)),
     };
 
-    const pkg = await import('esbuild');
-
     type ContextFn = (opts: typeof options) => Promise<BuildContext>;
     type WithContext = typeof pkg & { context?: ContextFn };
-    const context = await (pkg as WithContext).context?.(options);
+    const context = buildOptions.skipRebuild ? undefined : await (pkg as WithContext).context?.(options);
 
     let result;
     if (!buildOptions.skipRebuild) {
