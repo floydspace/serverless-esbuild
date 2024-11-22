@@ -231,7 +231,7 @@ export type ScalewayNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `node${Version}`]: `node${Version}`;
 };
 
-export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
+export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22>;
 
 export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
@@ -252,6 +252,7 @@ export type ScalewayNodeMatcherKey = keyof ScalewayNodeMatcher;
 export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey | ScalewayNodeMatcherKey;
 
 const awsNodeMatcher: AwsNodeMatcher = {
+  'nodejs22.x': 'node22',
   'nodejs20.x': 'node20',
   'nodejs18.x': 'node18',
   'nodejs16.x': 'node16',
