@@ -6,6 +6,7 @@ export type ConfigFn = (sls: Serverless) => Configuration;
 
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
+export type ESMPluginsModule = { default: Plugins | ReturnPluginsFn };
 
 export interface ImprovedServerlessOptions extends Serverless.Options {
   package?: string;
