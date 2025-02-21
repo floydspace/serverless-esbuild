@@ -25,7 +25,7 @@ jobs:
       - run: npm test
       - run: npm run test:e2e
       - name: Upload e2e test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-test-artifact
