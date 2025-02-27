@@ -34,6 +34,7 @@ import type {
   ImprovedServerlessOptions,
   Plugins,
   ReturnPluginsFn,
+  ESMPluginsModule,
 } from './types';
 
 function updateFile(op: string, src: string, dest: string) {
@@ -254,7 +255,13 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return this.buildOptions.plugins;
     }
 
-    const plugins: Plugins | ReturnPluginsFn = require(path.join(this.serviceDirPath, this.buildOptions.plugins));
+    let plugins: Plugins | ReturnPluginsFn | ESMPluginsModule = require(
+      path.join(this.serviceDirPath, this.buildOptions.plugins)
+    );
+
+    if (plugins.default) {
+      plugins = plugins.default;
+    }
 
     if (typeof plugins === 'function') {
       return plugins(this.serverless);
