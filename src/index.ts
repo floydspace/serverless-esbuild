@@ -150,12 +150,10 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       },
       'before:package:createDeploymentArtifacts': async () => {
         this.log.verbose('before:package:createDeploymentArtifacts');
-        if (this.functionEntries?.length > 0) {
-          await this.bundle();
-          await this.packExternalModules();
-          await this.copyExtras();
-          await this.pack();
-        }
+        await this.bundle();
+        await this.packExternalModules();
+        await this.copyExtras();
+        await this.pack();
       },
       'after:package:createDeploymentArtifacts': async () => {
         this.log.verbose('after:package:createDeploymentArtifacts');
