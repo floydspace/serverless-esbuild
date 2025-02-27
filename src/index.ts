@@ -36,6 +36,7 @@ import type {
   ReturnPluginsFn,
   ESMPluginsModule,
 } from './types';
+import { isESMModule } from './utils';
 
 function updateFile(op: string, src: string, dest: string) {
   if (['add', 'change', 'addDir'].includes(op)) {
@@ -255,11 +256,12 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return this.buildOptions.plugins;
     }
 
-    let plugins: Plugins | ReturnPluginsFn | ESMPluginsModule = require(
-      path.join(this.serviceDirPath, this.buildOptions.plugins)
-    );
+    let plugins: Plugins | ReturnPluginsFn | ESMPluginsModule = require(path.join(
+      this.serviceDirPath,
+      this.buildOptions.plugins
+    ));
 
-    if (plugins.default) {
+    if (isESMModule(plugins)) {
       plugins = plugins.default;
     }
 

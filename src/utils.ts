@@ -6,7 +6,7 @@ import { type Cause, Effect, Option } from 'effect';
 import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
-import type { IFile, IFiles } from './types';
+import type { ESMPluginsModule, IFile, IFiles } from './types';
 import FS, { FSyncLayer, makePath, makeTempPathScoped, safeFileExists } from './utils/effect-fs';
 
 export class SpawnError extends Error {
@@ -134,4 +134,8 @@ export const isEmpty = (obj: Record<string, unknown>) => {
   for (const _i in obj) return false;
 
   return true;
+};
+
+export const isESMModule = (obj: unknown): obj is ESMPluginsModule => {
+  return typeof obj === 'object' && obj !== null && 'default' in obj;
 };
