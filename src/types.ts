@@ -129,7 +129,7 @@ export interface BuildContext {
 /** Documentation: https://esbuild.github.io/api/#serve-return-values */
 interface ServeResult {
   port: number;
-  host: string;
+  hosts: string[];
 }
 
 export type JSONObject = any;

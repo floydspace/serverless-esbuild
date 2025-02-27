@@ -84,8 +84,8 @@
     "@types/semver": "^7.3.13",
     "@types/serverless": "^3.12.14",
     "all-contributors-cli": "^6.24.0",
-    "esbuild": "^0.24.0",
-    "esbuild-node-externals": "^1.15.0",
+    "esbuild": "^0.25.0",
+    "esbuild-node-externals": "^1.18.0",
     "eslint": "^8.56.0",
     "extract-zip": "^2.0.1",
     "husky": "^8.0.2",
@@ -99,7 +99,7 @@
     "typescript": "~5.5.4"
   },
   "peerDependencies": {
-    "esbuild": "0.8 - 0.24",
+    "esbuild": "0.8 - 0.25",
     "esbuild-node-externals": "^1.0.0"
   },
   "peerDependenciesMeta": {

@@ -189,8 +189,8 @@ describe('Move Artifacts', () => {
     });
 
     it('should skip function if skipEsbuild is set to true', async () => {
-      // @ts-ignore
-      fs.existsSync.mockReturnValue(true);
+      jest.mocked(fs.existsSync).mockReturnValue(true);
+
       const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
       const plugin = new EsbuildServerlessPlugin(
         mockServerlessConfig({
