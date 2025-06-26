@@ -3,7 +3,7 @@ import path from 'path';
 
 import pMap from 'p-map';
 import fs from 'fs-extra';
-import globby from 'globby';
+import tinyglobby from 'tinyglobby';
 import { intersection, isEmpty, lensProp, map, over, pipe, reject, replace, test, without } from 'ramda';
 import semver from 'semver';
 import type Serverless from 'serverless';
@@ -107,8 +107,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
   assertIsString(workDirPath, 'workDirPath is not a string');
 
   // get a list of all path in build
-  const files: IFiles = globby
-    .sync('**', {
+  const files: IFiles = tinyglobby
+    .globSync('**', {
       cwd: buildDirPath,
       dot: true,
       onlyFiles: true,
@@ -181,7 +181,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   // get a tree of all production dependencies
   const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(buildDirPath) : {};
 
-  const packageFiles = await globby(this.serverless.service.package.patterns);
+  const packageFiles = await tinyglobby.glob(this.serverless.service.package.patterns);
 
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
@@ -194,8 +194,8 @@ export async function pack(this: EsbuildServerlessPlugin) {
       .filter((pattern) => pattern.charAt(0) === '!')
       .map((pattern) => pattern.slice(1));
 
-    const functionFiles = await globby(functionPackagePatterns, { cwd: buildDirPath });
-    const functionExcludedFiles = (await globby(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
+    const functionFiles = await tinyglobby.glob(functionPackagePatterns, { cwd: buildDirPath });
+    const functionExcludedFiles = (await tinyglobby.glob(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
 
     const includedFiles = [...packageFiles, ...functionFiles];
     const excludedPackageFiles = [...bundleExcludedFiles, ...functionExcludedFiles];

@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import globby from 'globby';
+import tinyglobby from 'tinyglobby';
 import pMap from 'p-map';
 
 import { filterFilesForZipPackage, pack, copyPreBuiltResources } from '../pack';
@@ -8,7 +8,7 @@ import type { EsbuildFunctionDefinitionHandler, FunctionBuildResult } from '../t
 import type EsbuildServerlessPlugin from '../index';
 import { SERVERLESS_FOLDER } from '../constants';
 
-jest.mock('globby');
+jest.mock('tinyglobby');
 jest.mock('fs-extra');
 jest.mock('p-map');
 
@@ -54,8 +54,8 @@ describe('filterFilesForZipPackage', () => {
 
 describe('pack', () => {
   beforeEach(() => {
-    jest.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
-    jest.mocked(globby).mockResolvedValue([]);
+    jest.mocked(tinyglobby).globSync.mockReturnValue(['hello1.js', 'hello2.js']);
+    jest.mocked(tinyglobby).glob.mockResolvedValue([]);
     jest.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
 
     jest.mocked(pMap).mockImplementation((entries, mapper) => {

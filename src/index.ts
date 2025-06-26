@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import path from 'node:path';
 import { Predicate } from 'effect';
 import fs from 'fs-extra';
-import globby from 'globby';
+import tinyglobby from 'tinyglobby';
 
 import { concat, mergeDeepRight } from 'ramda';
 import type Serverless from 'serverless';
@@ -481,7 +481,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     // include any "extras" from the "patterns" section
     if (packagePatterns.length) {
-      const files = await globby(packagePatterns);
+      const files = await tinyglobby.glob(packagePatterns);
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, filename));
@@ -498,7 +498,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         continue;
       }
 
-      const files = await globby(patterns);
+      const files = await tinyglobby.glob(patterns);
 
       for (const filename of files) {
         const destFileName = path.resolve(path.join(this.buildDirPath, `${ONLY_PREFIX}${functionAlias}`, filename));

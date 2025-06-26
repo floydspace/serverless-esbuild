@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import mockFs from 'mock-fs';
 import path from 'path';
 import extract from 'extract-zip';
-import globby from 'globby';
+import tinyglobby from 'tinyglobby';
 import crypto from 'crypto';
 
 import { findProjectRoot, zip } from '../utils';
@@ -71,7 +71,7 @@ describe('utils/zip', () => {
 
       await extract(zipPath, { dir: destination });
 
-      const files = await globby(['**/*'], { cwd: destination, dot: true });
+      const files = await tinyglobby.glob(['**/*'], { cwd: destination, dot: true });
 
       expect(files).toEqual(['archive.zip', 'test.txt', 'modules/module.txt']);
 
