@@ -186,7 +186,9 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
 
-    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
+    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(
+      trimExtension
+    );
 
     const functionPackagePatterns = func.package?.patterns || [];
 
