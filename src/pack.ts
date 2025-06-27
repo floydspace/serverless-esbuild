@@ -186,9 +186,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
 
-    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(
-      trimExtension
-    );
+    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
 
     const functionPackagePatterns = func.package?.patterns || [];
 
@@ -197,7 +195,9 @@ export async function pack(this: EsbuildServerlessPlugin) {
       .map((pattern) => pattern.slice(1));
 
     const functionFiles = await tinyglobby.glob(functionPackagePatterns, { cwd: buildDirPath });
-    const functionExcludedFiles = (await tinyglobby.glob(functionExclusionPatterns, { cwd: buildDirPath })).map(trimExtension);
+    const functionExcludedFiles = (await tinyglobby.glob(functionExclusionPatterns, { cwd: buildDirPath })).map(
+      trimExtension
+    );
 
     const includedFiles = [...packageFiles, ...functionFiles];
     const excludedPackageFiles = [...bundleExcludedFiles, ...functionExcludedFiles];
