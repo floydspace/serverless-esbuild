@@ -150,6 +150,8 @@ This plugin is compatible with the [serverless-google-cloudfunctions](https://gi
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs24`   | `node24` |
+| `nodejs22`   | `node22` |
 | `nodejs20`   | `node20` |
 | `nodejs18`   | `node18` |
 | `nodejs16`   | `node16` |
