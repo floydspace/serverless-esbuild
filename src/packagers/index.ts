@@ -14,10 +14,10 @@ import type { PackagerId, PackagerOptions } from '../types';
 import type { Packager } from './packager';
 
 const packagerFactories: Record<PackagerId, (packagerOptions: PackagerOptions) => Promise<Packager>> = {
-  async npm() {
+  async npm(packagerOptions: PackagerOptions) {
     const { NPM } = await import('./npm');
 
-    return new NPM();
+    return new NPM(packagerOptions);
   },
   async pnpm() {
     const { Pnpm } = await import('./pnpm');

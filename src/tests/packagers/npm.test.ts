@@ -5,7 +5,7 @@ import * as utils from '../../utils';
 
 jest.mock('process');
 describe('NPM Packager', () => {
-  const npm = new NPM();
+  const npm = new NPM({});
   const path = './';
 
   let spawnSpy: jest.SpyInstance;
