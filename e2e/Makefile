@@ -12,10 +12,11 @@ test-e2e-minimal: build
 
 test-e2e-individually: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/individually && rsync -r ./examples/individually/ ./.test-artifacts/individually/
-	cd ./.test-artifacts/individually && yarn install && npx sls package
+	cd ./.test-artifacts/individually && touch yarn.lock && yarn set version classic && yarn install && npx sls package
 	cd ./.test-artifacts/individually/.serverless && unzip hello1.zip && unzip hello2.zip
 	npx jest -c jest.config.e2e.js --ci ./e2e/individually.test.ts
 	rm -fr ./.test-artifacts
+	node -e "const f='./package.json',p=require(f);delete p.packageManager;require('fs').writeFileSync(f,JSON.stringify(p,null,2))"
 
 test-e2e-complete: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/complete && rsync -r ./examples/complete/ ./.test-artifacts/complete/
@@ -27,3 +28,12 @@ test-e2e-complete: build
 test-e2e-config: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/config && rsync -r ./examples/config/ ./.test-artifacts/config/
 	cd ./.test-artifacts/config && pnpm install && npx sls package
+
+test-e2e-berry: build
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/berry && rsync -r ./examples/berry/ ./.test-artifacts/berry/
+	node -e "const fs=require('fs'),f='./package.json',p=require(f);p.workspaces=['.test-artifacts/berry','.test-artifacts/berry/.esbuild/.build'];fs.writeFileSync(f,JSON.stringify(p,null,2))"
+	cd ./.test-artifacts/berry && yarn set version berry && yarn install && npx sls package
+	cd ./.test-artifacts/berry/.serverless && unzip hello1.zip && unzip hello2.zip
+	npx jest -c jest.config.e2e.js --ci ./e2e/berry.test.ts
+	rm -fr ./.test-artifacts && rm -fr ./.yarn yarn.lock
+	node -e "const f='./package.json',p=require(f);delete p.packageManager;delete p.workspaces;require('fs').writeFileSync(f,JSON.stringify(p,null,2))"

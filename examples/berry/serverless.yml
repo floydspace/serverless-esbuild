@@ -1,0 +1,38 @@
+service: serverless-example
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+custom:
+  esbuild:
+    plugins: ./plugins.js
+    packager: yarn
+    bundle: true
+    minify: true
+    sourcemap: false
+    keepNames: true
+    external:
+      - lodash
+
+functions:
+  hello1:
+    handler: hello1.handler
+    events:
+      - http:
+          path: hello1
+          method: get
+
+  hello2:
+    handler: hello2.handler
+    events:
+      - http:
+          path: hello2
+          method: get
