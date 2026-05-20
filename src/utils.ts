@@ -1,6 +1,7 @@
 import type { FileSystem } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
 import archiver from 'archiver';
+import crypto from 'crypto';
 import { bestzip } from 'bestzip';
 import { type Cause, Effect, Option } from 'effect';
 import execa from 'execa';
@@ -77,7 +78,10 @@ export const humanSize = (size: number) => {
 
 export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
-  const tempDirName = `${path.basename(zipPath, path.extname(zipPath))}-${Date.now().toString()}`;
+  const baseName = path.basename(zipPath, path.extname(zipPath));
+  const tempDirName = `${baseName}-${process.pid.toString()}-${Date.now().toString()}-${crypto
+    .randomBytes(4)
+    .toString('hex')}`;
 
   const copyFileEffect = (temp: string) => (file: IFile) => FS.copy(file.rootPath, path.join(temp, file.localPath));
   const bestZipEffect = (temp: string) =>
