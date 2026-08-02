@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import mockFs from 'mock-fs';
+import os from 'os';
 import path from 'path';
 import extract from 'extract-zip';
 import globby from 'globby';
@@ -81,6 +82,33 @@ describe('utils/zip', () => {
         const fileHash = crypto.createHash('sha256').update(data).digest('base64');
         expect(fileHash).toEqual('iCZdyHJ7ON2LLwBIE6gQmRvBTzXBogSqJTMvHSenzGk=');
       }
+    }
+  );
+
+  it.each([{ useNativeZip: true }, { useNativeZip: false }])(
+    'should remove its temporary staging directory when useNativeZip=$useNativeZip.',
+    async ({ useNativeZip }) => {
+      const source = '/src';
+      const destination = '/dist';
+      const zipPath = path.join(destination, 'archive.zip');
+      const filesPathList = [
+        {
+          rootPath: path.join(source, 'test.txt'),
+          localPath: 'test.txt',
+        },
+      ];
+
+      await zip(zipPath, filesPathList, useNativeZip);
+
+      // `zip` stages the archive contents in a directory under `os.tmpdir()` and releases
+      // it through `Effect.acquireRelease`. That release always removes a NON-EMPTY
+      // directory, so it has to recurse -- a non-recursive remove fails with ENOTEMPTY,
+      // the failure is swallowed by `Effect.orElse`, and one directory is left behind per
+      // archive on every packaging run.
+      const tmpDir = os.tmpdir();
+      const leaked = fs.existsSync(tmpDir) ? fs.readdirSync(tmpDir).filter((name) => name.startsWith('archive-')) : [];
+
+      expect(leaked).toEqual([]);
     }
   );
 });
