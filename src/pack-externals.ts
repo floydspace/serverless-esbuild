@@ -61,6 +61,20 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
  * Resolve the needed versions of production dependencies for external modules.
  * @this - The active plugin instance
  */
+// npm can't install these outside the workspace that defines them, so use the installed module's version instead
+const WORKSPACE_ONLY_PROTOCOLS = ['catalog:', 'workspace:'];
+
+export function getModuleVersion(
+  dependencyVersion: string | undefined,
+  installedVersion: string | undefined
+): string | undefined {
+  if (dependencyVersion && WORKSPACE_ONLY_PROTOCOLS.some((protocol) => dependencyVersion.startsWith(protocol))) {
+    return installedVersion;
+  }
+
+  return dependencyVersion || installedVersion;
+}
+
 function getProdModules(
   this: EsbuildServerlessPlugin,
   externalModules: { external: string }[],
@@ -144,7 +158,7 @@ function getProdModules(
     const modulePackage: Partial<PackageJSON> = modulePackagePath ? require(modulePackagePath) : {};
 
     // Get version
-    const moduleVersion = packageJson.dependencies?.[externalModule.external] || modulePackage.version;
+    const moduleVersion = getModuleVersion(packageJson.dependencies?.[externalModule.external], modulePackage.version);
 
     // add dep with version if we have it - versionless otherwise
     prodModules.push(moduleVersion ? `${externalModule.external}@${moduleVersion}` : externalModule.external);
