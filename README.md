@@ -137,6 +137,7 @@ This plugin will automatically set the esbuild `target` for the following suppor
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs26.x` | `node26` |
 | `nodejs24.x` | `node24` |
 | `nodejs22.x` | `node22` |
 | `nodejs20.x` | `node20` |
