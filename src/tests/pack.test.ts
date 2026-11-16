@@ -67,6 +67,105 @@ describe('pack', () => {
     jest.clearAllMocks();
   });
 
+  describe('metafiles', () => {
+    function createPlugin(individually: boolean, metafile = true, extension = '.js'): EsbuildServerlessPlugin {
+      return {
+        buildResults: ['hello1', 'hello2'].map((name) => ({
+          bundlePath: `src/${name}${extension}`,
+          functionAlias: name,
+          func: { handler: `src/${name}.handler`, events: [], package: {} },
+        })),
+        serverless: {
+          service: { service: 'testApp', package: { individually } },
+          cli: mockCli,
+          getVersion: jest.fn().mockReturnValue('3.28.1'),
+        },
+        buildOptions: {
+          metafile,
+          packager: 'yarn',
+          exclude: ['aws-sdk'],
+          external: [],
+          nativeZip: false,
+          zipConcurrency: Infinity,
+        },
+        buildDirPath: '/workdir/.esbuild/.build',
+        workDirPath: '/workdir/.esbuild',
+        serviceDirPath: '/workdir',
+        log: { debug: jest.fn(), verbose: jest.fn() },
+      } as unknown as EsbuildServerlessPlugin;
+    }
+
+    it.each(['.js', '.mjs', '.cjs'])(
+      'should include only the owning function metafile with %s output',
+      async (extension) => {
+        jest
+          .mocked(globby)
+          .sync.mockReturnValue([
+            `src/hello1${extension}`,
+            `src/hello1${extension}.map`,
+            'src/hello1-meta.json',
+            `src/hello2${extension}`,
+            `src/hello2${extension}.map`,
+            'src/hello2-meta.json',
+            'assets/user-meta.json',
+          ]);
+        const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+
+        await pack.call(createPlugin(true, true, extension));
+
+        for (const [index, name] of ['hello1', 'hello2'].entries()) {
+          expect(zipSpy.mock.calls[index]?.[1].map(({ localPath }) => localPath)).toEqual([
+            `src/${name}${extension}`,
+            `src/${name}${extension}.map`,
+            `src/${name}-meta.json`,
+            'assets/user-meta.json',
+          ]);
+        }
+      }
+    );
+
+    it('should retain all function metafiles in a shared service archive', async () => {
+      const files = ['src/hello1.js', 'src/hello1-meta.json', 'src/hello2.js', 'src/hello2-meta.json'];
+      jest.mocked(globby).sync.mockReturnValue(files);
+      const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(createPlugin(false));
+
+      expect(zipSpy).toHaveBeenCalledTimes(1);
+      expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual(files);
+    });
+
+    it('should retain the same metafile for functions sharing an entry point', async () => {
+      const files = ['src/hello1.js', 'src/hello1-meta.json'];
+      jest.mocked(globby).sync.mockReturnValue(files);
+      const plugin = createPlugin(true);
+      plugin.buildResults = plugin.buildResults?.map((result) => ({ ...result, bundlePath: 'src/hello1.js' }));
+      const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(plugin);
+
+      expect(zipSpy).toHaveBeenCalledTimes(2);
+      for (const [, entries] of zipSpy.mock.calls) {
+        expect(entries.map(({ localPath }) => localPath)).toEqual(files);
+      }
+    });
+
+    it('should not exclude similarly named application assets when metafile generation is disabled', async () => {
+      jest
+        .mocked(globby)
+        .sync.mockReturnValue(['src/hello1.js', 'src/hello1-meta.json', 'src/hello2.js', 'src/hello2-meta.json']);
+      const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(createPlugin(true, false));
+
+      expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual([
+        'src/hello1.js',
+        'src/hello1-meta.json',
+        'src/hello2-meta.json',
+      ]);
+    });
+  });
+
   describe('individually', () => {
     it('should create zips with the functionAlias as the name', async () => {
       const buildResults: FunctionBuildResult[] = [

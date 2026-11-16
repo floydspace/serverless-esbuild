@@ -94,6 +94,17 @@ See [example folder](examples) for some example configurations.
 | `skipBuildExcludeFns` | An array of lambda names that will always be rebuilt if `skipBuild` is set to `true` and bundling individually. This is helpful for dynamically generated functions like serverless-plugin-warmup. | `[]`                                                 |
 | `stripEntryResolveExtensions` | A boolean that determines if entrypoints using custom file extensions provided in the `resolveExtensions` ESbuild setting should be stripped of their custom extension upon packing the final bundle for that file. Example: `myLambda.custom.ts` would result in `myLambda.js` instead of `myLambda.custom.js`.
 | `disposeContext` | An option to disable the disposal of the context.(Functions can override the global `disposeContext` configuration by specifying their own `disposeContext` option in their individual configurations.) | `true`
+#### Bundle metafiles
+
+Enable esbuild metadata with `custom.esbuild.metafile: true`. The generated
+`<entry>-meta.json` files are included in deployment archives: individual function
+ZIPs contain their own metafile, while a shared service ZIP contains all metafiles.
+Metafiles for unrelated functions are excluded from individual packages.
+
+Set `custom.esbuild.keepOutputDirectory: true` to also keep the generated files in
+`.esbuild` after packaging. Metafiles inside deployment ZIPs count toward the
+deployment package size.
+
 #### Default Esbuild Options
 
 The following `esbuild` options are automatically set.
