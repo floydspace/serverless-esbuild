@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22, 24, 26]
+        # mock-fs@5.3.0 breaks on Node 26.8.0+ due to private fs changes.
+        node-version: [22, 24, '26.7.0']
     steps:
       - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
