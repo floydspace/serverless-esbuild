@@ -88,11 +88,30 @@ afterEach(() => {
   jest.resetAllMocks();
 });
 
+describe('Config file', () => {
+  it('should apply options from an async config factory before initialization completes', async () => {
+    const config = jest.fn().mockResolvedValue({
+      outputBuildFolder: 'custom-build',
+      packagerOptions: { noInstall: true },
+    });
+    jest.doMock('/workDir/async-config.js', () => config, { virtual: true });
+
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config.js' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await plugin.hooks.initialize?.();
+
+    expect(config).toHaveBeenCalledWith(serverless);
+    expect(plugin.buildDirPath).toBe('/workDir/.esbuild/custom-build');
+    expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
+  });
+});
+
 describe('Move Artifacts', () => {
   it('should copy files from the esbuild folder to the serverless folder', async () => {
     const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
 
-    plugin.hooks.initialize?.();
+    await plugin.hooks.initialize?.();
 
     await plugin.moveArtifacts();
 
@@ -107,7 +126,7 @@ describe('Move Artifacts', () => {
         function: 'hello1',
       });
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -129,7 +148,7 @@ describe('Move Artifacts', () => {
     it('should update function package artifacts base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -164,7 +183,7 @@ describe('Move Artifacts', () => {
         mockOptions
       );
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -201,7 +220,7 @@ describe('Move Artifacts', () => {
         }),
         mockOptions
       );
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -267,7 +286,7 @@ describe('Move Artifacts', () => {
     it('should update the service package artifact base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(packageService), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -278,10 +297,10 @@ describe('Move Artifacts', () => {
 
 describe('Prepare', () => {
   describe('function package', () => {
-    it('should set package patterns on functions only if supplied', () => {
+    it('should set package patterns on functions only if supplied', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(patternsService), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       plugin.prepare();
 
@@ -323,7 +342,7 @@ describe('Prepare', () => {
       const copyPreBuiltResourcesSpy = jest.spyOn(plugin, 'copyPreBuiltResources');
       const prepareSpy = jest.spyOn(plugin, 'prepare');
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
       expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();
       expect(prepareSpy).toHaveBeenCalled();
     });
