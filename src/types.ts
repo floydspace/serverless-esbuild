@@ -2,7 +2,7 @@ import type { WatchOptions } from 'chokidar';
 import type { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import type Serverless from 'serverless';
 
-export type ConfigFn = (sls: Serverless) => Configuration;
+export type ConfigFn = (sls: Serverless) => Partial<Configuration> | Promise<Partial<Configuration>>;
 
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
