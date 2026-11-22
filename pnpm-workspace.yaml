@@ -1,0 +1,10 @@
+# Only the root package. Without this pnpm treats every subfolder (examples/*) as a workspace project.
+packages:
+  - '.'
+
+# Force every dependency to use the root eslint version.
+overrides:
+  eslint: $eslint
+
+onlyBuiltDependencies:
+  - esbuild

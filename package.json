@@ -32,15 +32,13 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
-    "precommit": "npm run test",
-    "prebuild": "npm run clean",
-    "build": "tsc -p ./tsconfig.build.json",
-    "dev": "npm run build -- --watch",
+    "prepublishOnly": "pnpm build",
+    "precommit": "pnpm test",
+    "build": "pnpm clean && tsc -p ./tsconfig.build.json",
+    "dev": "tsc -p ./tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist",
-    "pretest": "npm run lint",
-    "test": "jest --passWithNoTests",
+    "test": "pnpm lint && jest --passWithNoTests",
     "test:e2e": "make -f e2e/Makefile",
     "lint": "eslint .",
     "prepare": "husky install"
@@ -96,6 +94,7 @@
     "prettier": "^2.8.1",
     "semantic-release": "^25.0.2",
     "ts-jest": "^29.2.5",
+    "type-fest": "^0.21.3",
     "typescript": "~5.5.4"
   },
   "peerDependencies": {
@@ -110,7 +109,5 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "overrides": {
-    "eslint": "$eslint"
-  }
+  "packageManager": "pnpm@10.31.0"
 }

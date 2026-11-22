@@ -14,17 +14,17 @@ jobs:
         node-version: [22, 24, '26.7.0']
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 7
-      - run: npm ci
-      - run: npm test
-      - run: npm run test:e2e
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # TODO: remove once verified on CI; kept for release.yml
+      - run: npm audit signatures
+      - run: pnpm test
+      - run: pnpm test:e2e
       - name: Upload e2e test artifacts
         uses: actions/upload-artifact@v7
         if: failure()
@@ -34,4 +34,4 @@ jobs:
             .test-artifacts/**/.serverless/*.json
             .test-artifacts/**/.serverless/*.zip
           retention-days: 7
-      - run: npm run build --if-present
+      - run: pnpm build
