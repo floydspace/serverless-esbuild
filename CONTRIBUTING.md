@@ -4,8 +4,7 @@ Thanks for helping improve `serverless-esbuild`! This guide covers how to set up
 
 ## Prerequisites
 
-- Node.js v22.13 or newer, which is what pnpm 11 requires. The plugin itself supports Node.js v18+ (see the [README](README.md#features)), but CI only runs v22, v24 and v26.7.0.
-  - Avoid Node.js v26.8+ for now: `mock-fs` breaks on it (see the comment in `.github/workflows/pull.yml`).
+- Node.js v22.13 or newer, which is what pnpm 11 requires. The plugin itself supports Node.js v18+ (see the [README](README.md#features)), but CI runs v22, v24 and v26.
 - [pnpm](https://pnpm.io/installation) v11. The exact version is pinned in the `packageManager` field of `package.json`, and pnpm downloads it automatically when yours differs.
   - Node.js v25+ no longer bundles Corepack. Install pnpm directly, for example `npm install -g pnpm`.
   - Use pnpm only. Do not run `npm install` or `yarn install` in the repo root, and do not commit `package-lock.json` or `yarn.lock`.
@@ -62,7 +61,7 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/), enf
 1. Fork the repo and create a branch from `master`.
 2. Make your change, and add or update tests in `src/tests` for any behavior change.
 3. Run `pnpm test` and, if you changed packaging behavior, `pnpm test:e2e`.
-4. Open a pull request against `master`. CI runs `pnpm test`, `pnpm test:e2e` and `pnpm build` on Node.js v22, v24 and v26.7.0.
+4. Open a pull request against `master`. CI runs `pnpm test`, `pnpm test:e2e` and `pnpm build` on Node.js v22, v24 and v26.
 5. If you change documented behavior or options, update the [README](README.md) in the same pull request.
 
 Releases are automated: when a pull request is merged into `master`, `semantic-release` publishes the new version. Contributors do not bump the version or edit a changelog by hand.
