@@ -1,5 +1,6 @@
-# .test-artifacts lives inside the repo, so corepack would otherwise force the root packageManager (pnpm) onto yarn/npm
+# .test-artifacts lives inside the repo, so corepack (local) and yarn classic itself (CI) would otherwise force the root packageManager (pnpm) onto yarn
 export COREPACK_ENABLE_STRICT=0
+export SKIP_YARN_COREPACK_CHECK=1
 
 test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config
 

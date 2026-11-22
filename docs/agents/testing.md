@@ -12,7 +12,7 @@
 
 Examples are copied into `.test-artifacts/` inside the repo, so pnpm and Corepack walk up and find the repo's `package.json` and `pnpm-workspace.yaml`. Because of that:
 
-- `e2e/Makefile` exports `COREPACK_ENABLE_STRICT=0`, otherwise yarn refuses to run (the root `packageManager` says pnpm).
+- `e2e/Makefile` exports `COREPACK_ENABLE_STRICT=0` (Corepack shims) and `SKIP_YARN_COREPACK_CHECK=1` (real yarn classic 1.22.x, as on CI runners). Otherwise yarn refuses to run because the root `packageManager` says pnpm. A local run can pass on the first variable alone while CI fails, so keep both.
 - The `config` step creates its own empty `pnpm-workspace.yaml`. Without it the plugin's own `pnpm install` attaches to the repo workspace and writes `.test-artifacts/...` into `pnpm-lock.yaml`.
 - The `config` step passes `--config.strictDepBuilds=false`, because pnpm 11 fails installs on unapproved dependency build scripts (`ERR_PNPM_IGNORED_BUILDS`). `.npmrc` cannot set this.
 - After any e2e run, confirm `grep -c test-artifacts pnpm-lock.yaml` prints `0`.
