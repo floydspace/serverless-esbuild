@@ -36,18 +36,14 @@
     "precommit": "pnpm test",
     "build": "pnpm clean && tsc -p ./tsconfig.build.json",
     "dev": "tsc -p ./tsconfig.build.json --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.examples.json",
     "clean": "rm -rf ./dist",
-    "test": "pnpm lint && jest --passWithNoTests",
+    "test": "pnpm lint && pnpm test:unit",
+    "test:unit": "vitest run --project unit --passWithNoTests",
     "test:e2e": "make -f e2e/Makefile",
-    "lint": "eslint .",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "prettier --write",
-      "eslint"
-    ]
+    "lint": "run-p lint:eslint typecheck",
+    "prepare": "husky install",
+    "lint:eslint": "eslint ."
   },
   "prettier": "@floydspace/prettier-config",
   "dependencies": {
@@ -75,9 +71,9 @@
     "@floydspace/prettier-config": "^1.37.0",
     "@types/archiver": "^5.3.1",
     "@types/fs-extra": "^9.0.13",
-    "@types/jest": "^29.2.4",
+    "@types/lodash": "4.14.185",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^18.11.18",
+    "@types/node": "^22.20.5",
     "@types/ramda": "^0.28.20",
     "@types/semver": "^7.3.13",
     "@types/serverless": "^3.12.14",
@@ -87,15 +83,17 @@
     "eslint": "catalog:",
     "extract-zip": "^2.0.1",
     "husky": "^8.0.2",
-    "jest": "^29.3.1",
+    "isin-validator": "^1.1.1",
     "lint-staged": "^13.1.0",
+    "lodash": "^4.17.21",
     "mock-fs": "^5.3.0",
     "mock-spawn": "^0.2.6",
+    "npm-run-all2": "^9.1.0",
     "prettier": "^2.8.1",
     "semantic-release": "^25.0.2",
-    "ts-jest": "^29.2.5",
     "type-fest": "^0.21.3",
-    "typescript": "~5.5.4"
+    "typescript": "~5.5.4",
+    "vitest": "^5.1.1"
   },
   "peerDependencies": {
     "esbuild": "0.8 - 0.28",

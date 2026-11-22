@@ -11,3 +11,6 @@ overrides:
 
 allowBuilds:
   esbuild: true
+
+patchedDependencies:
+  mock-fs: patches/mock-fs.patch

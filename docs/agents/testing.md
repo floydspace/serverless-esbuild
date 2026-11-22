@@ -1,9 +1,9 @@
 # Testing
 
-- Unit tests live in `src/tests/` (jest `rootDir` is `src`). To run one file without lint: `pnpm exec jest src/tests/bundle.test.ts` (add `-t "name"` to filter).
-- ts-jest type-checks tests: a missing or undeclared type import fails the whole suite (e.g. TS2307 for `type-fest`).
-- Unit tests use `mock-fs`, which breaks on Node >= 26.8.0. CI tests Node 22, 24 and 26.7.0.
-- `pnpm test:e2e` (`e2e/Makefile`) builds the plugin, copies each `examples/*` into `.test-artifacts/`, installs dependencies with npm, yarn or pnpm (all three must be installed), runs `sls package`, then snapshot-tests the zips via `jest.config.e2e.js`. It is slow (~6 min) and needs network access.
+- Unit tests live in `src/tests/` (the `unit` Vitest project in `vitest.config.mts`). To run all unit tests without lint: `pnpm test:unit`. To run one file: `pnpm test:unit src/tests/bundle.test.ts` (add `-t "name"` to filter). Plain `vitest` also includes the `e2e` project, which fails without `.test-artifacts`.
+- Vitest does not type-check tests. `pnpm lint` runs eslint and `tsc --noEmit` in parallel, and `tsconfig.json` includes `src` and `e2e`, so type errors in tests fail lint (and so `pnpm test`). `examples/` is excluded from `tsconfig.json` because its dependencies are not installed.
+- Unit tests use `mock-fs`, which breaks on Node >= 26.8.0 (it can no longer find the `ReadFileContext` prototype). `patches/mock-fs.patch` (applied by pnpm via `patchedDependencies`) skips that patching, so sync and stream APIs work, but async `fs.readFile` and `fs.promises.readFile` bypass the mock on those Node versions. Drop the patch once upstream ships a fix. CI tests Node 22, 24 and 26.
+- `pnpm test:e2e` (`e2e/Makefile`) builds the plugin, copies each `examples/*` into `.test-artifacts/`, installs dependencies with npm, yarn or pnpm (all three must be installed), runs `sls package`, then snapshot-tests the zips via the `e2e` Vitest project. It is slow (~6 min) and needs network access.
 - Run one example: `make -f e2e/Makefile test-e2e-minimal|individually|complete|config`. `config` only checks that `sls package` succeeds and has no snapshot test. Other tools needed on PATH: `make`, `rsync`, `unzip`.
 - E2E snapshots live in `e2e/__snapshots__`.
 - `examples/*` are fixtures with their own `package.json`, not part of the pnpm workspace. Each covers a packager: `config` uses `pnpm`, `individually` uses `yarn`, the others use `npm`. A new example must also be added to `e2e/Makefile`.

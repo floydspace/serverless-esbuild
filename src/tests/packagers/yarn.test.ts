@@ -1,23 +1,24 @@
+import type { MockInstance } from 'vitest';
 import { Yarn } from '../../packagers/yarn';
 import type { YarnDeps } from '../../packagers/yarn';
 import type { DependenciesResult } from '../../types';
 
 import * as utils from '../../utils';
 
-jest.mock('process');
+vi.mock('process');
 describe('Yarn Packager', () => {
   const yarn = new Yarn({});
   const path = './';
 
-  let spawnSpy: jest.SpyInstance;
+  let spawnSpy: MockInstance;
 
   beforeEach(() => {
-    spawnSpy = jest.spyOn(utils, 'spawnProcess');
+    spawnSpy = vi.spyOn(utils, 'spawnProcess');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should call spawnProcess with the correct arguments for listing yarn dependencies', async () => {
