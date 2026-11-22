@@ -365,6 +365,8 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
 
 ## Contributors
 
+Want to contribute? See the [contributing guide](CONTRIBUTING.md).
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
