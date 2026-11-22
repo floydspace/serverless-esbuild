@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
     "target": "es2020",
     "skipLibCheck": true,
     "esModuleInterop": true,
