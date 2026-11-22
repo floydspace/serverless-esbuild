@@ -1,22 +1,23 @@
+import type { MockInstance } from 'vitest';
 import { NPM } from '../../packagers/npm';
 import type { NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
 import type { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 
-jest.mock('process');
+vi.mock('process');
 describe('NPM Packager', () => {
   const npm = new NPM({});
   const path = './';
 
-  let spawnSpy: jest.SpyInstance;
+  let spawnSpy: MockInstance;
 
   beforeEach(() => {
-    spawnSpy = jest.spyOn(utils, 'spawnProcess');
+    spawnSpy = vi.spyOn(utils, 'spawnProcess');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should call spawnProcess with the correct arguments for getting the npm version', async () => {

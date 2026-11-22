@@ -7,8 +7,8 @@ import { bundle } from '../bundle';
 import type { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
 import type EsbuildServerlessPlugin from '../index';
 
-jest.mock('esbuild');
-jest.mock('p-map');
+vi.mock('esbuild');
+vi.mock('p-map');
 
 const getBuild = async () => {
   return build;
@@ -16,10 +16,10 @@ const getBuild = async () => {
 
 const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServerlessPlugin =>
   ({
-    prepare: jest.fn(),
+    prepare: vi.fn(),
     serverless: {
       cli: {
-        log: jest.fn(),
+        log: vi.fn(),
       },
       classes: {
         Error,
@@ -44,25 +44,25 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
     buildDirPath: '/workdir/.esbuild',
     functionEntries: [],
     log: {
-      error: jest.fn(),
-      warning: jest.fn(),
-      notice: jest.fn(),
-      info: jest.fn(),
-      debug: jest.fn(),
-      verbose: jest.fn(),
-      success: jest.fn(),
+      error: vi.fn(),
+      warning: vi.fn(),
+      notice: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      verbose: vi.fn(),
+      success: vi.fn(),
     },
     ...override,
   } as PartialDeep<EsbuildServerlessPlugin> as EsbuildServerlessPlugin);
 
 beforeEach(() => {
-  jest.mocked(pMap).mockImplementation((entries, mapper) => {
+  vi.mocked(pMap).mockImplementation((entries, mapper) => {
     return Promise.all((entries as string[]).map((entry, index) => mapper(entry, index)));
   });
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
 });
 
 it('should call esbuild only once when functions share the same entry', async () => {

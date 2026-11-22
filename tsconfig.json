@@ -18,8 +18,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noErrorTruncation": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["./*.js", "src", "e2e", "examples"],
+  "include": ["./*.js", "src", "e2e", "vitest.config.mts"],
   "exclude": ["node_modules"]
 }

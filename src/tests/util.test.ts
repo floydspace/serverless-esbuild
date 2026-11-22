@@ -49,7 +49,7 @@ describe('utils/zip', () => {
   });
 
   it.each([{ useNativeZip: true }, { useNativeZip: false }])(
-    'should properly archive files when useNativeZip=$useNativeZip.',
+    'should properly archive files when useNativeZip=$useNativeZip',
     async ({ useNativeZip }) => {
       const source = '/src';
       const destination = '/dist';

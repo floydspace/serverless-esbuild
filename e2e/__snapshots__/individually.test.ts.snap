@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`individually 1`] = `
 ""use strict";var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,d=Object.prototype.hasOwnProperty;var u=(e,s)=>n(e,"name",{value:s,configurable:!0});var p=(e,s)=>{for(var o in s)n(e,o,{get:s[o],enumerable:!0})},c=(e,s,o,r)=>{if(s&&typeof s=="object"||typeof s=="function")for(let t of f(s))!d.call(e,t)&&t!==o&&n(e,t,{get:()=>s[t],enumerable:!(r=a(s,t))||r.enumerable});return e};var y=(e,s,o)=>(o=e!=null?l(m(e)):{},c(s||!e||!e.__esModule?n(o,"default",{value:e,enumerable:!0}):o,e)),g=e=>c(n({},"__esModule",{value:!0}),e);var S={};p(S,{handler:()=>x});module.exports=g(S);var i=y(require("lodash"));async function x(e,s,o){console.log(i.VERSION),await new Promise(t=>setTimeout(t,500));let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};o(null,r)}u(x,"handler");0&&(module.exports={handler});

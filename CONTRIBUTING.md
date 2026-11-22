@@ -26,8 +26,9 @@ This also installs the Git hooks (via `husky`):
 
 | Command          | What it does                                                            |
 | ---------------- | ----------------------------------------------------------------------- |
-| `pnpm test`      | Runs `eslint`, then the unit tests (`jest`, files in `src/tests`)       |
-| `pnpm lint`      | Runs `eslint` only                                                      |
+| `pnpm test`      | Runs `pnpm lint`, then the unit tests (`vitest`, files in `src/tests`)  |
+| `pnpm test:unit` | Runs only the unit tests (no lint or typecheck)                         |
+| `pnpm lint`      | Runs `eslint` and `tsc --noEmit` in parallel                            |
 | `pnpm typecheck` | Type-checks without emitting files                                      |
 | `pnpm build`     | Cleans `dist` and compiles TypeScript                                   |
 | `pnpm dev`       | Compiles TypeScript in watch mode                                       |
