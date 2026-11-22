@@ -55,7 +55,9 @@ describe('NPM Packager', () => {
   });
 
   it('should call spawnProcess with the correct arguments for listing dependencies when depth is provided', async () => {
-    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: '{"dependencies":{}}' });
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: '{"dependencies":{}}' });
 
     await npm.getProdDependencies(path, 2);
 
