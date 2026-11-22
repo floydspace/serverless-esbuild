@@ -1,3 +1,3 @@
 module.exports = {
-  '*.ts': ['prettier --write', 'eslint', () => 'tsc --noEmit'],
+  '*.ts': ['prettier --write', 'eslint', () => 'pnpm typecheck'],
 };
