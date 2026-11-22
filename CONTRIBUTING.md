@@ -4,9 +4,9 @@ Thanks for helping improve `serverless-esbuild`! This guide covers how to set up
 
 ## Prerequisites
 
-- Node.js v18 or newer, the same range the plugin supports (see the [README](README.md#features)). CI runs v22, v24 and v26.7.0, so v18 is not covered by CI.
+- Node.js v22.13 or newer, which is what pnpm 11 requires. The plugin itself supports Node.js v18+ (see the [README](README.md#features)), but CI only runs v22, v24 and v26.7.0.
   - Avoid Node.js v26.8+ for now: `mock-fs` breaks on it (see the comment in `.github/workflows/pull.yml`).
-- [pnpm](https://pnpm.io/installation) v10. The exact version is pinned in the `packageManager` field of `package.json`, and pnpm downloads it automatically when yours differs.
+- [pnpm](https://pnpm.io/installation) v11. The exact version is pinned in the `packageManager` field of `package.json`, and pnpm downloads it automatically when yours differs.
   - Node.js v25+ no longer bundles Corepack. Install pnpm directly, for example `npm install -g pnpm`.
   - Use pnpm only. Do not run `npm install` or `yarn install` in the repo root, and do not commit `package-lock.json` or `yarn.lock`.
 - For the e2e tests only: `make`, `rsync`, `unzip` and `yarn` available in your `PATH`.

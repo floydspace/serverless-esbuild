@@ -2,9 +2,12 @@
 packages:
   - '.'
 
+catalog:
+  eslint: ^8.56.0
+
 # Force every dependency to use the root eslint version.
 overrides:
-  eslint: $eslint
+  eslint: 'catalog:'
 
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true

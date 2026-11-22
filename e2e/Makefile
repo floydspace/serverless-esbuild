@@ -31,4 +31,4 @@ test-e2e-complete: build
 
 test-e2e-config: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/config && rsync -r ./examples/config/ ./.test-artifacts/config/
-	cd ./.test-artifacts/config && touch pnpm-workspace.yaml && pnpm install && $(PATCH_REQUIRE) && npx sls package
+	cd ./.test-artifacts/config && touch pnpm-workspace.yaml && pnpm install --config.strictDepBuilds=false && $(PATCH_REQUIRE) && npx sls package

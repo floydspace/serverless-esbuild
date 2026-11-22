@@ -21,8 +21,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # TODO: remove once verified on CI; kept for release.yml
-      - run: npm audit signatures
+      # TODO: temporary, remove once `pnpm audit signatures` is confirmed to work on CI (kept in release.yml)
+      - run: pnpm audit signatures
       - run: pnpm test
       - run: pnpm test:e2e
       - name: Upload e2e test artifacts
