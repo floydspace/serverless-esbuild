@@ -2,7 +2,7 @@
 export COREPACK_ENABLE_STRICT=0
 export SKIP_YARN_COREPACK_CHECK=1
 
-test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config
+test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config test-e2e-async-config
 
 PATCH_REQUIRE = sed -i.bak "s/ERR_REQUIRE_ESM/ERR_REQUIRE_ESM' || error.code === 'ERR_REQUIRE_ASYNC_MODULE/" node_modules/serverless/lib/utils/require-with-import-fallback.js
 
@@ -33,3 +33,10 @@ test-e2e-complete: build
 test-e2e-config: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/config && rsync -r ./examples/config/ ./.test-artifacts/config/
 	cd ./.test-artifacts/config && touch pnpm-workspace.yaml && pnpm install --config.strictDepBuilds=false && $(PATCH_REQUIRE) && npx sls package
+
+test-e2e-async-config: build
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/async-config && rsync -r ./examples/async-config/ ./.test-artifacts/async-config/
+	cd ./.test-artifacts/async-config && npm install && $(PATCH_REQUIRE) && npx sls package
+	cd ./.test-artifacts/async-config/.serverless && unzip async-config-example.zip
+	pnpm exec vitest run --project e2e e2e/async-config.test.ts
+	rm -fr ./.test-artifacts
