@@ -12,7 +12,7 @@
 
 - Zero-config: Works out of the box without the need to install any additional plugins
 - Works with Typescript and Javascript projects
-- Guaranteed to work in Node.js v18 and higher environments
+- Requires Node.js v20.19 or higher
 - Supports `sls package`, `sls deploy`, `sls deploy function`
 - Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
@@ -364,6 +364,8 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
 - [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
 
 ## Contributors
+
+Want to contribute? See the [contributing guide](CONTRIBUTING.md).
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->

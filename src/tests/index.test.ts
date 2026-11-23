@@ -5,7 +5,7 @@ import type Service from 'serverless/classes/Service';
 import EsbuildServerlessPlugin from '../index';
 import type { ImprovedServerlessOptions } from '../types';
 
-jest.mock('fs-extra');
+vi.mock('fs-extra');
 
 const mockProvider: Service['provider'] = {
   name: 'aws',
@@ -18,7 +18,7 @@ const mockProvider: Service['provider'] = {
   versionFunctions: true,
 };
 
-const mockGetFunction = jest.fn();
+const mockGetFunction = vi.fn();
 
 const packageIndividuallyService: Partial<Service> = {
   functions: {
@@ -58,7 +58,7 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   } as Service;
 
   const mockCli = {
-    log: jest.fn(),
+    log: vi.fn(),
   };
 
   return {
@@ -68,12 +68,12 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
       serviceDir: '/workDir',
     },
     configSchemaHandler: {
-      defineCustomProperties: jest.fn(),
-      defineFunctionEvent: jest.fn(),
-      defineFunctionEventProperties: jest.fn(),
-      defineFunctionProperties: jest.fn(),
-      defineProvider: jest.fn(),
-      defineTopLevelProperty: jest.fn(),
+      defineCustomProperties: vi.fn(),
+      defineFunctionEvent: vi.fn(),
+      defineFunctionEventProperties: vi.fn(),
+      defineFunctionProperties: vi.fn(),
+      defineProvider: vi.fn(),
+      defineTopLevelProperty: vi.fn(),
     },
     cli: mockCli,
   } as Partial<Serverless> as Serverless;
@@ -85,7 +85,7 @@ const mockOptions: ImprovedServerlessOptions = {
 };
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
 });
 
 describe('Config file', () => {
@@ -208,7 +208,7 @@ describe('Move Artifacts', () => {
     });
 
     it('should skip function if skipEsbuild is set to true', async () => {
-      jest.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.existsSync).mockReturnValue(true);
 
       const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
       const plugin = new EsbuildServerlessPlugin(
@@ -339,8 +339,8 @@ describe('Prepare', () => {
         },
       };
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(skipBuildServerlessConfig), mockOptions);
-      const copyPreBuiltResourcesSpy = jest.spyOn(plugin, 'copyPreBuiltResources');
-      const prepareSpy = jest.spyOn(plugin, 'prepare');
+      const copyPreBuiltResourcesSpy = vi.spyOn(plugin, 'copyPreBuiltResources');
+      const prepareSpy = vi.spyOn(plugin, 'prepare');
 
       await plugin.hooks.initialize?.();
       expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();

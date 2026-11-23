@@ -2,10 +2,10 @@ import { preLocal } from '../pre-local';
 
 import type EsbuildServerlessPlugin from '../index';
 
-const chdirSpy = jest.spyOn(process, 'chdir').mockImplementation();
+const chdirSpy = vi.spyOn(process, 'chdir').mockImplementation(() => undefined);
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.clearAllMocks();
 });
 
 it('should call chdir with the buildDirPath if the invoked function is a node function', () => {
