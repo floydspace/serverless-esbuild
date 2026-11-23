@@ -228,6 +228,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         }
       : this.serverless.service.functions;
 
+    assert(this.buildOptions, 'buildOptions is not defined');
     const { buildOptions } = this;
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
@@ -235,11 +236,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     for (const [functionAlias, fn] of Object.entries(functions)) {
       const currFn = fn as EsbuildFunctionDefinitionHandler;
       if (this.isFunctionDefinitionHandler(currFn) && this.isNodeFunction(currFn)) {
-        if (buildOptions) {
-          buildOptions.disposeContext = currFn.disposeContext ? currFn.disposeContext : buildOptions.disposeContext; // disposeContext configuration can be overridden per function
-          if (buildOptions.skipBuild && !buildOptions.skipBuildExcludeFns?.includes(functionAlias)) {
-            currFn.skipEsbuild = true;
-          }
+        buildOptions.disposeContext = currFn.disposeContext ? currFn.disposeContext : buildOptions.disposeContext; // disposeContext configuration can be overridden per function
+        if (buildOptions.skipBuild && !buildOptions.skipBuildExcludeFns?.includes(functionAlias)) {
+          currFn.skipEsbuild = true;
         }
 
         nodeFunctions[functionAlias] = currFn;

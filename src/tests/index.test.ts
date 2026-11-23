@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import fs from 'fs-extra';
 import type Serverless from 'serverless';
 import type Service from 'serverless/classes/Service';
@@ -51,6 +53,8 @@ const patternsService: Partial<Service> = {
   getFunction: mockGetFunction,
 };
 
+const workDir = path.join(__dirname, 'fixtures');
+
 const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless => {
   const service = {
     ...packageIndividuallyService,
@@ -64,8 +68,8 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   return {
     service,
     config: {
-      servicePath: '/workDir',
-      serviceDir: '/workDir',
+      servicePath: workDir,
+      serviceDir: workDir,
     },
     configSchemaHandler: {
       defineCustomProperties: vi.fn(),
@@ -88,22 +92,41 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
+/**
+ * Wraps a CommonJS module that exports a function in a `vi.fn` spy, so a native `require` of it
+ * (which `vi.mock` cannot intercept) returns the spy. The original export is restored after the test.
+ */
+const spyOnRequire = <T extends (...args: never[]) => unknown>(modulePath: string) => {
+  const resolvedPath = require.resolve(modulePath);
+  const original = require(resolvedPath) as T;
+  const spy = vi.fn(original);
+
+  require.cache[resolvedPath]!.exports = spy;
+  onTestFinished(() => {
+    require.cache[resolvedPath]!.exports = original;
+  });
+
+  return spy;
+};
+
 describe('Config file', () => {
   it('should apply options from an async config factory before initialization completes', async () => {
-    const config = jest.fn().mockResolvedValue({
-      outputBuildFolder: 'custom-build',
-      packagerOptions: { noInstall: true },
-    });
-    jest.doMock('/workDir/async-config.js', () => config, { virtual: true });
-
+    const config = spyOnRequire(path.join(workDir, 'async-config.js'));
     const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config.js' } } });
     const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
 
     await plugin.hooks.initialize?.();
 
     expect(config).toHaveBeenCalledWith(serverless);
-    expect(plugin.buildDirPath).toBe('/workDir/.esbuild/custom-build');
+    expect(plugin.buildDirPath).toBe(path.join(workDir, '.esbuild', 'custom-build'));
     expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
+  });
+
+  it('should fail initialization when an async config factory rejects', async () => {
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config-rejects.js' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await expect(plugin.hooks.initialize?.()).rejects.toThrow('config failed');
   });
 });
 
@@ -115,7 +138,10 @@ describe('Move Artifacts', () => {
 
     await plugin.moveArtifacts();
 
-    expect(fs.copy).toHaveBeenCalledWith('/workDir/.esbuild/.serverless', '/workDir/.serverless');
+    expect(fs.copy).toHaveBeenCalledWith(
+      path.join(workDir, '.esbuild', '.serverless'),
+      path.join(workDir, '.serverless')
+    );
   });
 
   describe('function option', () => {
