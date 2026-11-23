@@ -14,3 +14,7 @@ allowBuilds:
 
 patchedDependencies:
   mock-fs: patches/mock-fs.patch
+
+minimumReleaseAgeExclude:
+  - '@floydspace/eslint-config@1.38.1'
+  - '@floydspace/eslint-plugin@1.38.1'
