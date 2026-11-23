@@ -53,7 +53,7 @@ describe('utils/zip', () => {
       },
     ];
 
-    await expect(zip(zipPath, filesPathList)).rejects.toThrow("ENOENT, no such file or directory '/src/incorrect.txt'");
+    await expect(zip(zipPath, filesPathList)).rejects.toThrow('NotFound: FileSystem.copy (/src/incorrect.txt)');
   });
 
   it.each([{ useNativeZip: true }, { useNativeZip: false }])(

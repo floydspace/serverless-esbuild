@@ -1,30 +1,40 @@
-import { FileSystem, Error as PlatformError } from '@effect/platform';
-import { Effect } from 'effect';
+import { NodeFileSystem } from '@effect/platform-node';
+import { Context, Effect, FileSystem, Layer, PlatformError } from 'effect';
 import fs from 'fs-extra';
-import os from 'node:os';
-import path from 'node:path';
-
-const FS = Effect.serviceFunctions(FileSystem.FileSystem);
-
-export const makePath = (p: string) => FS.makeDirectory(p, { recursive: true });
-export const safeFileExists = (p: string) => FS.exists(p).pipe(Effect.orElseSucceed(() => false));
-export const safeFileRemove = (p: string) => FS.remove(p).pipe(Effect.orElse(() => Effect.void));
-export const makeTempPathScoped = (dirName: string) =>
-  Effect.acquireRelease(Effect.succeed(path.join(os.tmpdir(), dirName)).pipe(Effect.tap(makePath)), safeFileRemove);
 
 export const FSyncLayer = FileSystem.layerNoop({
   exists: (p) =>
     Effect.try({
       try: () => fs.existsSync(p),
       catch: (error) =>
-        PlatformError.SystemError({
+        PlatformError.systemError({
+          _tag: 'Unknown',
           module: 'FileSystem',
-          reason: 'Unknown',
           method: 'exists',
           pathOrDescriptor: p,
-          message: (error as Error).message,
+          description: (error as Error).message,
         }),
     }),
 });
 
-export default FS;
+export class FsUtils extends Context.Service<FsUtils>()('serverless-esbuild/FsUtils', {
+  make: Effect.gen(function* () {
+    const effectFs = yield* FileSystem.FileSystem;
+
+    const safeFileExists = (p: string) => effectFs.exists(p).pipe(Effect.orElseSucceed(() => false));
+
+    return {
+      copy: effectFs.copy,
+      makeTempDirectoryScoped: (prefix: string) => effectFs.makeTempDirectoryScoped({ prefix }),
+      makePath: (p: string) => effectFs.makeDirectory(p, { recursive: true }),
+      anyExists: (paths: string[]) =>
+        Effect.all(paths.map(safeFileExists)).pipe(Effect.map((found) => found.some(Boolean))),
+    };
+  }),
+}) {
+  /** Requires a `FileSystem` to be provided separately */
+  static readonly layerWithoutDependencies = Layer.effect(this, this.make);
+  static readonly layer = this.layerWithoutDependencies.pipe(Layer.provide(NodeFileSystem.layer));
+  /** Backed by synchronous `fs-extra` calls, so it can be run with `Effect.runSync` */
+  static readonly layerSync = this.layerWithoutDependencies.pipe(Layer.provide(FSyncLayer));
+}

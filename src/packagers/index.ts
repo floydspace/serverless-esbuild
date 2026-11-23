@@ -15,17 +15,17 @@ import type { Packager } from './packager';
 
 const packagerFactories: Record<PackagerId, (packagerOptions: PackagerOptions) => Promise<Packager>> = {
   async npm(packagerOptions: PackagerOptions) {
-    const { NPM } = await import('./npm');
+    const { NPM } = await import('./npm.js');
 
     return new NPM(packagerOptions);
   },
   async pnpm() {
-    const { Pnpm } = await import('./pnpm');
+    const { Pnpm } = await import('./pnpm.js');
 
     return new Pnpm();
   },
   async yarn(packagerOptions) {
-    const { Yarn } = await import('./yarn');
+    const { Yarn } = await import('./yarn.js');
 
     return new Yarn(packagerOptions);
   },

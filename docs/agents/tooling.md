@@ -3,7 +3,8 @@
 ## Versions
 
 - pnpm is pinned in `packageManager` (11.x). pnpm 11 requires Node >=22.13.
-- The plugin itself must still work on Node 18+ (see `engines` and the README), even though dev tooling needs 22.13+. Don't use newer-Node-only APIs in `src/`.
+- The plugin's `engines` is Node `>=20.19.0`, the first Node 20 release that can `require()` the ESM-only `effect` v4 (Node 18 cannot). Don't use newer-Node-only APIs in `src/`. Keep the README's Node requirement in sync.
+- `@effect/platform-node` 4.x declares `>=22.19.0` itself, but the plugin was verified with `sls package` on 20.19.1. CI only covers Node 22+ because pnpm 11 needs it, so Node 20 is checked by hand.
 - Stay on pnpm 11 unless the user asks to upgrade. pnpm 12 adds a second YAML "boot document" at the top of `pnpm-lock.yaml`, which dependency scanners may not read.
 - When you change the pnpm or Node requirement, update `CONTRIBUTING.md` (Prerequisites section) to match.
 
