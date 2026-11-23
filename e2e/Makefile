@@ -33,10 +33,13 @@ test-e2e-complete: build
 test-e2e-config: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/config && rsync -r ./examples/config/ ./.test-artifacts/config/
 	cd ./.test-artifacts/config && touch pnpm-workspace.yaml && pnpm install --config.strictDepBuilds=false && $(PATCH_REQUIRE) && npx sls package
+	cd ./.test-artifacts/config/.serverless && unzip hello1.zip && unzip hello2.zip
+	pnpm exec vitest run --project e2e e2e/config.test.ts
+	rm -fr ./.test-artifacts
 
 test-e2e-async-config: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/async-config && rsync -r ./examples/async-config/ ./.test-artifacts/async-config/
 	cd ./.test-artifacts/async-config && npm install && $(PATCH_REQUIRE) && npx sls package
 	cd ./.test-artifacts/async-config/.serverless && unzip async-config-example.zip
-	pnpm exec vitest run --project e2e e2e/async-config.test.ts
+	pnpm exec vitest run --project e2e e2e/config-async.test.ts
 	rm -fr ./.test-artifacts
