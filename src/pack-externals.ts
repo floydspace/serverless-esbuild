@@ -57,11 +57,28 @@ function addModulesToPackageJson(externalModules: string[], packageJson: JSONObj
   }, externalModules);
 }
 
+// npm can't install these outside the workspace that defines them, so use the installed module's version instead
+const WORKSPACE_ONLY_PROTOCOLS = ['catalog:', 'workspace:'];
+
+const isWorkspaceOnlyVersion = (version: string | undefined): version is string =>
+  !!version && WORKSPACE_ONLY_PROTOCOLS.some((protocol) => version.startsWith(protocol));
+
+export function getModuleVersion(
+  dependencyVersion: string | undefined,
+  installedVersion: string | undefined
+): string | undefined {
+  if (isWorkspaceOnlyVersion(dependencyVersion)) {
+    return installedVersion;
+  }
+
+  return dependencyVersion || installedVersion;
+}
+
 /**
  * Resolve the needed versions of production dependencies for external modules.
  * @this - The active plugin instance
  */
-function getProdModules(
+export function getProdModules(
   this: EsbuildServerlessPlugin,
   externalModules: { external: string }[],
   packageJsonPath: string,
@@ -144,7 +161,14 @@ function getProdModules(
     const modulePackage: Partial<PackageJSON> = modulePackagePath ? require(modulePackagePath) : {};
 
     // Get version
-    const moduleVersion = packageJson.dependencies?.[externalModule.external] || modulePackage.version;
+    const dependencyVersion = packageJson.dependencies?.[externalModule.external];
+    const moduleVersion = getModuleVersion(dependencyVersion, modulePackage.version);
+
+    if (isWorkspaceOnlyVersion(dependencyVersion) && !moduleVersion) {
+      this.log.warning(
+        `WARNING: Could not resolve '${dependencyVersion}' for '${externalModule.external}' because the module is not installed. The latest version will be packed instead.`
+      );
+    }
 
     // add dep with version if we have it - versionless otherwise
     prodModules.push(moduleVersion ? `${externalModule.external}@${moduleVersion}` : externalModule.external);

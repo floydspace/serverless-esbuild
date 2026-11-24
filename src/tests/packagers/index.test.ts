@@ -5,7 +5,7 @@ import type EsbuildServerlessPlugin from '../../index';
 describe('getPackager()', () => {
   const mockPlugin = {
     log: {
-      debug: jest.fn(),
+      debug: vi.fn(),
     },
   } as unknown as EsbuildServerlessPlugin;
 

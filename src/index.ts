@@ -121,7 +121,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     this.hooks = {
       initialize: async () => {
-        this.init();
+        await this.init();
         if (this.buildOptions?.skipBuild) {
           this.prepare();
           await this.copyPreBuiltResources();
@@ -188,8 +188,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     };
   }
 
-  private init() {
-    this.buildOptions = this.getBuildOptions();
+  private async init() {
+    this.buildOptions = await this.getBuildOptions();
     this.outputWorkFolder = this.buildOptions.outputWorkFolder || WORK_FOLDER;
     this.outputBuildFolder = this.buildOptions.outputBuildFolder || BUILD_FOLDER;
     this.packageOutputPath = this.options.package || SERVERLESS_FOLDER;
@@ -228,7 +228,8 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
         }
       : this.serverless.service.functions;
 
-    const buildOptions = this.getBuildOptions();
+    assert(this.buildOptions, 'buildOptions is not defined');
+    const { buildOptions } = this;
     // ignore all functions with a different runtime than nodejs:
     const nodeFunctions: Record<string, Serverless.FunctionDefinitionHandler> = {};
 
@@ -300,7 +301,7 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
     return { patterns, ignored };
   }
 
-  private getBuildOptions() {
+  private async getBuildOptions() {
     if (this.buildOptions) return this.buildOptions;
 
     const DEFAULT_BUILD_OPTIONS: Partial<Configuration> = {
@@ -355,9 +356,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return mod?.default ?? mod;
     })();    
 
-    return withResolvedOptions<Configuration>(
-      config ? config(this.serverless) : this.serverless.service.custom?.esbuild ?? {}
-    ) as Configuration;
+    const configOptions = config ? await config(this.serverless) : this.serverless.service.custom?.esbuild ?? {};
+
+    return withResolvedOptions<Configuration>(configOptions) as Configuration;
   }
 
   get functionEntries() {

@@ -12,7 +12,7 @@
 
 - Zero-config: Works out of the box without the need to install any additional plugins
 - Works with Typescript and Javascript projects
-- Guaranteed to work in Node.js v18 and higher environments
+- Requires Node.js v20.19 or higher
 - Supports `sls package`, `sls deploy`, `sls deploy function`
 - Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
@@ -94,6 +94,17 @@ See [example folder](examples) for some example configurations.
 | `skipBuildExcludeFns` | An array of lambda names that will always be rebuilt if `skipBuild` is set to `true` and bundling individually. This is helpful for dynamically generated functions like serverless-plugin-warmup. | `[]`                                                 |
 | `stripEntryResolveExtensions` | A boolean that determines if entrypoints using custom file extensions provided in the `resolveExtensions` ESbuild setting should be stripped of their custom extension upon packing the final bundle for that file. Example: `myLambda.custom.ts` would result in `myLambda.js` instead of `myLambda.custom.js`.
 | `disposeContext` | An option to disable the disposal of the context.(Functions can override the global `disposeContext` configuration by specifying their own `disposeContext` option in their individual configurations.) | `true`
+#### Bundle metafiles
+
+Enable esbuild metadata with `custom.esbuild.metafile: true`. The generated
+`<entry>-meta.json` files are included in deployment archives: individual function
+ZIPs contain their own metafile, while a shared service ZIP contains all metafiles.
+Metafiles for unrelated functions are excluded from individual packages.
+
+Set `custom.esbuild.keepOutputDirectory: true` to also keep the generated files in
+`.esbuild` after packaging. Metafiles inside deployment ZIPs count toward the
+deployment package size.
+
 #### Default Esbuild Options
 
 The following `esbuild` options are automatically set.
@@ -109,11 +120,11 @@ The following `esbuild` options are automatically set.
 
 #### Packager Options
 
-| Option           | Description                                                                                                                                                                        | Default     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `scripts`        | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn                                                                              | `undefined` |
-| `noInstall`      | [Yarn only] A boolean that deactivates the install step                                                                                                                            | `false`     |
-| `ignoreLockfile` | [Yarn only] A boolean to bypass lockfile validation, typically paired with `external` dependencies because we generate a new package.json with only the externalized dependencies. | `false`     |
+| Option           | Description                                                                                                                                                                             | Default     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `scripts`        | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn                                                                                   | `undefined` |
+| `noInstall`      | [Yarn only] A boolean that deactivates the install step                                                                                                                                 | `false`     |
+| `ignoreLockfile` | [Yarn, npm only] A boolean to bypass lockfile validation, typically paired with `external` dependencies because we generate a new package.json with only the externalized dependencies. | `false`     |
 
 #### Watch Options
 
@@ -137,6 +148,9 @@ This plugin will automatically set the esbuild `target` for the following suppor
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs26.x` | `node26` |
+| `nodejs24.x` | `node24` |
+| `nodejs22.x` | `node22` |
 | `nodejs20.x` | `node20` |
 | `nodejs18.x` | `node18` |
 | `nodejs16.x` | `node16` |
@@ -149,6 +163,8 @@ This plugin is compatible with the [serverless-google-cloudfunctions](https://gi
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs24`   | `node24` |
+| `nodejs22`   | `node22` |
 | `nodejs20`   | `node20` |
 | `nodejs18`   | `node18` |
 | `nodejs16`   | `node16` |
@@ -183,7 +199,7 @@ _Note:_ If you are using Python functions with Serverless Offline you will need 
 
 ### Config file
 
-Esbuild configuration can be defined by a config file.
+Esbuild configuration can be defined by a config file. The exported function can return the options directly or return a promise that resolves to them.
 
 ```yml
 custom:
@@ -348,6 +364,8 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
 - [`serverless-analyze-bundle-plugin`](https://github.com/adriencaccia/serverless-analyze-bundle-plugin): a plugin that allow users to analyze the bundle of a lambda
 
 ## Contributors
+
+Want to contribute? See the [contributing guide](CONTRIBUTING.md).
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->

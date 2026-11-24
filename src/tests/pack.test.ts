@@ -8,12 +8,12 @@ import type { EsbuildFunctionDefinitionHandler, FunctionBuildResult } from '../t
 import type EsbuildServerlessPlugin from '../index';
 import { SERVERLESS_FOLDER } from '../constants';
 
-jest.mock('globby');
-jest.mock('fs-extra');
-jest.mock('p-map');
+vi.mock('globby');
+vi.mock('fs-extra');
+vi.mock('p-map');
 
 const mockCli = {
-  log: jest.fn(),
+  log: vi.fn(),
 };
 
 describe('filterFilesForZipPackage', () => {
@@ -54,17 +54,117 @@ describe('filterFilesForZipPackage', () => {
 
 describe('pack', () => {
   beforeEach(() => {
-    jest.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
-    jest.mocked(globby).mockResolvedValue([]);
-    jest.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
+    vi.mocked(globby).sync.mockReturnValue(['hello1.js', 'hello2.js']);
+    vi.mocked(globby).mockResolvedValue([]);
+    vi.mocked(fs).statSync.mockReturnValue({ size: 123 } as fs.Stats);
 
-    jest.mocked(pMap).mockImplementation((entries, mapper) => {
+    vi.mocked(pMap).mockImplementation((entries, mapper) => {
       return Promise.all((entries as string[]).map((entry, index) => mapper(entry, index)));
     });
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+  });
+
+  describe('metafiles', () => {
+    function createPlugin(individually: boolean, metafile = true, extension = '.js'): EsbuildServerlessPlugin {
+      return {
+        buildResults: ['hello1', 'hello2'].map((name) => ({
+          bundlePath: `src/${name}${extension}`,
+          functionAlias: name,
+          func: { handler: `src/${name}.handler`, events: [], package: {} },
+        })),
+        serverless: {
+          service: { service: 'testApp', package: { individually } },
+          cli: mockCli,
+          getVersion: vi.fn().mockReturnValue('3.28.1'),
+        },
+        buildOptions: {
+          metafile,
+          packager: 'yarn',
+          exclude: ['aws-sdk'],
+          external: [],
+          nativeZip: false,
+          zipConcurrency: Infinity,
+        },
+        buildDirPath: '/workdir/.esbuild/.build',
+        workDirPath: '/workdir/.esbuild',
+        serviceDirPath: '/workdir',
+        log: { debug: vi.fn(), verbose: vi.fn() },
+      } as unknown as EsbuildServerlessPlugin;
+    }
+
+    it.each(['.js', '.mjs', '.cjs'])(
+      'should include only the owning function metafile with %s output',
+      async (extension) => {
+        vi.mocked(globby).sync.mockReturnValue([
+          `src/hello1${extension}`,
+          `src/hello1${extension}.map`,
+          'src/hello1-meta.json',
+          `src/hello2${extension}`,
+          `src/hello2${extension}.map`,
+          'src/hello2-meta.json',
+          'assets/user-meta.json',
+        ]);
+        const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+        await pack.call(createPlugin(true, true, extension));
+
+        for (const [index, name] of ['hello1', 'hello2'].entries()) {
+          expect(zipSpy.mock.calls[index]?.[1].map(({ localPath }) => localPath)).toEqual([
+            `src/${name}${extension}`,
+            `src/${name}${extension}.map`,
+            `src/${name}-meta.json`,
+            'assets/user-meta.json',
+          ]);
+        }
+      }
+    );
+
+    it('should retain all function metafiles in a shared service archive', async () => {
+      const files = ['src/hello1.js', 'src/hello1-meta.json', 'src/hello2.js', 'src/hello2-meta.json'];
+      vi.mocked(globby).sync.mockReturnValue(files);
+      const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(createPlugin(false));
+
+      expect(zipSpy).toHaveBeenCalledTimes(1);
+      expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual(files);
+    });
+
+    it('should retain the same metafile for functions sharing an entry point', async () => {
+      const files = ['src/hello1.js', 'src/hello1-meta.json'];
+      vi.mocked(globby).sync.mockReturnValue(files);
+      const plugin = createPlugin(true);
+      plugin.buildResults = plugin.buildResults?.map((result) => ({ ...result, bundlePath: 'src/hello1.js' }));
+      const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(plugin);
+
+      expect(zipSpy).toHaveBeenCalledTimes(2);
+      for (const [, entries] of zipSpy.mock.calls) {
+        expect(entries.map(({ localPath }) => localPath)).toEqual(files);
+      }
+    });
+
+    it('should not exclude similarly named application assets when metafile generation is disabled', async () => {
+      vi.mocked(globby).sync.mockReturnValue([
+        'src/hello1.js',
+        'src/hello1-meta.json',
+        'src/hello2.js',
+        'src/hello2-meta.json',
+      ]);
+      const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+      await pack.call(createPlugin(true, false));
+
+      expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual([
+        'src/hello1.js',
+        'src/hello1-meta.json',
+        'src/hello2-meta.json',
+      ]);
+    });
   });
 
   describe('individually', () => {
@@ -101,7 +201,7 @@ describe('pack', () => {
             },
           },
           cli: mockCli,
-          getVersion: jest.fn().mockReturnValue('3.28.1'),
+          getVersion: vi.fn().mockReturnValue('3.28.1'),
         },
         buildOptions: {
           zipConcurrency: Infinity,
@@ -114,17 +214,17 @@ describe('pack', () => {
         workDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/',
         serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
         log: {
-          error: jest.fn(),
-          warning: jest.fn(),
-          notice: jest.fn(),
-          info: jest.fn(),
-          debug: jest.fn(),
-          verbose: jest.fn(),
-          success: jest.fn(),
+          error: vi.fn(),
+          warning: vi.fn(),
+          notice: vi.fn(),
+          info: vi.fn(),
+          debug: vi.fn(),
+          verbose: vi.fn(),
+          success: vi.fn(),
         },
       } as unknown as EsbuildServerlessPlugin;
 
-      const zipSpy = jest.spyOn(utils, 'zip').mockResolvedValue();
+      const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
 
       await pack.call(esbuildPlugin);
 
@@ -173,7 +273,7 @@ describe('pack', () => {
             },
           },
           cli: mockCli,
-          getVersion: jest.fn().mockReturnValue('3.28.1'),
+          getVersion: vi.fn().mockReturnValue('3.28.1'),
         },
         buildOptions: {
           zipConcurrency: Infinity,
@@ -186,13 +286,13 @@ describe('pack', () => {
         workDirPath: '/workdir/serverless-esbuild/examples/individually/.esbuild/',
         serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
         log: {
-          error: jest.fn(),
-          warning: jest.fn(),
-          notice: jest.fn(),
-          info: jest.fn(),
-          debug: jest.fn(),
-          verbose: jest.fn(),
-          success: jest.fn(),
+          error: vi.fn(),
+          warning: vi.fn(),
+          notice: vi.fn(),
+          info: vi.fn(),
+          debug: vi.fn(),
+          verbose: vi.fn(),
+          success: vi.fn(),
         },
       } as unknown as EsbuildServerlessPlugin;
 
@@ -207,7 +307,7 @@ describe('pack', () => {
 
 describe('copyPreBuiltResources', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   function getMockEsbuildPlugin(bundleIndividually = true): EsbuildServerlessPlugin {
     return {
@@ -223,7 +323,7 @@ describe('copyPreBuiltResources', () => {
           },
         },
         cli: mockCli,
-        getVersion: jest.fn().mockReturnValue('3.28.1'),
+        getVersion: vi.fn().mockReturnValue('3.28.1'),
       },
       buildOptions: {
         zipConcurrency: Infinity,
@@ -237,13 +337,13 @@ describe('copyPreBuiltResources', () => {
       serviceDirPath: '/workdir/serverless-esbuild/examples/individually',
       packageOutputPath: '/workdir/serverless-esbuild/examples/minimal',
       log: {
-        error: jest.fn(),
-        warning: jest.fn(),
-        notice: jest.fn(),
-        info: jest.fn(),
-        debug: jest.fn(),
-        verbose: jest.fn(),
-        success: jest.fn(),
+        error: vi.fn(),
+        warning: vi.fn(),
+        notice: vi.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+        verbose: vi.fn(),
+        success: vi.fn(),
       },
     } as unknown as EsbuildServerlessPlugin;
   }

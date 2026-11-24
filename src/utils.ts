@@ -1,13 +1,11 @@
-import type { FileSystem } from '@effect/platform';
-import { NodeFileSystem } from '@effect/platform-node';
 import archiver from 'archiver';
 import { bestzip } from 'bestzip';
-import { type Cause, Effect, Option } from 'effect';
+import { Cause, Effect } from 'effect';
 import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
-import type { ESMPluginsModule, IFile, IFiles } from './types';
-import FS, { FSyncLayer, makePath, makeTempPathScoped, safeFileExists } from './utils/effect-fs';
+import type { ESMPluginsModule, IFiles } from './types';
+import { FsUtils } from './utils/effect-fs';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -36,16 +34,17 @@ const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
 const findUpEffect = (
   names: string[],
   directory = process.cwd()
-): Effect.Effect<string, Cause.NoSuchElementException, FileSystem.FileSystem> => {
-  const dir = path.resolve(directory);
-  return Effect.all(names.map((name) => safeFileExists(path.join(dir, name)))).pipe(
-    Effect.flatMap((exist) => {
-      if (exist.some(Boolean)) return Option.some(dir);
-      if (isPathRoot(dir)) return Option.none();
-      return findUpEffect(names, path.dirname(dir));
-    })
-  );
-};
+): Effect.Effect<string, Cause.NoSuchElementError, FsUtils> =>
+  Effect.gen(function* () {
+    const fsUtils = yield* FsUtils;
+    let current = path.resolve(directory);
+    while (true) {
+      const dir = current;
+      if (yield* fsUtils.anyExists(names.map((name) => path.join(dir, name)))) return dir;
+      if (isPathRoot(dir)) return yield* Effect.fail(new Cause.NoSuchElementError());
+      current = path.dirname(dir);
+    }
+  });
 
 /**
  * Find a file by walking up parent directories
@@ -53,7 +52,7 @@ const findUpEffect = (
 export const findUp = (name: string) =>
   findUpEffect([name]).pipe(
     Effect.orElseSucceed(() => undefined),
-    Effect.provide(FSyncLayer),
+    Effect.provide(FsUtils.layerSync),
     Effect.runSync
   );
 
@@ -61,10 +60,10 @@ export const findUp = (name: string) =>
  * Forwards `rootDir` or finds project root folder.
  */
 export const findProjectRoot = (rootDir?: string) =>
-  Effect.fromNullable(rootDir).pipe(
-    Effect.orElse(() => findUpEffect(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json'])),
+  Effect.fromNullishOr(rootDir).pipe(
+    Effect.catch(() => findUpEffect(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json'])),
     Effect.orElseSucceed(() => undefined),
-    Effect.provide(FSyncLayer),
+    Effect.provide(FsUtils.layerSync),
     Effect.runSync
   );
 
@@ -77,24 +76,26 @@ export const humanSize = (size: number) => {
 
 export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
   // create a temporary directory to hold the final zip structure
-  const tempDirName = `${path.basename(zipPath, path.extname(zipPath))}-${Date.now().toString()}`;
+  const baseName = path.basename(zipPath, path.extname(zipPath));
 
-  const copyFileEffect = (temp: string) => (file: IFile) => FS.copy(file.rootPath, path.join(temp, file.localPath));
-  const bestZipEffect = (temp: string) =>
-    Effect.tryPromise(() => bestzip({ source: '*', destination: zipPath, cwd: temp }));
-  const nodeZipEffect = Effect.tryPromise(() => nodeZip(zipPath, filesPathList));
+  const archiveEffect = Effect.gen(function* () {
+    const fsUtils = yield* FsUtils;
+    const temp = yield* fsUtils.makeTempDirectoryScoped(`${baseName}-`);
 
-  const archiveEffect = makeTempPathScoped(tempDirName).pipe(
     // copy all required files from origin path to (sometimes modified) target path
-    Effect.tap((temp) => Effect.all(filesPathList.map(copyFileEffect(temp)), { discard: true })),
+    yield* Effect.all(
+      filesPathList.map((file) => fsUtils.copy(file.rootPath, path.join(temp, file.localPath))),
+      { discard: true }
+    );
     // prepare zip folder
-    Effect.tap(() => makePath(path.dirname(zipPath))),
+    yield* fsUtils.makePath(path.dirname(zipPath));
     // zip the temporary directory
-    Effect.andThen((temp) => (useNativeZip ? bestZipEffect(temp) : nodeZipEffect)),
-    Effect.scoped
-  );
+    yield* Effect.tryPromise(() =>
+      useNativeZip ? bestzip({ source: '*', destination: zipPath, cwd: temp }) : nodeZip(zipPath, filesPathList)
+    );
+  }).pipe(Effect.scoped);
 
-  await archiveEffect.pipe(Effect.provide(NodeFileSystem.layer), Effect.runPromise);
+  await archiveEffect.pipe(Effect.provide(FsUtils.layer), Effect.runPromise);
 };
 
 function nodeZip(zipPath: string, filesPathList: IFiles): Promise<void> {

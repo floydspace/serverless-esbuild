@@ -1,0 +1,32 @@
+diff --git a/lib/index.js b/lib/index.js
+index fa3fca8ad2841b781eba0e395eb7a71a91bd6848..ccd338ba4384cea40b18420614c0c52da17b7035 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -101,6 +101,7 @@ function overrideCreateWriteStream() {
+ }
+ 
+ function overrideReadFileContext(binding) {
++  if (!readFileContextPrototype) return;
+   readFileContextPrototype._mockedBinding = binding;
+ }
+ 
+@@ -121,6 +122,7 @@ function restoreCreateWriteStream() {
+ }
+ 
+ function restoreReadFileContext(binding) {
++  if (!readFileContextPrototype) return;
+   delete readFileContextPrototype._mockedBinding;
+ }
+ 
+diff --git a/lib/readfilecontext.js b/lib/readfilecontext.js
+index 1b37620c5ec350040aab2f121c45e875e2669401..ba8c1474357cb9b8ab28dd28f5498266d70dbbb5 100644
+--- a/lib/readfilecontext.js
++++ b/lib/readfilecontext.js
+@@ -40,6 +40,7 @@ exports.getReadFileContextPrototype = function () {
+  * @param {object} prototype The ReadFileContext prototype object to patch.
+  */
+ exports.patchReadFileContext = function (prototype) {
++  if (!prototype) return;
+   const origRead = prototype.read;
+   const origClose = prototype.close;
+ 

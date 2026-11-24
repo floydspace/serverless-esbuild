@@ -231,13 +231,13 @@ export type ScalewayNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `node${Version}`]: `node${Version}`;
 };
 
-export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22>;
+export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24 | 26>;
 
 export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
+export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24>;
 
-export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
+export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22>;
 
 export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher & ScalewayNodeMatcher;
 
@@ -252,6 +252,8 @@ export type ScalewayNodeMatcherKey = keyof ScalewayNodeMatcher;
 export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey | ScalewayNodeMatcherKey;
 
 const awsNodeMatcher: AwsNodeMatcher = {
+  'nodejs26.x': 'node26',
+  'nodejs24.x': 'node24',
   'nodejs22.x': 'node22',
   'nodejs20.x': 'node20',
   'nodejs18.x': 'node18',
@@ -268,6 +270,8 @@ const azureNodeMatcher: AzureNodeMatcher = {
 };
 
 const googleNodeMatcher: GoogleNodeMatcher = {
+  nodejs24: 'node24',
+  nodejs22: 'node22',
   nodejs20: 'node20',
   nodejs18: 'node18',
   nodejs16: 'node16',
@@ -276,6 +280,7 @@ const googleNodeMatcher: GoogleNodeMatcher = {
 };
 
 const scalewayNodeMatcher: ScalewayNodeMatcher = {
+  node22: 'node22',
   node20: 'node20',
   node18: 'node18',
   node16: 'node16',

@@ -186,7 +186,12 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
 
-    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
+    const bundleExcludedFiles = bundlePathList
+      .filter((item) => !bundlePath.startsWith(item))
+      .map(trimExtension)
+      // Metafiles use a -meta suffix, unlike sourcemaps, so exclude them explicitly
+      // for other functions while retaining this function's own deployment metadata.
+      .flatMap((file) => (buildOptions.metafile ? [file, `${file}-meta`] : [file]));
 
     const functionPackagePatterns = func.package?.patterns || [];
 
