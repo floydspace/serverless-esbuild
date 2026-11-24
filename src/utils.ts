@@ -1,6 +1,7 @@
 import archiver from 'archiver';
 import { bestzip } from 'bestzip';
-import { Cause, Effect } from 'effect';
+import * as Cause from 'effect/Cause';
+import * as Effect from 'effect/Effect';
 import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';

@@ -1,5 +1,5 @@
 import assert, { AssertionError } from 'assert';
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import os from 'os';
 import path from 'path';
 

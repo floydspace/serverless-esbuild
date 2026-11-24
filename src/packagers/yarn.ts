@@ -1,4 +1,4 @@
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 import { satisfies } from 'semver';
 

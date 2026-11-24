@@ -1,4 +1,4 @@
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import { isEmpty, reduce, replace, split, startsWith } from 'ramda';
 
 import type { JSONObject } from '../types';
