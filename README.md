@@ -199,7 +199,7 @@ _Note:_ If you are using Python functions with Serverless Offline you will need 
 
 ### Config file
 
-Esbuild configuration can be defined by a config file.
+Esbuild configuration can be defined by a config file. The exported function can return the options directly or return a promise that resolves to them.
 
 ```yml
 custom:
