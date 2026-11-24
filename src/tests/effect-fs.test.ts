@@ -1,7 +1,8 @@
-import { Effect } from 'effect';
+import * as Effect from 'effect/Effect';
 
 import { FsUtils } from '../utils/effect-fs';
 
+// Fail if anything imports the root entry point: it re-exports NodeRedis, which requires the optional `redis` peer.
 vi.mock('@effect/platform-node', () => {
   throw new Error('The root entry point loads unrelated peer dependencies such as redis');
 });

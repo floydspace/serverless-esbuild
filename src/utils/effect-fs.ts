@@ -1,5 +1,9 @@
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import { Context, Effect, FileSystem, Layer, PlatformError } from 'effect';
+import * as Context from 'effect/Context';
+import * as Effect from 'effect/Effect';
+import * as FileSystem from 'effect/FileSystem';
+import * as Layer from 'effect/Layer';
+import * as PlatformError from 'effect/PlatformError';
 import fs from 'fs-extra';
 
 export const FSyncLayer = FileSystem.layerNoop({

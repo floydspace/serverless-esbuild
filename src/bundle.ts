@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import type { BuildOptions } from 'esbuild';
 import * as pkg from 'esbuild';
 import fs from 'fs-extra';

@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import path from 'node:path';
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import fs from 'fs-extra';
 import globby from 'globby';
 

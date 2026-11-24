@@ -1,4 +1,4 @@
-import { Predicate } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import { any, isEmpty, replace, split, startsWith, takeWhile } from 'ramda';
 import * as path from 'path';
 
