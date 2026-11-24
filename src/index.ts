@@ -349,7 +349,11 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     const configPath: string | undefined = this.serverless.service.custom?.esbuild?.config;
 
-    const config: ConfigFn | undefined = configPath ? require(path.join(this.serviceDirPath, configPath)) : undefined;
+    const config: ConfigFn | undefined = (() => {
+      if (!configPath) return undefined;
+      const mod = require(path.join(this.serviceDirPath, configPath));
+      return mod?.default ?? mod;
+    })();
 
     const configOptions = config ? await config(this.serverless) : this.serverless.service.custom?.esbuild ?? {};
 

@@ -122,6 +122,16 @@ describe('Config file', () => {
     expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
   });
 
+  it('should apply options from an ES module config with a default export', async () => {
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './esm-config.mjs' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await plugin.hooks.initialize?.();
+
+    expect(plugin.buildDirPath).toBe(path.join(workDir, '.esbuild', 'esm-build'));
+    expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
+  });
+
   it('should fail initialization when an async config factory rejects', async () => {
     const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config-rejects.js' } } });
     const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
