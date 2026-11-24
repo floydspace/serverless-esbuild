@@ -215,6 +215,18 @@ module.exports = (serverless) => ({
 });
 ```
 
+ES module config files with a default export are also supported (for example `esbuild.config.mjs`):
+
+```js
+// esbuild.config.mjs
+export default async (serverless) => ({
+  external: ['lodash'],
+  plugins: [],
+});
+```
+
+_Note:_ ES module config files are loaded with `require()`, so they cannot use top-level `await`.
+
 ### Including Extra Files
 
 [Serverless Package Configuration](https://www.serverless.com/framework/docs/providers/aws/guide/packaging#package-configuration) will behave in the same way as native packaging. You can use `patterns`, `include` and `exclude` to include extra files into your bundles.
