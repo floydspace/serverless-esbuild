@@ -1,4 +1,4 @@
-import { NodeFileSystem } from '@effect/platform-node';
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
 import { Context, Effect, FileSystem, Layer, PlatformError } from 'effect';
 import fs from 'fs-extra';
 
