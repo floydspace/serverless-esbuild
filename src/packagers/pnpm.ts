@@ -25,6 +25,7 @@ export class Pnpm implements Packager {
     // Get first level dependency graph
     const command = /^win/.test(process.platform) ? 'pnpm.cmd' : 'pnpm';
     const args = [
+      '--ignore-workspace',
       'ls',
       '--prod', // Only prod dependencies
       '--json',
