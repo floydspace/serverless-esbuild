@@ -286,8 +286,36 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Gleeble",
+      "name": "Adam Swift",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1588262?v=4",
+      "profile": "http://caffeinatedcoding.wordpress.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "fm-sz",
+      "name": "Florian Mayer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/119663527?v=4",
+      "profile": "https://github.com/fm-sz",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ZachLeviPixel",
+      "name": "Zach Levi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/131263652?v=4",
+      "profile": "https://github.com/ZachLeviPixel",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
-  "linkToUsage": false
+  "linkToUsage": false,
+  "commitType": "docs"
 }

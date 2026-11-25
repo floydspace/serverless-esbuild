@@ -1,0 +1,8 @@
+service: no-functions-example
+
+plugins:
+  - serverless-esbuild
+
+provider:
+  name: aws
+  runtime: nodejs18.x

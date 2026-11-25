@@ -1,4 +1,5 @@
 import assert, { AssertionError } from 'assert';
+import * as Predicate from 'effect/Predicate';
 import os from 'os';
 import path from 'path';
 
@@ -9,16 +10,16 @@ import { uniq } from 'ramda';
 
 import type Serverless from 'serverless';
 import type ServerlessPlugin from 'serverless/classes/Plugin';
-import type { Configuration, DependencyMap, FunctionEntry } from './types';
+import type { Configuration, DependencyMap, FunctionEntry, IFile } from './types';
+import type { EsbuildFunctionDefinitionHandler } from './types';
+import { DEFAULT_EXTENSIONS } from './constants';
 
 export function asArray<T>(data: T | T[]): T[] {
   return Array.isArray(data) ? data : [data];
 }
 
-export const isString = (input: unknown): input is string => typeof input === 'string';
-
 export function assertIsString(input: unknown, message = 'input is not a string'): asserts input is string {
-  if (!isString(input)) {
+  if (!Predicate.isString(input)) {
     throw new AssertionError({ message, actual: input });
   }
 }
@@ -26,7 +27,8 @@ export function assertIsString(input: unknown, message = 'input is not a string'
 export function extractFunctionEntries(
   cwd: string,
   provider: string,
-  functions: Record<string, Serverless.FunctionDefinitionHandler>
+  functions: Record<string, Serverless.FunctionDefinitionHandler>,
+  resolveExtensions?: string[]
 ): FunctionEntry[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
@@ -54,46 +56,50 @@ export function extractFunctionEntries(
     }
   }
 
-  return Object.keys(functions).map((functionAlias) => {
-    const func = functions[functionAlias];
+  return Object.keys(functions)
+    .filter((functionAlias) => {
+      return !(functions[functionAlias] as EsbuildFunctionDefinitionHandler).skipEsbuild;
+    })
+    .map((functionAlias) => {
+      const func = functions[functionAlias] as EsbuildFunctionDefinitionHandler;
+      assert(func, `${functionAlias} not found in functions`);
 
-    assert(func, `${functionAlias} not found in functions`);
+      const { handler, esbuildEntrypoint } = func;
+      const entrypoint = esbuildEntrypoint || handler;
 
-    const { handler } = func;
-    const fnName = path.extname(handler);
-    const fnNameLastAppearanceIndex = handler.lastIndexOf(fnName);
-    // replace only last instance to allow the same name for file and handler
-    const fileName = handler.substring(0, fnNameLastAppearanceIndex);
+      const fnName = path.extname(entrypoint);
+      const fnNameLastAppearanceIndex = entrypoint.lastIndexOf(fnName);
+      // replace only last instance to allow the same name for file and handler
+      const fileName = entrypoint.substring(0, fnNameLastAppearanceIndex);
 
-    const extensions = ['.ts', '.js', '.jsx', '.tsx'];
+      const extensions = resolveExtensions ?? DEFAULT_EXTENSIONS;
 
-    for (const extension of extensions) {
-      // Check if the .{extension} files exists. If so return that to watch
-      if (fs.existsSync(path.join(cwd, fileName + extension))) {
-        const entry = path.relative(cwd, fileName + extension);
+      for (const extension of extensions) {
+        // Check if the .{extension} files exists. If so return that to watch
+        if (fs.existsSync(path.join(cwd, fileName + extension))) {
+          const entry = path.relative(cwd, fileName + extension);
 
-        return {
-          func,
-          functionAlias,
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
-        };
+          return {
+            func,
+            functionAlias,
+            entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          };
+        }
+        if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
+          const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
+
+          return {
+            func,
+            functionAlias,
+            entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          };
+        }
       }
-      if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
-        const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
-
-        return {
-          func,
-          functionAlias,
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
-        };
-      }
-    }
-
-    // Can't find the files. Watch will have an exception anyway. So throw one with error.
-    throw new Error(
-      `Compilation failed for function alias ${functionAlias}. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json`
-    );
-  });
+      // Can't find the files. Watch will have an exception anyway. So throw one with error.
+      throw new Error(
+        `Compilation failed for function alias ${functionAlias}. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json`
+      );
+    });
 }
 
 /**
@@ -181,8 +187,13 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
   // There are properties at runtime that do not exist in the `acorn.Node` type.
   simpleWalk(ast, {
     CallExpression(node: any) {
-      if (node.callee.name === 'require') {
-        deps.push(node.arguments[0].value);
+      // esbuild rewrites `require` to `__require` when bundling CJS code into an ESM output
+      if (node.callee.name === 'require' || node.callee.name === '__require') {
+        const [arg] = node.arguments;
+
+        if (typeof arg?.value === 'string') {
+          deps.push(arg.value);
+        }
       }
     },
     ImportExpression(node: any) {
@@ -193,7 +204,7 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
     },
   });
 
-  const baseDeps = deps.map(getBaseDep).filter(isString);
+  const baseDeps = deps.map(getBaseDep).filter(Predicate.isString);
 
   return uniq(baseDeps);
 };
@@ -225,13 +236,13 @@ export type ScalewayNodeProviderRuntimeMatcher<Versions extends number> = {
   [Version in Versions as `node${Version}`]: `node${Version}`;
 };
 
-export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24 | 26>;
 
 export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
 
-export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24>;
 
-export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20>;
+export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22>;
 
 export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher & ScalewayNodeMatcher;
 
@@ -246,6 +257,10 @@ export type ScalewayNodeMatcherKey = keyof ScalewayNodeMatcher;
 export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey | ScalewayNodeMatcherKey;
 
 const awsNodeMatcher: AwsNodeMatcher = {
+  'nodejs26.x': 'node26',
+  'nodejs24.x': 'node24',
+  'nodejs22.x': 'node22',
+  'nodejs20.x': 'node20',
   'nodejs18.x': 'node18',
   'nodejs16.x': 'node16',
   'nodejs14.x': 'node14',
@@ -260,6 +275,9 @@ const azureNodeMatcher: AzureNodeMatcher = {
 };
 
 const googleNodeMatcher: GoogleNodeMatcher = {
+  nodejs24: 'node24',
+  nodejs22: 'node22',
+  nodejs20: 'node20',
   nodejs18: 'node18',
   nodejs16: 'node16',
   nodejs14: 'node14',
@@ -267,6 +285,7 @@ const googleNodeMatcher: GoogleNodeMatcher = {
 };
 
 const scalewayNodeMatcher: ScalewayNodeMatcher = {
+  node22: 'node22',
   node20: 'node20',
   node18: 'node18',
   node16: 'node16',
@@ -309,3 +328,18 @@ export const buildServerlessV3LoggerFromLegacyLogger = (
   verbose: legacyLogger.log.bind(legacyLogger),
   success: legacyLogger.log.bind(legacyLogger),
 });
+
+export const stripEntryResolveExtensions = (file: IFile, extensions: string[]): IFile => {
+  const resolveExtensionMatch = file.localPath.match(extensions.map((ext) => ext).join('|'));
+
+  if (resolveExtensionMatch?.length && !DEFAULT_EXTENSIONS.includes(resolveExtensionMatch[0])) {
+    const extensionParts = resolveExtensionMatch[0].split('.');
+
+    return {
+      ...file,
+      localPath: file.localPath.replace(resolveExtensionMatch[0], `.${extensionParts[extensionParts.length - 1]}`),
+    };
+  }
+
+  return file;
+};

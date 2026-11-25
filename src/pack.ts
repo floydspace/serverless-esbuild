@@ -9,12 +9,12 @@ import semver from 'semver';
 import type Serverless from 'serverless';
 
 import { ONLY_PREFIX, SERVERLESS_FOLDER } from './constants';
-import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM } from './helper';
+import { assertIsString, doSharePath, flatDep, getDepsFromBundle, isESM, stripEntryResolveExtensions } from './helper';
 import { getPackager } from './packagers';
 import { humanSize, trimExtension, zip } from './utils';
 
 import type EsbuildServerlessPlugin from './index';
-import type { FunctionBuildResult, IFiles } from './types';
+import type { EsbuildFunctionDefinitionHandler, FunctionBuildResult, FunctionReference, IFiles } from './types';
 
 function setFunctionArtifactPath(
   this: EsbuildServerlessPlugin,
@@ -114,7 +114,16 @@ export async function pack(this: EsbuildServerlessPlugin) {
       onlyFiles: true,
     })
     .filter((file) => !excludedFiles.includes(file))
-    .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }));
+    .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }))
+    .map((file) => {
+      if (this.buildOptions?.resolveExtensions && this.buildOptions.resolveExtensions.length > 0) {
+        if (this.buildOptions.stripEntryResolveExtensions) {
+          return stripEntryResolveExtensions(file, this.buildOptions.resolveExtensions);
+        }
+      }
+
+      return file;
+    });
 
   if (isEmpty(files)) {
     this.log.verbose('Packaging: No files found. Skipping esbuild.');
@@ -177,7 +186,12 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;
 
-    const bundleExcludedFiles = bundlePathList.filter((item) => !bundlePath.startsWith(item)).map(trimExtension);
+    const bundleExcludedFiles = bundlePathList
+      .filter((item) => !bundlePath.startsWith(item))
+      .map(trimExtension)
+      // Metafiles use a -meta suffix, unlike sourcemaps, so exclude them explicitly
+      // for other functions while retaining this function's own deployment metadata.
+      .flatMap((file) => (buildOptions.metafile ? [file, `${file}-meta`] : [file]));
 
     const functionPackagePatterns = func.package?.patterns || [];
 
@@ -221,7 +235,6 @@ export async function pack(this: EsbuildServerlessPlugin) {
       }));
 
     const startZip = Date.now();
-    this.log.verbose(`Starting to zip function: ${functionAlias}`);
     await zip(artifactPath, filesPathList, buildOptions.nativeZip);
     const { size } = fs.statSync(artifactPath);
     this.log.verbose(`Function zipped: ${functionAlias} - ${humanSize(size)} [${Date.now() - startZip} ms]`);
@@ -233,4 +246,45 @@ export async function pack(this: EsbuildServerlessPlugin) {
   this.log.verbose(`Zipping with concurrency: ${buildOptions.zipConcurrency}`);
   await pMap(buildResults, zipMapper, { concurrency: buildOptions.zipConcurrency });
   this.log.verbose('All functions zipped.');
+}
+
+export async function copyPreBuiltResources(this: EsbuildServerlessPlugin) {
+  this.log.verbose('Copying Prebuilt resources');
+
+  const { workDirPath, packageOutputPath } = this;
+
+  assertIsString(workDirPath, 'workDirPath is not a string');
+  assertIsString(packageOutputPath, 'packageOutputPath is not a string');
+
+  // 1) If individually is not set, just zip the all build dir and return
+  if (!this.serverless?.service?.package?.individually) {
+    const zipName = `${this.serverless.service.service}.zip`;
+    await fs.copy(path.join(packageOutputPath, zipName), path.join(workDirPath, SERVERLESS_FOLDER, zipName));
+    // defined present zip as output artifact
+    this.serverless.service.package.artifact = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
+
+    return;
+  }
+
+  // get a list of every function bundle
+  const buildResults = Object.entries(this.functions)
+    .filter(([functionAlias, func]) => func && functionAlias)
+    .map(([functionAlias, func]) => ({ func, functionAlias })) as FunctionReference[];
+
+  assert(buildResults, 'buildResults is not an array');
+  const zipMapper = async (buildResult: FunctionReference) => {
+    const { func, functionAlias } = buildResult;
+
+    if ((func as EsbuildFunctionDefinitionHandler).skipEsbuild) {
+      const zipName = `${functionAlias}.zip`;
+      const artifactPath = path.join(workDirPath, SERVERLESS_FOLDER, zipName);
+
+      // defined present zip as output artifact
+      await fs.copy(path.join(packageOutputPath, zipName), artifactPath);
+      setFunctionArtifactPath.call(this, func, path.relative(this.serviceDirPath, artifactPath));
+    }
+  };
+
+  await pMap(buildResults, zipMapper, {});
+  this.log.verbose('All functions copied.');
 }

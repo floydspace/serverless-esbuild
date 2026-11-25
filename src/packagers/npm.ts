@@ -1,10 +1,10 @@
+import * as Predicate from 'effect/Predicate';
 import { any, isEmpty, replace, split, startsWith, takeWhile } from 'ramda';
 import * as path from 'path';
 
-import type { DependenciesResult, DependencyMap, JSONObject } from '../types';
+import type { DependenciesResult, DependencyMap, JSONObject, PackagerOptions } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
-import { isString } from '../helper';
 
 type NpmV7Map = Record<string, NpmV7Tree>;
 
@@ -90,6 +90,12 @@ export interface NpmV6Deps {
  * NPM packager.
  */
 export class NPM implements Packager {
+  private packagerOptions: PackagerOptions;
+
+  constructor(packagerOptions: PackagerOptions) {
+    this.packagerOptions = packagerOptions;
+  }
+
   get lockfileName() {
     return 'package-lock.json';
   }
@@ -131,7 +137,7 @@ export class NPM implements Packager {
       prodFlag, // Only prod dependencies
       '-long',
       depth ? `-depth=${depth}` : noDepthFlag,
-    ].filter(isString);
+    ].filter(Predicate.isString);
 
     const ignoredNpmErrors: Array<{
       npmError: string;
@@ -269,10 +275,10 @@ export class NPM implements Packager {
     return lockfile;
   }
 
-  async install(cwd: string, extraArgs: Array<string>) {
+  async install(cwd: string, extraArgs: Array<string>, useLockfile: boolean) {
     const command = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
 
-    const args = ['install', ...extraArgs];
+    const args = [!this.packagerOptions.ignoreLockfile && useLockfile ? 'ci' : 'install', ...extraArgs];
 
     await spawnProcess(command, args, { cwd });
   }
