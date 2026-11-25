@@ -522,7 +522,14 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     const { service } = this.serverless;
 
-    await fs.copy(path.join(this.workDirPath, SERVERLESS_FOLDER), path.join(this.serviceDirPath, SERVERLESS_FOLDER));
+    const builtArtifactsPath = path.join(this.workDirPath, SERVERLESS_FOLDER);
+
+    // nothing was built (e.g. the service has no functions to bundle)
+    if (!(await fs.pathExists(builtArtifactsPath))) {
+      return;
+    }
+
+    await fs.copy(builtArtifactsPath, path.join(this.serviceDirPath, SERVERLESS_FOLDER));
 
     if (service.package.individually === true || this.options.function) {
       Object.values(this.functions).forEach((func) => {
@@ -535,7 +542,9 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       return;
     }
 
-    service.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(service.package.artifact));
+    if (service.package.artifact) {
+      service.package.artifact = path.join(SERVERLESS_FOLDER, path.basename(service.package.artifact));
+    }
   }
 
   async disposeContexts(): Promise<void> {
