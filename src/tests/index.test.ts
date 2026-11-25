@@ -141,6 +141,10 @@ describe('Config file', () => {
 });
 
 describe('Move Artifacts', () => {
+  beforeEach(() => {
+    vi.mocked(fs.pathExists).mockImplementation(async () => true);
+  });
+
   it('should copy files from the esbuild folder to the serverless folder', async () => {
     const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
 
@@ -381,6 +385,54 @@ describe('Prepare', () => {
       await plugin.hooks.initialize?.();
       expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();
       expect(prepareSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('packaging a service without function entries', () => {
+    const emptyService = (overrides?: Partial<Service>) =>
+      mockServerlessConfig({
+        functions: {},
+        package: {},
+        provider: mockProvider,
+        getFunction: mockGetFunction,
+        ...overrides,
+      });
+
+    it.each([
+      ['non-individual', {}],
+      ['individual', { individually: true }],
+    ])('should not fail when packaging (%s)', async (_, packageConfig) => {
+      const plugin = new EsbuildServerlessPlugin(emptyService({ package: packageConfig }), mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => false);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['before:package:createDeploymentArtifacts']?.();
+      await expect(plugin.hooks['after:package:createDeploymentArtifacts']?.()).resolves.not.toThrow();
+
+      expect(fs.copy).not.toHaveBeenCalled();
+    });
+
+    it('should leave a user-provided artifact untouched when nothing was built', async () => {
+      const serverless = emptyService({ package: { artifact: 'custom/artifact.zip' } });
+      const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => false);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['after:package:createDeploymentArtifacts']?.();
+
+      expect(serverless.service.package.artifact).toBe('custom/artifact.zip');
+    });
+
+    it('should still move prebuilt artifacts when they exist', async () => {
+      const serverless = emptyService({ package: { artifact: '/abs/.esbuild/.serverless/service.zip' } });
+      const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => true);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['after:package:createDeploymentArtifacts']?.();
+
+      expect(fs.copy).toHaveBeenCalled();
+      expect(serverless.service.package.artifact).toBe(path.join('.serverless', 'service.zip'));
     });
   });
 });
