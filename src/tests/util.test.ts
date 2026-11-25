@@ -1,11 +1,19 @@
+import { unzipSync } from 'fflate';
 import fs from 'fs-extra';
 import mockFs from 'mock-fs';
 import path from 'path';
-import extract from 'extract-zip';
 import globby from 'globby';
 import crypto from 'crypto';
 
 import { findProjectRoot, zip } from '../utils';
+
+// Replacement for `extract-zip`. Sync fs calls because async reads bypass `mock-fs` on newer Node versions.
+const extract = async (source: string, options: { dir: string }): Promise<void> => {
+  Object.entries(unzipSync(fs.readFileSync(source))).forEach(([name, content]) => {
+    if (name.endsWith('/')) return;
+    fs.outputFileSync(path.join(path.resolve(options.dir), name), content);
+  });
+};
 
 describe('utils/findProjectRoot', () => {
   it('should properly Find a Project Root.', () => {
@@ -45,13 +53,11 @@ describe('utils/zip', () => {
       },
     ];
 
-    await expect(zip(zipPath, filesPathList)).rejects.toThrowError(
-      "ENOENT, no such file or directory '/src/incorrect.txt'"
-    );
+    await expect(zip(zipPath, filesPathList)).rejects.toThrow('NotFound: FileSystem.copy (/src/incorrect.txt)');
   });
 
   it.each([{ useNativeZip: true }, { useNativeZip: false }])(
-    'should properly archive files when useNativeZip=$useNativeZip.',
+    'should properly archive files when useNativeZip=$useNativeZip',
     async ({ useNativeZip }) => {
       const source = '/src';
       const destination = '/dist';

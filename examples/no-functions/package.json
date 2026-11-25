@@ -1,0 +1,9 @@
+{
+  "name": "no-functions",
+  "version": "0.1.0",
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "serverless": "^3.22.0",
+    "serverless-esbuild": "file:../.."
+  }
+}

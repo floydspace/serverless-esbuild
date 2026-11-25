@@ -1,0 +1,21 @@
+service: async-config-example
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+custom:
+  esbuild:
+    config: './config.js'
+
+functions:
+  hello:
+    handler: handler.handler
+    events:
+      - http:
+          path: hello
+          method: get

@@ -12,6 +12,7 @@
 
 - Zero-config: Works out of the box without the need to install any additional plugins
 - Works with Typescript and Javascript projects
+- Requires Node.js v20.19 or higher
 - Supports `sls package`, `sls deploy`, `sls deploy function`
 - Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 
@@ -28,6 +29,7 @@
 - [Advanced Configuration](#advanced-configuration)
   - [Including Extra Files](#including-extra-files)
   - [External Dependencies](#external-dependencies)
+  - [Dependencies in a layer](#dependencies-in-a-layer)
   - [Esbuild Plugins](#esbuild-plugins)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
@@ -72,23 +74,37 @@ See [example folder](examples) for some example configurations.
 
 ### Options
 
-| Option                | Description                                                                                                                                                                | Default                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Esbuild Options       | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api).                                                               | [Default Esbuild Options](#default-esbuild-options) |
-| `concurrency`         | The number of concurrent bundle operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                  | `Infinity`                                          |
-| `zipConcurrency`      | The number of concurrent zip operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                     | `Infinity`                                          |
-| `disableIncremental`  | Disables the use of esbuild `incremental` compilation.                                                                                                                     | `false`                                             |
-| `exclude`             | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                       | `['aws-sdk']`                                       |
-| `installExtraArgs`    | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior | `[]`                                                |
-| `keepOutputDirectory` | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                  | `false`                                             |
-| `nativeZip`           | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.   | `false`                                             |
-| `outputBuildFolder`   | The output folder for Esbuild builds within the work folder. You will also need to manually override the watch ignore config if used.                                      | `'.build'`                                          |
-| `outputWorkFolder`    | The output folder for this plugin where all the bundle preparation is done. You will also need to manually override the watch ignore config if used.                       | `'.esbuild'`                                        |
-| `outputFileExtension` | The file extension used for the bundled output file. This will override the esbuild `outExtension` option                                                                  | `'.js'`                                             |
-| `packagePath`         | Path to the `package.json` file for `external` dependency resolution.                                                                                                      | `'./package.json'`                                  |
-| `packager`            | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                        | `'npm'`                                             |
-| `packagerOptions`     | Extra options for packagers for `external` dependency resolution.                                                                                                          | [Packager Options](#packager-options)               |
-| `watch`               | Watch options for `serverless-offline`.                                                                                                                                    | [Watch Options](#watch-options)                     |
+| Option                 | Description                                                                                                                                                                                        | Default                                             |
+|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| Esbuild Options        | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api).                                                                                       | [Default Esbuild Options](#default-esbuild-options) |
+| `concurrency`          | The number of concurrent bundle operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                                          | `Infinity`                                          |
+| `zipConcurrency`       | The number of concurrent zip operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                                             | `Infinity`                                          |
+| `exclude`              | An array of dependencies to exclude from the Lambda. Named packages are passed to the esbuild `external` option and are left out of the packed dependencies, together with the dependencies only they bring in. Set to `*` to bundle everything and skip packaging `node_modules`. For dependencies provided by a layer, see [Dependencies in a layer](#dependencies-in-a-layer) | `['aws-sdk']`                                       |
+| `installExtraArgs`     | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior                         | `[]`                                                |
+| `keepOutputDirectory`  | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                                          | `false`                                             |
+| `nativeZip`            | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.                           | `false`                                             |
+| `outputBuildFolder`    | The output folder for Esbuild builds within the work folder. You will also need to manually override the watch ignore config if used.                                                              | `'.build'`                                          |
+| `outputWorkFolder`     | The output folder for this plugin where all the bundle preparation is done. You will also need to manually override the watch ignore config if used.                                               | `'.esbuild'`                                        |
+| `outputFileExtension`  | The file extension used for the bundled output file. This will override the esbuild `outExtension` option                                                                                          | `'.js'`                                             |
+| `packagePath`          | Path to the `package.json` file for `external` dependency resolution.                                                                                                                              | `'./package.json'`                                  |
+| `packager`             | Packager to use for `external` dependency resolution. Values: `npm`, `yarn`, `pnpm`                                                                                                                | `'npm'`                                             |
+| `packagerOptions`      | Extra options for packagers for `external` dependency resolution.                                                                                                                                  | [Packager Options](#packager-options)               |
+| `watch`                | Watch options for `serverless-offline`.                                                                                                                                                            | [Watch Options](#watch-options)                     |
+| `skipBuild`            | Avoid rebuilding lambda artifacts in favor of reusing previous build artifacts.                                                                                                                    | `false`                                             |
+| `skipRebuild`          | A boolean defining whether rebuild is avoided. Generally rebuild produces faster builds but in some context scenarios with many lambdas or low memory computer (like Github Actions) it can cause memory leaks.                                    | `false`                                             |
+| `skipBuildExcludeFns` | An array of lambda names that will always be rebuilt if `skipBuild` is set to `true` and bundling individually. This is helpful for dynamically generated functions like serverless-plugin-warmup. | `[]`                                                 |
+| `stripEntryResolveExtensions` | A boolean that determines if entrypoints using custom file extensions provided in the `resolveExtensions` ESbuild setting should be stripped of their custom extension upon packing the final bundle for that file. Example: `myLambda.custom.ts` would result in `myLambda.js` instead of `myLambda.custom.js`.
+| `disposeContext` | An option to disable the disposal of the context.(Functions can override the global `disposeContext` configuration by specifying their own `disposeContext` option in their individual configurations.) | `true`
+#### Bundle metafiles
+
+Enable esbuild metadata with `custom.esbuild.metafile: true`. The generated
+`<entry>-meta.json` files are included in deployment archives: individual function
+ZIPs contain their own metafile, while a shared service ZIP contains all metafiles.
+Metafiles for unrelated functions are excluded from individual packages.
+
+Set `custom.esbuild.keepOutputDirectory: true` to also keep the generated files in
+`.esbuild` after packaging. Metafiles inside deployment ZIPs count toward the
+deployment package size.
 
 #### Default Esbuild Options
 
@@ -98,19 +114,18 @@ The following `esbuild` options are automatically set.
 | ------------- | ---------- | ---------------------------------------------------------------------- |
 | `bundle`      | `true`     | Esbuild requires this for use with `external`                          |
 | `entryPoints` | N/A        | Cannot be overridden                                                   |
-| `incremental` | N/A        | Cannot be overridden. Use `disableIncremental` to disable it           |
 | `outDir`      | N/A        | Cannot be overridden                                                   |
 | `platform`    | `'node'`   | Set `format` to `esm` to enable ESM support                            |
-| `target`      | `'node16'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
+| `target`      | `'node18'` | We dynamically set this. See [Supported Runtimes](#supported-runtimes) |
 | `watch`       | N/A        | Cannot be overridden                                                   |
 
 #### Packager Options
 
-| Option           | Description                                                                                                                                                                        | Default     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `scripts`        | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn                                                                              | `undefined` |
-| `noInstall`      | [Yarn only] A boolean that deactivates the install step                                                                                                                            | `false`     |
-| `ignoreLockfile` | [Yarn only] A boolean to bypass lockfile validation, typically paired with `external` dependencies because we generate a new package.json with only the externalized dependencies. | `false`     |
+| Option           | Description                                                                                                                                                                             | Default     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `scripts`        | A string or array of scripts to be executed, currently only supports 'scripts' for npm, pnpm and yarn                                                                                   | `undefined` |
+| `noInstall`      | [Yarn only] A boolean that deactivates the install step                                                                                                                                 | `false`     |
+| `ignoreLockfile` | [Yarn, npm only] A boolean to bypass lockfile validation, typically paired with `external` dependencies because we generate a new package.json with only the externalized dependencies. | `false`     |
 
 #### Watch Options
 
@@ -130,14 +145,32 @@ The following `esbuild` options are automatically set.
 
 This plugin will automatically set the esbuild `target` for the following supported Serverless runtimes:
 
-###AWS 
+### AWS 
 
 | Runtime      | Target   |
 | ------------ | -------- |
+| `nodejs26.x` | `node26` |
+| `nodejs24.x` | `node24` |
+| `nodejs22.x` | `node22` |
+| `nodejs20.x` | `node20` |
 | `nodejs18.x` | `node18` |
 | `nodejs16.x` | `node16` |
 | `nodejs14.x` | `node14` |
 | `nodejs12.x` | `node12` |
+
+### Google
+
+This plugin is compatible with the [serverless-google-cloudfunctions](https://github.com/serverless/serverless-google-cloudfunctions) plugin, and will set the runtimes accordingly.
+
+| Runtime      | Target   |
+| ------------ | -------- |
+| `nodejs24`   | `node24` |
+| `nodejs22`   | `node22` |
+| `nodejs20`   | `node20` |
+| `nodejs18`   | `node18` |
+| `nodejs16`   | `node16` |
+| `nodejs14`   | `node14` |
+| `nodejs12`   | `node12` |
 
 ### Azure
 
@@ -167,7 +200,7 @@ _Note:_ If you are using Python functions with Serverless Offline you will need 
 
 ### Config file
 
-Esbuild configuration can be defined by a config file.
+Esbuild configuration can be defined by a config file. The exported function can return the options directly or return a promise that resolves to them.
 
 ```yml
 custom:
@@ -182,6 +215,18 @@ module.exports = (serverless) => ({
   plugins: [],
 });
 ```
+
+ES module config files with a default export are also supported (for example `esbuild.config.mjs`):
+
+```js
+// esbuild.config.mjs
+export default async (serverless) => ({
+  external: ['lodash'],
+  plugins: [],
+});
+```
+
+_Note:_ ES module config files are loaded with `require()`, so they cannot use top-level `await`.
 
 ### Including Extra Files
 
@@ -217,6 +262,24 @@ custom:
       - 'my-package-name'
       - 'another-package-name'
 ```
+
+### Dependencies in a layer
+
+If your dependencies are provided by a Lambda layer, list them in `exclude`, so they are neither bundled nor packed. Your own code is still bundled:
+
+```yml
+custom:
+  esbuild:
+    exclude:
+      - lodash
+      - my-package-name
+```
+
+Be careful with `*`:
+
+- `exclude: '*'` bundles everything, including your dependencies, and packs nothing.
+- `external: '*'` bundles nothing and packs nothing. Esbuild also treats relative imports such as `./util` as external, so your own files are left out of the zip and the function fails at runtime. Use it only if the whole handler is a single file.
+- An explicit `external` list is not overridden by `exclude: '*'`, so those packages would end up neither bundled nor packed.
 
 ### Esbuild Plugins
 
@@ -266,6 +329,16 @@ module.exports = (serverless) => {
 ### Automatic compilation
 
 As long as the plugin is properly installed, all regular Serverless operations `sls package`, `sls deploy`, `sls deploy function`, `sls invoke local`, `sls offline` will automatically compile using `serverless-esbuild`.
+
+### Specify a custom entrypoint for a function
+
+You can specify a custom entrypoint for ESBuild by specifying the `esbuildEntrypoint` field in your function definition.
+```typescript
+export const myLambdaFunction = {
+  handler: '/opt/nodejs/node_modules/my_custom_extension/handler.handler',
+  esbuildEntrypoint: './handler.main',
+};
+```
 
 ### Serverless Offline
 
@@ -323,6 +396,8 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
 
 ## Contributors
 
+Want to contribute? See the [contributing guide](CONTRIBUTING.md).
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -361,6 +436,12 @@ This plugin supports the Serverless [Invoke Local](https://www.serverless.com/fr
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/koryhutchison"><img src="https://avatars.githubusercontent.com/u/22381273?v=4?s=70" width="70px;" alt="Kory Hutchison"/><br /><sub><b>Kory Hutchison</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=koryhutchison" title="Code">💻</a> <a href="#ideas-koryhutchison" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.chrishutchinson.me"><img src="https://avatars.githubusercontent.com/u/1573022?v=4?s=70" width="70px;" alt="Chris Hutchinson"/><br /><sub><b>Chris Hutchinson</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=chrishutchinson" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://fredrikmollerstrand.se"><img src="https://avatars.githubusercontent.com/u/12793?v=4?s=70" width="70px;" alt="Fredrik Möllerstrand"/><br /><sub><b>Fredrik Möllerstrand</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=fredrik" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://thisisfashion.tv"><img src="https://avatars.githubusercontent.com/u/19397354?v=4?s=70" width="70px;" alt="Sander Kooger"/><br /><sub><b>Sander Kooger</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=sanderkooger" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://caffeinatedcoding.wordpress.com"><img src="https://avatars.githubusercontent.com/u/1588262?v=4?s=70" width="70px;" alt="Adam Swift"/><br /><sub><b>Adam Swift</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=Gleeble" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fm-sz"><img src="https://avatars.githubusercontent.com/u/119663527?v=4?s=70" width="70px;" alt="Florian Mayer"/><br /><sub><b>Florian Mayer</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=fm-sz" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ZachLeviPixel"><img src="https://avatars.githubusercontent.com/u/131263652?v=4?s=70" width="70px;" alt="Zach Levi"/><br /><sub><b>Zach Levi</b></sub></a><br /><a href="https://github.com/floydspace/serverless-esbuild/commits?author=ZachLeviPixel" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

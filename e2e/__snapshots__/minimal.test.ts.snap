@@ -1,10 +1,14 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`minimal 1`] = `
 ""use strict";
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 
 // node_modules/i18n-iso-countries/codes.json
@@ -14227,7 +14231,7 @@ exports[`minimal 5`] = `
           "Arn",
         ],
       },
-      "Runtime": "nodejs12.x",
+      "Runtime": "nodejs18.x",
       "Timeout": 6,
     },
     "Type": "AWS::Lambda::Function",
@@ -14269,16 +14273,6 @@ exports[`minimal 5`] = `
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "ValidateIsinLambdaVersionEpft2h1OOZyD03CU8JMaqcj3Xcth3KeWrSuKw8G2UQ": {
-    "DeletionPolicy": "Retain",
-    "Properties": {
-      "CodeSha256": Any<String>,
-      "FunctionName": {
-        "Ref": "ValidateIsinLambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
   "ValidateIsinLogGroup": {
     "Properties": {
       "LogGroupName": "/aws/lambda/minimal-example-dev-validateIsin",
@@ -14300,5 +14294,18 @@ exports[`minimal 6`] = `
     "StageName": "dev",
   },
   "Type": "AWS::ApiGateway::Deployment",
+}
+`;
+
+exports[`minimal 7`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "ValidateIsinLambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
 }
 `;

@@ -34,8 +34,18 @@ test('individually', () => {
     s.startsWith('ApiGatewayDeployment')
   ) as keyof typeof cloudformation.Resources;
 
-  const { [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment, ...deterministicResources } =
-    cloudformation.Resources;
+  const hello1LambdaVersionPropertyKey = cloudformation.Outputs.Hello1LambdaFunctionQualifiedArn.Value
+    .Ref as keyof typeof cloudformation.Resources;
+
+  const hello2LambdaVersionPropertyKey = cloudformation.Outputs.Hello2LambdaFunctionQualifiedArn.Value
+    .Ref as keyof typeof cloudformation.Resources;
+
+  const {
+    [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment,
+    [hello1LambdaVersionPropertyKey]: hello1LambdaVersion,
+    [hello2LambdaVersionPropertyKey]: hello2LambdaVersion,
+    ...deterministicResources
+  } = cloudformation.Resources;
 
   expect(deterministicResources).toMatchSnapshot({
     Hello1LambdaFunction: {
@@ -48,13 +58,13 @@ test('individually', () => {
         Code: { S3Key: expect.stringContaining('hello2.zip') },
       },
     },
-    [Object.keys(deterministicResources).find((s) => s.startsWith('Hello1LambdaVersion')) as string]: {
-      Properties: { CodeSha256: expect.any(String) },
-    },
-    [Object.keys(deterministicResources).find((s) => s.startsWith('Hello2LambdaVersion')) as string]: {
-      Properties: { CodeSha256: expect.any(String) },
-    },
   });
 
   expect(apiGatewayDeployment).toMatchSnapshot();
+  expect(hello1LambdaVersion).toMatchSnapshot({
+    Properties: { CodeSha256: expect.any(String) },
+  });
+  expect(hello2LambdaVersion).toMatchSnapshot({
+    Properties: { CodeSha256: expect.any(String) },
+  });
 });

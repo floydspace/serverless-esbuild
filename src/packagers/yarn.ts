@@ -1,10 +1,10 @@
+import * as Predicate from 'effect/Predicate';
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
 import { satisfies, valid as isValidSemver } from 'semver';
 
 import type { DependenciesResult, DependencyMap, PackagerOptions } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
 import type { Packager } from './packager';
-import { isString } from '../helper';
 
 interface YarnTree {
   name: string;
@@ -87,7 +87,7 @@ export class Yarn implements Packager {
 
   async getProdDependencies(cwd: string, depth?: number): Promise<DependenciesResult> {
     const command = /^win/.test(process.platform) ? 'yarn.cmd' : 'yarn';
-    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(isString);
+    const args = ['list', depth ? `--depth=${depth}` : null, '--json', '--production'].filter(Predicate.isString);
 
     // If we need to ignore some errors add them here
     const ignoredYarnErrors: Array<{

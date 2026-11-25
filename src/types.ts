@@ -2,10 +2,15 @@ import type { WatchOptions } from 'chokidar';
 import type { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import type Serverless from 'serverless';
 
-export type ConfigFn = (sls: Serverless) => Configuration;
+export type ConfigFn = (sls: Serverless) => Partial<Configuration> | Promise<Partial<Configuration>>;
 
 export type Plugins = Plugin[];
 export type ReturnPluginsFn = (sls: Serverless) => Plugins;
+export type ESMPluginsModule = { default: Plugins | ReturnPluginsFn };
+
+export interface ImprovedServerlessOptions extends Serverless.Options {
+  package?: string;
+}
 
 export interface WatchConfiguration {
   pattern?: string[] | string;
@@ -37,15 +42,21 @@ export interface Configuration extends EsbuildOptions {
   installExtraArgs: string[];
   plugins?: string | Plugin[];
   keepOutputDirectory?: boolean;
-  disableIncremental?: boolean;
   outputWorkFolder?: string;
   outputBuildFolder?: string;
   outputFileExtension: '.js' | '.cjs' | '.mjs';
   nodeExternals?: NodeExternalsOptions;
+  skipBuild?: boolean;
+  skipRebuild?: boolean;
+  skipBuildExcludeFns: string[];
+  stripEntryResolveExtensions?: boolean;
+  disposeContext?: boolean;
 }
 
 export interface EsbuildFunctionDefinitionHandler extends Serverless.FunctionDefinitionHandler {
+  disposeContext?: boolean;
   skipEsbuild: boolean;
+  esbuildEntrypoint?: string;
 }
 
 export interface FunctionEntry {
@@ -54,8 +65,11 @@ export interface FunctionEntry {
   functionAlias?: string;
 }
 
-export interface FunctionBuildResult {
+export interface FunctionBuildResult extends FunctionReference {
   bundlePath: string;
+}
+
+export interface FunctionReference {
   func: Serverless.FunctionDefinitionHandler;
   functionAlias: string;
 }
@@ -116,7 +130,7 @@ export interface BuildContext {
 /** Documentation: https://esbuild.github.io/api/#serve-return-values */
 interface ServeResult {
   port: number;
-  host: string;
+  hosts: string[];
 }
 
 export type JSONObject = any;

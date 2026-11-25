@@ -1,23 +1,26 @@
+import path from 'node:path';
+
 import fs from 'fs-extra';
 import type Serverless from 'serverless';
 import type Service from 'serverless/classes/Service';
 
 import EsbuildServerlessPlugin from '../index';
+import type { ImprovedServerlessOptions } from '../types';
 
-jest.mock('fs-extra');
+vi.mock('fs-extra');
 
 const mockProvider: Service['provider'] = {
   name: 'aws',
   region: 'us-east-1',
   stage: 'dev',
-  runtime: 'nodejs12.x',
+  runtime: 'nodejs18.x',
   compiledCloudFormationTemplate: {
     Resources: {},
   },
   versionFunctions: true,
 };
 
-const mockGetFunction = jest.fn();
+const mockGetFunction = vi.fn();
 
 const packageIndividuallyService: Partial<Service> = {
   functions: {
@@ -50,6 +53,8 @@ const patternsService: Partial<Service> = {
   getFunction: mockGetFunction,
 };
 
+const workDir = path.join(__dirname, 'fixtures');
+
 const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless => {
   const service = {
     ...packageIndividuallyService,
@@ -57,44 +62,100 @@ const mockServerlessConfig = (serviceOverride?: Partial<Service>): Serverless =>
   } as Service;
 
   const mockCli = {
-    log: jest.fn(),
+    log: vi.fn(),
   };
 
   return {
     service,
     config: {
-      servicePath: '/workDir',
+      servicePath: workDir,
+      serviceDir: workDir,
     },
     configSchemaHandler: {
-      defineCustomProperties: jest.fn(),
-      defineFunctionEvent: jest.fn(),
-      defineFunctionEventProperties: jest.fn(),
-      defineFunctionProperties: jest.fn(),
-      defineProvider: jest.fn(),
-      defineTopLevelProperty: jest.fn(),
+      defineCustomProperties: vi.fn(),
+      defineFunctionEvent: vi.fn(),
+      defineFunctionEventProperties: vi.fn(),
+      defineFunctionProperties: vi.fn(),
+      defineProvider: vi.fn(),
+      defineTopLevelProperty: vi.fn(),
     },
     cli: mockCli,
   } as Partial<Serverless> as Serverless;
 };
 
-const mockOptions: Serverless.Options = {
+const mockOptions: ImprovedServerlessOptions = {
   region: 'us-east-1',
   stage: 'dev',
 };
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
+});
+
+/**
+ * Wraps a CommonJS module that exports a function in a `vi.fn` spy, so a native `require` of it
+ * (which `vi.mock` cannot intercept) returns the spy. The original export is restored after the test.
+ */
+const spyOnRequire = <T extends (...args: never[]) => unknown>(modulePath: string) => {
+  const resolvedPath = require.resolve(modulePath);
+  const original = require(resolvedPath) as T;
+  const spy = vi.fn(original);
+
+  require.cache[resolvedPath]!.exports = spy;
+  onTestFinished(() => {
+    require.cache[resolvedPath]!.exports = original;
+  });
+
+  return spy;
+};
+
+describe('Config file', () => {
+  it('should apply options from an async config factory before initialization completes', async () => {
+    const config = spyOnRequire(path.join(workDir, 'async-config.js'));
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config.js' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await plugin.hooks.initialize?.();
+
+    expect(config).toHaveBeenCalledWith(serverless);
+    expect(plugin.buildDirPath).toBe(path.join(workDir, '.esbuild', 'custom-build'));
+    expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
+  });
+
+  it('should apply options from an ES module config with a default export', async () => {
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './esm-config.mjs' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await plugin.hooks.initialize?.();
+
+    expect(plugin.buildDirPath).toBe(path.join(workDir, '.esbuild', 'esm-build'));
+    expect(plugin.buildOptions?.packagerOptions).toEqual({ noInstall: true, ignoreLockfile: false });
+  });
+
+  it('should fail initialization when an async config factory rejects', async () => {
+    const serverless = mockServerlessConfig({ custom: { esbuild: { config: './async-config-rejects.js' } } });
+    const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+
+    await expect(plugin.hooks.initialize?.()).rejects.toThrow('config failed');
+  });
 });
 
 describe('Move Artifacts', () => {
+  beforeEach(() => {
+    vi.mocked(fs.pathExists).mockImplementation(async () => true);
+  });
+
   it('should copy files from the esbuild folder to the serverless folder', async () => {
     const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
 
-    plugin.hooks.initialize?.();
+    await plugin.hooks.initialize?.();
 
     await plugin.moveArtifacts();
 
-    expect(fs.copy).toBeCalledWith('/workDir/.esbuild/.serverless', '/workDir/.serverless');
+    expect(fs.copy).toHaveBeenCalledWith(
+      path.join(workDir, '.esbuild', '.serverless'),
+      path.join(workDir, '.serverless')
+    );
   });
 
   describe('function option', () => {
@@ -105,7 +166,7 @@ describe('Move Artifacts', () => {
         function: 'hello1',
       });
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -127,7 +188,7 @@ describe('Move Artifacts', () => {
     it('should update function package artifacts base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -162,7 +223,7 @@ describe('Move Artifacts', () => {
         mockOptions
       );
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -187,6 +248,8 @@ describe('Move Artifacts', () => {
     });
 
     it('should skip function if skipEsbuild is set to true', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+
       const hello3 = { handler: 'hello3.handler', events: [], skipEsbuild: true };
       const plugin = new EsbuildServerlessPlugin(
         mockServerlessConfig({
@@ -197,7 +260,7 @@ describe('Move Artifacts', () => {
         }),
         mockOptions
       );
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -217,8 +280,45 @@ describe('Move Artifacts', () => {
               "artifact": ".serverless/hello2",
             },
           },
+          "hello3": {
+            "events": [],
+            "handler": "hello3.handler",
+            "skipEsbuild": true,
+          },
         }
       `);
+
+      expect(plugin.functionEntries).toEqual(
+        expect.arrayContaining([
+          {
+            entry: expect.stringContaining('/hello1.ts'),
+            func: {
+              events: [],
+              handler: 'hello1.handler',
+              package: {
+                artifact: '.serverless/hello1',
+              },
+            },
+            functionAlias: 'hello1',
+          },
+          {
+            entry: expect.stringContaining('/hello2.ts'),
+            func: {
+              events: [],
+              handler: 'hello2.handler',
+              package: {
+                artifact: '.serverless/hello2',
+              },
+            },
+            functionAlias: 'hello2',
+          },
+        ])
+      );
+      expect(plugin.functionEntries).not.toContain(
+        expect.objectContaining({
+          functionAlias: 'hello3',
+        })
+      );
     });
   });
 
@@ -226,7 +326,7 @@ describe('Move Artifacts', () => {
     it('should update the service package artifact base path to the serverless folder', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(packageService), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       await plugin.moveArtifacts();
 
@@ -237,10 +337,10 @@ describe('Move Artifacts', () => {
 
 describe('Prepare', () => {
   describe('function package', () => {
-    it('should set package patterns on functions only if supplied', () => {
+    it('should set package patterns on functions only if supplied', async () => {
       const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(patternsService), mockOptions);
 
-      plugin.hooks.initialize?.();
+      await plugin.hooks.initialize?.();
 
       plugin.prepare();
 
@@ -267,6 +367,72 @@ describe('Prepare', () => {
           },
         }
       `);
+    });
+
+    it('should copy the previous build resources if skipBuild is true', async () => {
+      const skipBuildServerlessConfig = {
+        ...patternsService,
+        custom: {
+          esbuild: {
+            skipBuild: true,
+          },
+        },
+      };
+      const plugin = new EsbuildServerlessPlugin(mockServerlessConfig(skipBuildServerlessConfig), mockOptions);
+      const copyPreBuiltResourcesSpy = vi.spyOn(plugin, 'copyPreBuiltResources');
+      const prepareSpy = vi.spyOn(plugin, 'prepare');
+
+      await plugin.hooks.initialize?.();
+      expect(copyPreBuiltResourcesSpy).toHaveBeenCalled();
+      expect(prepareSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('packaging a service without function entries', () => {
+    const emptyService = (overrides?: Partial<Service>) =>
+      mockServerlessConfig({
+        functions: {},
+        package: {},
+        provider: mockProvider,
+        getFunction: mockGetFunction,
+        ...overrides,
+      });
+
+    it.each([
+      ['non-individual', {}],
+      ['individual', { individually: true }],
+    ])('should not fail when packaging (%s)', async (_, packageConfig) => {
+      const plugin = new EsbuildServerlessPlugin(emptyService({ package: packageConfig }), mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => false);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['before:package:createDeploymentArtifacts']?.();
+      await expect(plugin.hooks['after:package:createDeploymentArtifacts']?.()).resolves.not.toThrow();
+
+      expect(fs.copy).not.toHaveBeenCalled();
+    });
+
+    it('should leave a user-provided artifact untouched when nothing was built', async () => {
+      const serverless = emptyService({ package: { artifact: 'custom/artifact.zip' } });
+      const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => false);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['after:package:createDeploymentArtifacts']?.();
+
+      expect(serverless.service.package.artifact).toBe('custom/artifact.zip');
+    });
+
+    it('should still move prebuilt artifacts when they exist', async () => {
+      const serverless = emptyService({ package: { artifact: '/abs/.esbuild/.serverless/service.zip' } });
+      const plugin = new EsbuildServerlessPlugin(serverless, mockOptions);
+      vi.mocked(fs.pathExists).mockImplementation(async () => true);
+
+      await plugin.hooks.initialize?.();
+      await plugin.hooks['after:package:createDeploymentArtifacts']?.();
+
+      expect(fs.copy).toHaveBeenCalled();
+      expect(serverless.service.package.artifact).toBe(path.join('.serverless', 'service.zip'));
     });
   });
 });

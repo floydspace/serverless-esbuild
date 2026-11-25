@@ -7,21 +7,19 @@ import { bundle } from '../bundle';
 import type { Configuration, FunctionBuildResult, FunctionEntry } from '../types';
 import type EsbuildServerlessPlugin from '../index';
 
-jest.mock('esbuild');
-jest.mock('p-map');
+vi.mock('esbuild');
+vi.mock('p-map');
 
 const getBuild = async () => {
-  const pkg: any = await import('esbuild');
-  if (pkg.context) return pkg.context;
   return build;
 };
 
 const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServerlessPlugin =>
   ({
-    prepare: jest.fn(),
+    prepare: vi.fn(),
     serverless: {
       cli: {
-        log: jest.fn(),
+        log: vi.fn(),
       },
       classes: {
         Error,
@@ -46,25 +44,25 @@ const esbuildPlugin = (override?: Partial<EsbuildServerlessPlugin>): EsbuildServ
     buildDirPath: '/workdir/.esbuild',
     functionEntries: [],
     log: {
-      error: jest.fn(),
-      warning: jest.fn(),
-      notice: jest.fn(),
-      info: jest.fn(),
-      debug: jest.fn(),
-      verbose: jest.fn(),
-      success: jest.fn(),
+      error: vi.fn(),
+      warning: vi.fn(),
+      notice: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      verbose: vi.fn(),
+      success: vi.fn(),
     },
     ...override,
   } as PartialDeep<EsbuildServerlessPlugin> as EsbuildServerlessPlugin);
 
 beforeEach(() => {
-  jest.mocked(pMap).mockImplementation((entries, mapper) => {
+  vi.mocked(pMap).mockImplementation((entries, mapper) => {
     return Promise.all((entries as string[]).map((entry, index) => mapper(entry, index)));
   });
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
 });
 
 it('should call esbuild only once when functions share the same entry', async () => {
@@ -90,7 +88,7 @@ it('should call esbuild only once when functions share the same entry', async ()
   await bundle.call(esbuildPlugin({ functionEntries }));
 
   const proxy = await getBuild();
-  expect(proxy).toBeCalledTimes(1);
+  expect(proxy).toHaveBeenCalledTimes(1);
 });
 
 it('should only call esbuild multiple times when functions have different entries', async () => {
@@ -116,7 +114,7 @@ it('should only call esbuild multiple times when functions have different entrie
   await bundle.call(esbuildPlugin({ functionEntries }));
 
   const proxy = await getBuild();
-  expect(proxy).toBeCalledTimes(2);
+  expect(proxy).toHaveBeenCalledTimes(2);
 });
 
 it('should set buildResults after compilation is complete', async () => {
@@ -175,7 +173,7 @@ it('should set the concurrency for pMap with the concurrency specified', async (
 
   await bundle.call(plugin);
 
-  expect(pMap).toBeCalledWith(expect.any(Array), expect.any(Function), {
+  expect(pMap).toHaveBeenCalledWith(expect.any(Array), expect.any(Function), {
     concurrency: Infinity,
   });
 });
@@ -200,7 +198,6 @@ it('should filter out non esbuild options', async () => {
     bundle: true,
     entryPoints: ['file1.ts'],
     external: ['aws-sdk'],
-    incremental: false,
     outdir: '/workdir/.esbuild',
     platform: 'node',
     plugins: [],
@@ -208,10 +205,8 @@ it('should filter out non esbuild options', async () => {
   };
 
   const proxy = await getBuild();
-  const pkg: any = await import('esbuild');
-  if (pkg.context) delete config.incremental;
 
-  expect(proxy).toBeCalledWith(config);
+  expect(proxy).toHaveBeenCalledWith(config);
 });
 
 describe('buildOption platform node', () => {

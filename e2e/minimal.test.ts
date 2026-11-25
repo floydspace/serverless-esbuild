@@ -26,8 +26,14 @@ test('minimal', () => {
     s.startsWith('ApiGatewayDeployment')
   ) as keyof typeof cloudformation.Resources;
 
-  const { [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment, ...deterministicResources } =
-    cloudformation.Resources;
+  const validateIsinLambdaVersionPropertyKey = cloudformation.Outputs.ValidateIsinLambdaFunctionQualifiedArn.Value
+    .Ref as keyof typeof cloudformation.Resources;
+
+  const {
+    [apiGatewayDeploymentPropertyKey]: apiGatewayDeployment,
+    [validateIsinLambdaVersionPropertyKey]: validateIsinLambdaVersion,
+    ...deterministicResources
+  } = cloudformation.Resources;
 
   expect(deterministicResources).toMatchSnapshot({
     ValidateIsinLambdaFunction: {
@@ -35,10 +41,10 @@ test('minimal', () => {
         Code: { S3Key: expect.stringContaining('minimal-example.zip') },
       },
     },
-    [Object.keys(deterministicResources).find((s) => s.startsWith('ValidateIsinLambdaVersion')) as string]: {
-      Properties: { CodeSha256: expect.any(String) },
-    },
   });
 
   expect(apiGatewayDeployment).toMatchSnapshot();
+  expect(validateIsinLambdaVersion).toMatchSnapshot({
+    Properties: { CodeSha256: expect.any(String) },
+  });
 });
