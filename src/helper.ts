@@ -187,8 +187,13 @@ export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[]
   // There are properties at runtime that do not exist in the `acorn.Node` type.
   simpleWalk(ast, {
     CallExpression(node: any) {
-      if (node.callee.name === 'require') {
-        deps.push(node.arguments[0].value);
+      // esbuild rewrites `require` to `__require` when bundling CJS code into an ESM output
+      if (node.callee.name === 'require' || node.callee.name === '__require') {
+        const [arg] = node.arguments;
+
+        if (typeof arg?.value === 'string') {
+          deps.push(arg.value);
+        }
       }
     },
     ImportExpression(node: any) {
