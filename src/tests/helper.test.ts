@@ -464,6 +464,17 @@ describe('getDepsFromBundle', () => {
       );
       expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['package1', 'package2', 'package3']);
     });
+
+    it('should extract deps from the __require shim esbuild emits for CJS code in ESM output', () => {
+      vi.mocked(fs).readFileSync.mockReturnValue(
+        `
+        var __require = (x) => require(x);
+        var { Client } = __require("ssh2");
+        import "package1";
+        `
+      );
+      expect(getDepsFromBundle(inputPath, true)).toStrictEqual(['ssh2', 'package1']);
+    });
   });
 });
 
