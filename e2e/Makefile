@@ -2,7 +2,7 @@
 export COREPACK_ENABLE_STRICT=0
 export SKIP_YARN_COREPACK_CHECK=1
 
-test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config test-e2e-async-config test-e2e-no-functions
+test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config test-e2e-async-config test-e2e-no-functions test-e2e-exclude
 
 PATCH_REQUIRE = sed -i.bak "s/ERR_REQUIRE_ESM/ERR_REQUIRE_ESM' || error.code === 'ERR_REQUIRE_ASYNC_MODULE/" node_modules/serverless/lib/utils/require-with-import-fallback.js
 
@@ -48,4 +48,11 @@ test-e2e-no-functions: build
 	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/no-functions && rsync -r ./examples/no-functions/ ./.test-artifacts/no-functions/
 	cd ./.test-artifacts/no-functions && npm install && $(PATCH_REQUIRE) && npx sls package
 	pnpm exec vitest run --project e2e e2e/no-functions.test.ts
+	rm -fr ./.test-artifacts
+
+test-e2e-exclude: build
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/exclude && rsync -r ./examples/exclude/ ./.test-artifacts/exclude/
+	cd ./.test-artifacts/exclude && npm install && $(PATCH_REQUIRE) && npx sls package
+	cd ./.test-artifacts/exclude/.serverless && unzip hello.zip
+	pnpm exec vitest run --project e2e e2e/exclude.test.ts
 	rm -fr ./.test-artifacts

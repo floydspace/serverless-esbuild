@@ -168,9 +168,11 @@ export async function pack(this: EsbuildServerlessPlugin) {
   const bundlePathList = buildResults.map((results) => results.bundlePath);
 
   let externals: string[] = [];
+  let excludedDeps: string[] = [];
 
   // get the list of externals to include only if exclude is not set to *
   if (this.buildOptions.exclude !== '*' && !this.buildOptions.exclude.includes('*')) {
+    excludedDeps = this.buildOptions.exclude;
     externals = without<string>(this.buildOptions.exclude, this.buildOptions.external ?? []);
   }
 
@@ -212,7 +214,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       const bundleDeps = getDepsFromBundle(path.join(buildDirPath, bundlePath), isESM(buildOptions));
       const bundleExternals = intersection(bundleDeps, externals);
 
-      depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals, buildOptions.exclude);
+      depWhiteList = flatDep(packagerDependenciesList.dependencies, bundleExternals, excludedDeps);
     }
 
     const zipName = `${functionAlias}.zip`;

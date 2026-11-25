@@ -105,17 +105,20 @@ export function extractFunctionEntries(
 /**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
  * @param root the root of the dependency tree
- * @param rootDeps array of top level root dependencies to whitelist
+ * @param rootDepsFilter array of top level root dependencies to whitelist
+ * @param excludes dependencies to leave out, together with the dependencies only they bring in.
  */
-export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes: '*' | string[]): string[] => {
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes: string[] = []): string[] => {
   const flattenedDependencies = new Set<string>();
+
+  const excluded = new Set(excludes);
 
   /**
    *
    * @param deps the current tree
    * @param filter the dependencies to get from this tree
    */
-  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[], excludes?: '*' | string[]) => {
+  const recursiveFind = (deps: DependencyMap | undefined, filter?: string[]) => {
     if (!deps) return;
 
     Object.entries(deps).forEach(([depName, details]) => {
@@ -124,9 +127,14 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes:
         return;
       }
 
+      // excluded dependencies are skipped together with everything they would bring in
+      if (excluded.has(depName)) {
+        return;
+      }
+
       if (details.isRootDep || filter) {
         // We already have this root dep and it's dependencies - skip this iteration
-        if (flattenedDependencies.has(depName) || (excludes && excludes !== '*' && excludes.includes(depName))) {
+        if (flattenedDependencies.has(depName)) {
           return;
         }
 
@@ -145,7 +153,7 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes:
     });
   };
 
-  recursiveFind(root, rootDepsFilter, excludes);
+  recursiveFind(root, rootDepsFilter);
 
   return Array.from(flattenedDependencies);
 };
