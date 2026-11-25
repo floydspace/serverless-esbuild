@@ -29,6 +29,7 @@
 - [Advanced Configuration](#advanced-configuration)
   - [Including Extra Files](#including-extra-files)
   - [External Dependencies](#external-dependencies)
+  - [Dependencies in a layer](#dependencies-in-a-layer)
   - [Esbuild Plugins](#esbuild-plugins)
 - [Usage](#usage)
   - [Automatic Compilation](#automatic-compilation)
@@ -78,7 +79,7 @@ See [example folder](examples) for some example configurations.
 | Esbuild Options        | This plugin can take almost any [Esbuild Javascript Build Option](https://esbuild.github.io/api/#build-api).                                                                                       | [Default Esbuild Options](#default-esbuild-options) |
 | `concurrency`          | The number of concurrent bundle operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                                          | `Infinity`                                          |
 | `zipConcurrency`       | The number of concurrent zip operations to run at once. eg. `8`. _NOTE_: This can be memory intensive and could produce slower builds.                                                             | `Infinity`                                          |
-| `exclude`              | An array of dependencies to exclude from the Lambda. This is passed to the esbuild `external` option. Set to `*` to disable packaging `node_modules`                                               | `['aws-sdk']`                                       |
+| `exclude`              | An array of dependencies to exclude from the Lambda. Named packages are passed to the esbuild `external` option and are left out of the packed dependencies, together with the dependencies only they bring in. Set to `*` to bundle everything and skip packaging `node_modules`. For dependencies provided by a layer, see [Dependencies in a layer](#dependencies-in-a-layer) | `['aws-sdk']`                                       |
 | `installExtraArgs`     | Optional arguments passed to npm or yarn for `external` dependency resolution. eg. `['--legacy-peer-deps']` for npm v7+ to use legacy `peerDependency` resolution behavior                         | `[]`                                                |
 | `keepOutputDirectory`  | Keeps the `.esbuild` output folder. Useful for debugging.                                                                                                                                          | `false`                                             |
 | `nativeZip`            | Uses the system's `zip` executable to create archives. _NOTE_: This will produce non-deterministic archives which causes a Serverless deployment update on every deploy.                           | `false`                                             |
@@ -261,6 +262,24 @@ custom:
       - 'my-package-name'
       - 'another-package-name'
 ```
+
+### Dependencies in a layer
+
+If your dependencies are provided by a Lambda layer, list them in `exclude`, so they are neither bundled nor packed. Your own code is still bundled:
+
+```yml
+custom:
+  esbuild:
+    exclude:
+      - lodash
+      - my-package-name
+```
+
+Be careful with `*`:
+
+- `exclude: '*'` bundles everything, including your dependencies, and packs nothing.
+- `external: '*'` bundles nothing and packs nothing. Esbuild also treats relative imports such as `./util` as external, so your own files are left out of the zip and the function fails at runtime. Use it only if the whole handler is a single file.
+- An explicit `external` list is not overridden by `exclude: '*'`, so those packages would end up neither bundled nor packed.
 
 ### Esbuild Plugins
 

@@ -105,10 +105,13 @@ export function extractFunctionEntries(
 /**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
  * @param root the root of the dependency tree
- * @param rootDeps array of top level root dependencies to whitelist
+ * @param rootDepsFilter array of top level root dependencies to whitelist
+ * @param excludes dependencies to leave out, together with the dependencies only they bring in.
  */
-export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[] => {
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes: string[] = []): string[] => {
   const flattenedDependencies = new Set<string>();
+
+  const excluded = new Set(excludes);
 
   /**
    *
@@ -121,6 +124,11 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
     Object.entries(deps).forEach(([depName, details]) => {
       // only for root level dependencies
       if (filter && !filter.includes(depName)) {
+        return;
+      }
+
+      // excluded dependencies are skipped together with everything they would bring in
+      if (excluded.has(depName)) {
         return;
       }
 

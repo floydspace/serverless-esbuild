@@ -670,6 +670,45 @@ describe('flatDeps', () => {
       expect(result).toStrictEqual(expectedResult);
     });
   });
+
+  describe('excludes', () => {
+    const depMap: DependencyMap = {
+      a: {
+        version: '1.0.0',
+        dependencies: { b: { version: '1.0.0', isRootDep: true } },
+      },
+      b: {
+        version: '1.0.0',
+        dependencies: { c: { version: '1.0.0', isRootDep: true } },
+      },
+      c: { version: '1.0.0', isRootDep: true },
+      d: {
+        version: '1.0.0',
+        dependencies: { c: { version: '1.0.0', isRootDep: true } },
+      },
+    };
+
+    it('should include everything when nothing is excluded', () => {
+      expect(flatDep(depMap, ['a'])).toStrictEqual(['a', 'b', 'c']);
+      expect(flatDep(depMap, ['a'], [])).toStrictEqual(['a', 'b', 'c']);
+    });
+
+    it('should drop an excluded top level dependency', () => {
+      expect(flatDep(depMap, ['a', 'd'], ['a'])).toStrictEqual(['d', 'c']);
+    });
+
+    it('should drop an excluded transitive dependency and its children', () => {
+      expect(flatDep(depMap, ['a'], ['b'])).toStrictEqual(['a']);
+    });
+
+    it('should keep a child that is still reachable through a non excluded dependency', () => {
+      expect(flatDep(depMap, ['a', 'd'], ['b'])).toStrictEqual(['a', 'd', 'c']);
+    });
+
+    it('should keep a child that is also a direct dependency', () => {
+      expect(flatDep(depMap, ['a', 'c'], ['b'])).toStrictEqual(['a', 'c']);
+    });
+  });
 });
 
 describe('stripEntryResolveExtensions', () => {
