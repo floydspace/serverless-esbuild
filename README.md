@@ -13,6 +13,8 @@
 - Zero-config: Works out of the box without the need to install any additional plugins
 - Works with Typescript and Javascript projects
 - Requires Node.js v20.19 or higher
+- Works with Serverless Framework v3 and [`osls`](https://github.com/oss-serverless/osls), the open-source fork of Serverless Framework v3; install `osls` instead of `serverless` and use the same `sls` command
+- Works with Serverless Framework v4 when its built-in esbuild build is turned off with `build.esbuild: false` (see [`examples/sls4`](examples/sls4)); v4 requires a Serverless login and AWS credentials. This is not covered by the e2e tests
 - Supports `sls package`, `sls deploy`, `sls deploy function`
 - Integrates with [`Serverless Invoke Local`](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local) & [`serverless-offline`](https://github.com/dherault/serverless-offline)
 

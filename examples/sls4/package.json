@@ -1,0 +1,12 @@
+{
+  "name": "sls4",
+  "version": "0.1.0",
+  "dependencies": {
+    "isin-validator": "^1.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "serverless": "^4",
+    "serverless-esbuild": "file:../.."
+  }
+}

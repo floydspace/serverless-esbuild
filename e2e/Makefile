@@ -2,7 +2,7 @@
 export COREPACK_ENABLE_STRICT=0
 export SKIP_YARN_COREPACK_CHECK=1
 
-test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config test-e2e-async-config test-e2e-no-functions test-e2e-exclude
+test-e2e: test-e2e-minimal test-e2e-individually test-e2e-complete test-e2e-config test-e2e-async-config test-e2e-no-functions test-e2e-exclude test-e2e-osls
 
 PATCH_REQUIRE = sed -i.bak "s/ERR_REQUIRE_ESM/ERR_REQUIRE_ESM' || error.code === 'ERR_REQUIRE_ASYNC_MODULE/" node_modules/serverless/lib/utils/require-with-import-fallback.js
 
@@ -55,4 +55,11 @@ test-e2e-exclude: build
 	cd ./.test-artifacts/exclude && npm install && $(PATCH_REQUIRE) && npx sls package
 	cd ./.test-artifacts/exclude/.serverless && unzip hello.zip
 	pnpm exec vitest run --project e2e e2e/exclude.test.ts
+	rm -fr ./.test-artifacts
+
+test-e2e-osls: build
+	rm -fr ./.test-artifacts && mkdir -p ./.test-artifacts/osls && rsync -r ./examples/osls/ ./.test-artifacts/osls/
+	cd ./.test-artifacts/osls && npm install && npx sls package
+	cd ./.test-artifacts/osls/.serverless && unzip osls-example.zip
+	pnpm exec vitest run --project e2e e2e/osls.test.ts
 	rm -fr ./.test-artifacts
