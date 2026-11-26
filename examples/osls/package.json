@@ -1,0 +1,12 @@
+{
+  "name": "osls",
+  "version": "0.1.0",
+  "dependencies": {
+    "isin-validator": "^1.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "osls": "^4.9.0",
+    "serverless-esbuild": "file:../.."
+  }
+}
