@@ -233,6 +233,77 @@ describe('Yarn Packager', () => {
     expect(result).toStrictEqual(expectedResult);
   });
 
+  it('should include non-semver references and parse their names from yarn output', async () => {
+    const yarnOutput: YarnDeps = {
+      type: 'tree',
+      data: {
+        type: 'list',
+        trees: [
+          {
+            name: 'parent@1.0.0',
+            children: [
+              {
+                name: '@org/kyc@git+ssh://git@github.com/org/kyc.git#0.3.2',
+                color: 'dim',
+                shadow: true,
+              },
+            ],
+            hint: null,
+            color: 'bold',
+            depth: 0,
+          },
+          { name: '@org/kyc@0.3.2', children: [], hint: null, color: null, depth: 0 },
+        ],
+      },
+    };
+
+    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(yarnOutput) });
+
+    const result = await yarn.getProdDependencies(path, 2);
+
+    expect(result).toStrictEqual({
+      dependencies: {
+        parent: {
+          version: '1.0.0',
+          dependencies: {
+            '@org/kyc': { version: 'git+ssh://git@github.com/org/kyc.git#0.3.2', isRootDep: true },
+          },
+        },
+        '@org/kyc': { version: '0.3.2' },
+      },
+    });
+  });
+
+  it('should ignore shadow entries whose semver range does not match the root version', async () => {
+    const yarnOutput: YarnDeps = {
+      type: 'tree',
+      data: {
+        type: 'list',
+        trees: [
+          {
+            name: 'parent@1.0.0',
+            children: [{ name: 'lodash@^3.0.0', color: 'dim', shadow: true }],
+            hint: null,
+            color: 'bold',
+            depth: 0,
+          },
+          { name: 'lodash@4.17.21', children: [], hint: null, color: null, depth: 0 },
+        ],
+      },
+    };
+
+    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(yarnOutput) });
+
+    const result = await yarn.getProdDependencies(path, 2);
+
+    expect(result).toStrictEqual({
+      dependencies: {
+        parent: { version: '1.0.0', dependencies: {} },
+        lodash: { version: '4.17.21' },
+      },
+    });
+  });
+
   it('should skip install if the noInstall option is true', async () => {
     const yarnWithoutInstall = new Yarn({
       noInstall: true,
