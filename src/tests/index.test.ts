@@ -140,6 +140,44 @@ describe('Config file', () => {
   });
 });
 
+describe('Watch ignore', () => {
+  const init = async (esbuild: Record<string, unknown>) => {
+    const plugin = new EsbuildServerlessPlugin(mockServerlessConfig({ custom: { esbuild } }), mockOptions);
+    await plugin.hooks.initialize?.();
+    return plugin;
+  };
+
+  it('should ignore the default output folders', async () => {
+    const plugin = await init({});
+
+    expect(plugin.buildOptions?.watch.ignore).toEqual(['.esbuild', 'dist', 'node_modules', '.build']);
+  });
+
+  it('should ignore custom output folders', async () => {
+    const plugin = await init({ outputWorkFolder: 'work', outputBuildFolder: 'build' });
+
+    expect(plugin.buildOptions?.watch.ignore).toEqual(['work', 'dist', 'node_modules', 'build']);
+  });
+
+  it('should ignore custom output folders returned by a config file', async () => {
+    const plugin = await init({ config: './async-config.js' });
+
+    expect(plugin.buildOptions?.watch.ignore).toEqual(['.esbuild', 'dist', 'node_modules', 'custom-build']);
+  });
+
+  it('should use the user provided ignore as is', async () => {
+    const plugin = await init({ outputWorkFolder: 'work', watch: { ignore: ['foo'] } });
+
+    expect(plugin.buildOptions?.watch.ignore).toEqual(['foo']);
+  });
+
+  it('should respect an explicitly empty ignore', async () => {
+    const plugin = await init({ watch: { ignore: [] } });
+
+    expect(plugin.buildOptions?.watch.ignore).toEqual([]);
+  });
+});
+
 describe('Move Artifacts', () => {
   beforeEach(() => {
     vi.mocked(fs.pathExists).mockImplementation(async () => true);

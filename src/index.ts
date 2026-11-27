@@ -320,7 +320,6 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
       installExtraArgs: [],
       watch: {
         pattern: './**/*.(js|ts)',
-        ignore: [WORK_FOLDER, 'dist', 'node_modules', BUILD_FOLDER],
         chokidar: {
           ignoreInitial: true,
         },
@@ -357,7 +356,18 @@ class EsbuildServerlessPlugin implements ServerlessPlugin {
 
     const configOptions = config ? await config(this.serverless) : this.serverless.service.custom?.esbuild ?? {};
 
-    return withResolvedOptions<Configuration>(configOptions) as Configuration;
+    const resolved = withResolvedOptions<Configuration>(configOptions) as Configuration;
+
+    if (configOptions.watch?.ignore === undefined) {
+      resolved.watch.ignore = [
+        resolved.outputWorkFolder || WORK_FOLDER,
+        'dist',
+        'node_modules',
+        resolved.outputBuildFolder || BUILD_FOLDER,
+      ];
+    }
+
+    return resolved;
   }
 
   get functionEntries() {
