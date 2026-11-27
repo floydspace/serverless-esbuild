@@ -1,0 +1,20 @@
+# Only the root package. Without this pnpm treats every subfolder (examples/*) as a workspace project.
+packages:
+  - '.'
+
+catalog:
+  eslint: ^8.56.0
+
+# Force every dependency to use the root eslint version.
+overrides:
+  eslint: 'catalog:'
+
+allowBuilds:
+  esbuild: true
+
+patchedDependencies:
+  mock-fs: patches/mock-fs.patch
+
+minimumReleaseAgeExclude:
+  - '@floydspace/eslint-config@1.38.1'
+  - '@floydspace/eslint-plugin@1.38.1'

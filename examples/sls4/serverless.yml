@@ -1,0 +1,16 @@
+service: sls4-example
+
+plugins:
+  - serverless-esbuild
+
+# Serverless Framework v4 ships its own esbuild build and rejects serverless-esbuild unless it is turned off
+build:
+  esbuild: false
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+
+functions:
+  validateIsin:
+    handler: index.handler

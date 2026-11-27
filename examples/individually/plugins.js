@@ -1,8 +1,8 @@
-let envPlugin = {
+const envPlugin = {
   name: 'log-lodash',
   setup(build) {
     // test interception : log all lodash imports
-    build.onResolve({ filter: /^lodash$/ }, args => {
+    build.onResolve({ filter: /^lodash$/ }, (args) => {
       console.log(args);
     });
   },

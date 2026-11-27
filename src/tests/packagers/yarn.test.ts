@@ -1,22 +1,24 @@
-import { Yarn, YarnDeps } from '../../packagers/yarn';
-import { DependenciesResult } from '../../types';
+import type { MockInstance } from 'vitest';
+import { Yarn } from '../../packagers/yarn';
+import type { YarnDeps } from '../../packagers/yarn';
+import type { DependenciesResult } from '../../types';
 
 import * as utils from '../../utils';
 
-jest.mock('process');
+vi.mock('process');
 describe('Yarn Packager', () => {
-  const yarn = new Yarn();
+  const yarn = new Yarn({});
   const path = './';
 
-  let spawnSpy = jest.spyOn(utils, 'spawnProcess');
+  let spawnSpy: MockInstance;
 
   beforeEach(() => {
-    spawnSpy = jest.spyOn(utils, 'spawnProcess');
+    spawnSpy = vi.spyOn(utils, 'spawnProcess');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should call spawnProcess with the correct arguments for listing yarn dependencies', async () => {
@@ -27,8 +29,8 @@ describe('Yarn Packager', () => {
 
     await yarn.getProdDependencies(path);
 
-    expect(spawnSpy).toBeCalledTimes(1);
-    expect(spawnSpy).toBeCalledWith('yarn', ['list', '--json', '--production'], { cwd: './' });
+    expect(spawnSpy).toHaveBeenCalledTimes(1);
+    expect(spawnSpy).toHaveBeenCalledWith('yarn', ['list', '--json', '--production'], { cwd: './' });
   });
 
   it('should call spawnProcess with the correct arguments for listing yarn dependencies when depth is provided', async () => {
@@ -39,8 +41,8 @@ describe('Yarn Packager', () => {
 
     await yarn.getProdDependencies(path, 2);
 
-    expect(spawnSpy).toBeCalledTimes(1);
-    expect(spawnSpy).toBeCalledWith('yarn', ['list', '--depth=2', '--json', '--production'], {
+    expect(spawnSpy).toHaveBeenCalledTimes(1);
+    expect(spawnSpy).toHaveBeenCalledWith('yarn', ['list', '--depth=2', '--json', '--production'], {
       cwd: './',
     });
   });
@@ -229,5 +231,85 @@ describe('Yarn Packager', () => {
     const result = await yarn.getProdDependencies(path, 2);
 
     expect(result).toStrictEqual(expectedResult);
+  });
+
+  it('should include non-semver references and parse their names from yarn output', async () => {
+    const yarnOutput: YarnDeps = {
+      type: 'tree',
+      data: {
+        type: 'list',
+        trees: [
+          {
+            name: 'parent@1.0.0',
+            children: [
+              {
+                name: '@org/kyc@git+ssh://git@github.com/org/kyc.git#0.3.2',
+                color: 'dim',
+                shadow: true,
+              },
+            ],
+            hint: null,
+            color: 'bold',
+            depth: 0,
+          },
+          { name: '@org/kyc@0.3.2', children: [], hint: null, color: null, depth: 0 },
+        ],
+      },
+    };
+
+    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(yarnOutput) });
+
+    const result = await yarn.getProdDependencies(path, 2);
+
+    expect(result).toStrictEqual({
+      dependencies: {
+        parent: {
+          version: '1.0.0',
+          dependencies: {
+            '@org/kyc': { version: 'git+ssh://git@github.com/org/kyc.git#0.3.2', isRootDep: true },
+          },
+        },
+        '@org/kyc': { version: '0.3.2' },
+      },
+    });
+  });
+
+  it('should ignore shadow entries whose semver range does not match the root version', async () => {
+    const yarnOutput: YarnDeps = {
+      type: 'tree',
+      data: {
+        type: 'list',
+        trees: [
+          {
+            name: 'parent@1.0.0',
+            children: [{ name: 'lodash@^3.0.0', color: 'dim', shadow: true }],
+            hint: null,
+            color: 'bold',
+            depth: 0,
+          },
+          { name: 'lodash@4.17.21', children: [], hint: null, color: null, depth: 0 },
+        ],
+      },
+    };
+
+    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(yarnOutput) });
+
+    const result = await yarn.getProdDependencies(path, 2);
+
+    expect(result).toStrictEqual({
+      dependencies: {
+        parent: { version: '1.0.0', dependencies: {} },
+        lodash: { version: '4.17.21' },
+      },
+    });
+  });
+
+  it('should skip install if the noInstall option is true', async () => {
+    const yarnWithoutInstall = new Yarn({
+      noInstall: true,
+    });
+
+    await expect(yarnWithoutInstall.install(path, [], false)).resolves.toBeUndefined();
+    expect(spawnSpy).toHaveBeenCalledTimes(0);
   });
 });

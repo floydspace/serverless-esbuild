@@ -1,44 +1,62 @@
 /**
  * Factory for supported packagers.
  *
- * All packagers must implement the following interface:
+ * All packagers must extend the Packager class.
  *
- * interface Packager {
- *
- * static get lockfileName(): string;
- * static get copyPackageSectionNames(): Array<string>;
- * static get mustCopyModules(): boolean;
- * static getProdDependencies(cwd: string, depth: number = 1): BbPromise<Object>;
- * static rebaseLockfile(pathToPackageRoot: string, lockfile: Object): void;
- * static install(cwd: string): BbPromise<void>;
- * static prune(cwd: string): BbPromise<void>;
- * static runScripts(cwd: string, scriptNames): BbPromise<void>;
- *
- * }
+ * @see Packager
  */
+import { memoizeWith } from 'ramda';
 
-import { Packager } from './packager';
-import { NPM } from './npm';
-import { Pnpm } from './pnpm';
-import { Yarn } from './yarn';
+import { isPackagerId } from '../type-predicate';
 
-const registeredPackagers = {
-  npm: new NPM(),
-  pnpm: new Pnpm(),
-  yarn: new Yarn(),
+import type EsbuildServerlessPlugin from '../index';
+import type { PackagerId, PackagerOptions } from '../types';
+import type { Packager } from './packager';
+
+const packagerFactories: Record<PackagerId, (packagerOptions: PackagerOptions) => Promise<Packager>> = {
+  async npm(packagerOptions: PackagerOptions) {
+    const { NPM } = await import('./npm.js');
+
+    return new NPM(packagerOptions);
+  },
+  async pnpm() {
+    const { Pnpm } = await import('./pnpm.js');
+
+    return new Pnpm();
+  },
+  async yarn(packagerOptions) {
+    const { Yarn } = await import('./yarn.js');
+
+    return new Yarn(packagerOptions);
+  },
 };
 
 /**
- * Factory method.
- * @this ServerlessWebpack - Active plugin instance
- * @param {string} packagerId - Well known packager id.
- * @returns {Promise<Packager>} - Promised packager to allow packagers be created asynchronously.
+ * Asynchronously create a Packager instance and memoize it.
+ *
+ * @this EsbuildServerlessPlugin - Active plugin instance
+ * @param {string} packagerId - Well known packager id
+ * @returns {Promise<Packager>} - The selected Packager
  */
-export function get(packagerId: string): Promise<Packager> {
-  if (!(packagerId in registeredPackagers)) {
-    const message = `Could not find packager '${packagerId}'`;
-    this.log.error(`ERROR: ${message}`);
-    throw new this.serverless.classes.Error(message);
+export const getPackager = memoizeWith(
+  (packagerId) => packagerId,
+  async function (
+    this: EsbuildServerlessPlugin,
+    packagerId: PackagerId,
+    packagerOptions: PackagerOptions
+  ): Promise<Packager> {
+    this.log.debug(`Trying to create packager: ${packagerId}`);
+
+    if (!isPackagerId(packagerId)) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Serverless typings (as of v3.0.2) are incorrect
+      throw new this.serverless.classes.Error(`Could not find packager '${packagerId}'`);
+    }
+
+    const packager = await packagerFactories[packagerId](packagerOptions);
+
+    this.log.debug(`Packager created: ${packagerId}`);
+
+    return packager;
   }
-  return registeredPackagers[packagerId];
-}
+);

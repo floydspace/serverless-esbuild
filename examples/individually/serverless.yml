@@ -9,11 +9,11 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
 
 custom:
   esbuild:
-    plugins : ./plugins.js
+    plugins: ./plugins.js
     packager: yarn
     bundle: true
     minify: true
@@ -22,18 +22,17 @@ custom:
     external:
       - lodash
 
-
 functions:
   hello1:
     handler: hello1.handler
     events:
       - http:
-          path: hello
+          path: hello1
           method: get
 
   hello2:
     handler: hello2.handler
     events:
       - http:
-          path: hello
+          path: hello2
           method: get

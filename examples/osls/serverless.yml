@@ -1,0 +1,12 @@
+service: osls-example
+
+plugins:
+  - serverless-esbuild
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+
+functions:
+  validateIsin:
+    handler: index.handler

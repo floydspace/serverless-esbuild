@@ -1,0 +1,20 @@
+service: exclude-example
+
+plugins:
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    external:
+      - dynamodb-doc
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  hello:
+    handler: index.handler

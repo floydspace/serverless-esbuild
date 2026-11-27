@@ -1,21 +1,23 @@
-import { NPM, NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
-import { DependenciesResult } from '../../types';
+import type { MockInstance } from 'vitest';
+import { NPM } from '../../packagers/npm';
+import type { NpmV6Deps, NpmV7Deps } from '../../packagers/npm';
+import type { DependenciesResult } from '../../types';
 import * as utils from '../../utils';
 
-jest.mock('process');
+vi.mock('process');
 describe('NPM Packager', () => {
-  const npm = new NPM();
+  const npm = new NPM({});
   const path = './';
 
-  let spawnSpy = jest.spyOn(utils, 'spawnProcess');
+  let spawnSpy: MockInstance;
 
   beforeEach(() => {
-    spawnSpy = jest.spyOn(utils, 'spawnProcess');
+    spawnSpy = vi.spyOn(utils, 'spawnProcess');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should call spawnProcess with the correct arguments for getting the npm version', async () => {
@@ -25,8 +27,8 @@ describe('NPM Packager', () => {
 
     await npm.getProdDependencies(path);
 
-    expect(spawnSpy).toBeCalledTimes(2);
-    expect(spawnSpy).toBeCalledWith('npm', ['--version'], { cwd: './' });
+    expect(spawnSpy).toHaveBeenCalledTimes(2);
+    expect(spawnSpy).toHaveBeenCalledWith('npm', ['--version'], { cwd: './' });
   });
 
   it('should call spawnProcess with the correct arguments for listing dependencies on npm', async () => {
@@ -36,8 +38,8 @@ describe('NPM Packager', () => {
 
     await npm.getProdDependencies(path);
 
-    expect(spawnSpy).toBeCalledTimes(2);
-    expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '-prod', '-long'], { cwd: './' });
+    expect(spawnSpy).toHaveBeenCalledTimes(2);
+    expect(spawnSpy).toHaveBeenCalledWith('npm', ['ls', '-json', '-prod', '-long'], { cwd: './' });
   });
 
   it('should call spawnProcess with the correct arguments for listing dependencies on npm v7', async () => {
@@ -47,19 +49,21 @@ describe('NPM Packager', () => {
 
     await npm.getProdDependencies(path);
 
-    expect(spawnSpy).toBeCalledTimes(2);
-    expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '-prod', '-long', '-all'], {
+    expect(spawnSpy).toHaveBeenCalledTimes(2);
+    expect(spawnSpy).toHaveBeenCalledWith('npm', ['ls', '-json', '--omit=dev', '-long', '-all'], {
       cwd: './',
     });
   });
 
   it('should call spawnProcess with the correct arguments for listing dependencies when depth is provided', async () => {
-    spawnSpy.mockResolvedValueOnce({ stderr: '', stdout: '{"dependencies":{}}' });
+    spawnSpy
+      .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
+      .mockResolvedValueOnce({ stderr: '', stdout: '{"dependencies":{}}' });
 
     await npm.getProdDependencies(path, 2);
 
-    expect(spawnSpy).toBeCalledTimes(1);
-    expect(spawnSpy).toBeCalledWith('npm', ['ls', '-json', '-prod', '-long', '-depth=2'], {
+    expect(spawnSpy).toHaveBeenCalledTimes(2);
+    expect(spawnSpy).toHaveBeenCalledWith('npm', ['ls', '-json', '-prod', '-long', '-depth=2'], {
       cwd: './',
     });
   });
@@ -79,8 +83,7 @@ describe('NPM Packager', () => {
           ],
           _from: 'samchungy-a@2.0.0',
           _id: 'samchungy-a@2.0.0',
-          _integrity:
-            'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
+          _integrity: 'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
           _location: '/samchungy-a',
           _phantomChildren: {},
           _requested: {
@@ -166,8 +169,7 @@ describe('NPM Packager', () => {
           ],
           _from: 'samchungy-b@2.0.0',
           _id: 'samchungy-b@2.0.0',
-          _integrity:
-            'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
+          _integrity: 'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
           _location: '/samchungy-b',
           _phantomChildren: {},
           _requested: {
@@ -320,8 +322,7 @@ describe('NPM Packager', () => {
           version: '2.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-2.0.0.tgz',
           name: 'samchungy-a',
-          integrity:
-            'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
+          integrity: 'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
           _id: 'samchungy-a@2.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-a',
@@ -350,8 +351,7 @@ describe('NPM Packager', () => {
           version: '2.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-2.0.0.tgz',
           name: 'samchungy-b',
-          integrity:
-            'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
+          integrity: 'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
           _id: 'samchungy-b@2.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-b',
@@ -419,7 +419,7 @@ describe('NPM Packager', () => {
     expect(v7dependencies).toStrictEqual(expectedResult);
   });
 
-  it('should create the same dependency tree which handles deduping for both npmv6 and npmv7', async () => {
+  it('should create the same dependency tree which handles deduping for both npm v6 and v7', async () => {
     const v6depsList: NpmV6Deps = {
       name: 'serverless-example',
       version: '1.0.0',
@@ -434,8 +434,7 @@ describe('NPM Packager', () => {
           ],
           _from: 'samchungy-a@3.0.0',
           _id: 'samchungy-a@3.0.0',
-          _integrity:
-            'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
+          _integrity: 'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
           _location: '/samchungy-a',
           _phantomChildren: {},
           _requested: {
@@ -503,8 +502,7 @@ describe('NPM Packager', () => {
                     fetchSpec: '1.0.0',
                   },
                   _requiredBy: ['/samchungy-dep-b'],
-                  _resolved:
-                    'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
+                  _resolved: 'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
                   _spec: '1.0.0',
                   _where: '/workdir/.esbuild/.build',
                   author: '',
@@ -531,8 +529,7 @@ describe('NPM Packager', () => {
                         fetchSpec: '1.0.0',
                       },
                       _requiredBy: ['/samchungy-dep-c', '/samchungy-dep-d'],
-                      _resolved:
-                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      _resolved: 'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
                       _spec: '1.0.0',
                       _where: '/workdir/.esbuild/.build',
                       author: '',
@@ -586,8 +583,7 @@ describe('NPM Packager', () => {
                     fetchSpec: '1.0.0',
                   },
                   _requiredBy: ['/samchungy-dep-b'],
-                  _resolved:
-                    'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
+                  _resolved: 'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
                   _spec: '1.0.0',
                   _where: '/workdir/.esbuild/.build',
                   author: '',
@@ -611,8 +607,7 @@ describe('NPM Packager', () => {
                         fetchSpec: '1.0.0',
                       },
                       _requiredBy: '[Circular]',
-                      _resolved:
-                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      _resolved: 'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
                       _spec: '1.0.0',
                       _where: '/workdir/.esbuild/.build',
                       author: '',
@@ -680,8 +675,7 @@ describe('NPM Packager', () => {
           ],
           _from: 'samchungy-b@5.0.0',
           _id: 'samchungy-b@5.0.0',
-          _integrity:
-            'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
+          _integrity: 'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
           _location: '/samchungy-b',
           _phantomChildren: {},
           _requested: {
@@ -829,8 +823,7 @@ describe('NPM Packager', () => {
           version: '3.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-3.0.0.tgz',
           name: 'samchungy-a',
-          integrity:
-            'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
+          integrity: 'sha512-5u55rgjPpASgPDU2jLYf4HCt31jUVtzy/r42q4SyJ4W+ItggEk+8w3WBfXRcQgxYyyWflL1F9w85u3Wudj542g==',
           _id: 'samchungy-a@3.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-a',
@@ -856,8 +849,7 @@ describe('NPM Packager', () => {
               dependencies: {
                 'samchungy-dep-c': {
                   version: '1.0.0',
-                  resolved:
-                    'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
+                  resolved: 'https://registry.npmjs.org/samchungy-dep-c/-/samchungy-dep-c-1.0.0.tgz',
                   name: 'samchungy-dep-c',
                   integrity:
                     'sha512-YMLl+vnxi7kNr59zq+FFVfBBKyPyxqc7LUU92ZYTkTJaEGHNlCyC2fVC+diIVaomhn4CNAqmOGIVqbr5sq8lQg==',
@@ -870,8 +862,7 @@ describe('NPM Packager', () => {
                   dependencies: {
                     'samchungy-dep-e': {
                       version: '1.0.0',
-                      resolved:
-                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      resolved: 'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
                       name: 'samchungy-dep-e',
                       integrity:
                         'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
@@ -886,8 +877,7 @@ describe('NPM Packager', () => {
                 },
                 'samchungy-dep-d': {
                   version: '1.0.0',
-                  resolved:
-                    'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
+                  resolved: 'https://registry.npmjs.org/samchungy-dep-d/-/samchungy-dep-d-1.0.0.tgz',
                   name: 'samchungy-dep-d',
                   integrity:
                     'sha512-yxXY2+OVhx1e5QZWSWrCajs5b2FCD0CV2ztss+7x4IgQbM0u5gMfzva31kMZFzX2iLJ7iy+09DYpe34TSRrzsA==',
@@ -901,8 +891,7 @@ describe('NPM Packager', () => {
                     'samchungy-dep-e': {
                       version: '1.0.0',
                       name: 'samchungy-dep-e',
-                      resolved:
-                        'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
+                      resolved: 'https://registry.npmjs.org/samchungy-dep-e/-/samchungy-dep-e-1.0.0.tgz',
                       integrity:
                         'sha512-phnrKKAOuZdVrVk86R6CNU62YC4bRr/Ru1SokC5ZqkXh4QR30XU4ApSTuLbFADb6F3HWKZTGelaoklyMW2mveg==',
                       _id: 'samchungy-dep-e@1.0.0',
@@ -922,8 +911,7 @@ describe('NPM Packager', () => {
           version: '5.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-5.0.0.tgz',
           name: 'samchungy-b',
-          integrity:
-            'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
+          integrity: 'sha512-Swb34L5tb1agVosN97lXr+HzMzYXvwt2XuZAe9YGVzAWYduObaS5Rc0lwYUkILqKmwqLmtb29Jc2veiNAmU2zw==',
           _id: 'samchungy-b@5.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-b',
@@ -988,6 +976,7 @@ describe('NPM Packager', () => {
         'samchungy-dep-e': { version: '1.0.0' },
       },
     };
+
     spawnSpy
       .mockResolvedValueOnce({ stderr: '', stdout: '6.0.0' })
       .mockResolvedValueOnce({ stderr: '', stdout: JSON.stringify(v6depsList) });
@@ -1059,8 +1048,7 @@ describe('NPM Packager', () => {
           version: '2.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-a/-/samchungy-a-2.0.0.tgz',
           name: 'samchungy-a',
-          integrity:
-            'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
+          integrity: 'sha512-gUv/cvd9AFYvvGep0e9m1wSAf3dfnb71eri5TjtgC6N7qvJALXFaFVOkLNBHEYGEm2ZJdosXvGqr3ISZ7Yh46Q==',
           _id: 'samchungy-a@2.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-a',
@@ -1089,8 +1077,7 @@ describe('NPM Packager', () => {
           version: '2.0.0',
           resolved: 'https://registry.npmjs.org/samchungy-b/-/samchungy-b-2.0.0.tgz',
           name: 'samchungy-b',
-          integrity:
-            'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
+          integrity: 'sha512-i42OG9FC2Py3RfbI8bBFZi3VoN7+MxM0OUvFcWrsIgqvZMUDVI4hNKHqpE6GTt07gDDqQnxlMNehbrsQLtHRVA==',
           _id: 'samchungy-b@2.0.0',
           extraneous: false,
           path: '/workdir/.esbuild/.build/node_modules/samchungy-b',
@@ -1136,11 +1123,10 @@ describe('NPM Packager', () => {
 
     spawnSpy
       .mockResolvedValueOnce({ stderr: '', stdout: '7.0.0' })
-      .mockRejectedValueOnce(
-        new utils.SpawnError('a spawn error', JSON.stringify(v7depsList), npm7stderr)
-      );
+      .mockRejectedValueOnce(new utils.SpawnError('a spawn error', JSON.stringify(v7depsList), npm7stderr));
 
     const result = await npm.getProdDependencies(path);
+
     expect(result).toStrictEqual({ stdout: JSON.stringify(v7depsList) });
   });
 });

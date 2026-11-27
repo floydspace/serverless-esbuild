@@ -1,16 +1,34 @@
-import fs from 'fs-extra';
-import path from 'path';
+import assert, { AssertionError } from 'assert';
+import * as Predicate from 'effect/Predicate';
 import os from 'os';
+import path from 'path';
+
+import { parse } from 'acorn';
+import { simple as simpleWalk } from 'acorn-walk';
+import fs from 'fs-extra';
 import { uniq } from 'ramda';
-import Serverless from 'serverless';
-import ServerlessPlugin from 'serverless/classes/Plugin';
-import matchAll from 'string.prototype.matchall';
-import { DependencyMap, FunctionEntry } from './types';
+
+import type Serverless from 'serverless';
+import type ServerlessPlugin from 'serverless/classes/Plugin';
+import type { Configuration, DependencyMap, FunctionEntry, IFile } from './types';
+import type { EsbuildFunctionDefinitionHandler } from './types';
+import { DEFAULT_EXTENSIONS } from './constants';
+
+export function asArray<T>(data: T | T[]): T[] {
+  return Array.isArray(data) ? data : [data];
+}
+
+export function assertIsString(input: unknown, message = 'input is not a string'): asserts input is string {
+  if (!Predicate.isString(input)) {
+    throw new AssertionError({ message, actual: input });
+  }
+}
 
 export function extractFunctionEntries(
   cwd: string,
   provider: string,
-  functions?: Record<string, Serverless.FunctionDefinitionHandler>
+  functions: Record<string, Serverless.FunctionDefinitionHandler>,
+  resolveExtensions?: string[]
 ): FunctionEntry[] {
   // The Google provider will use the entrypoint not from the definition of the
   // handler function, but instead from the package.json:main field, or via a
@@ -20,6 +38,7 @@ export function extractFunctionEntries(
   // it instead selects the index.js file.
   if (provider === 'google') {
     const packageFilePath = path.join(cwd, 'package.json');
+
     if (fs.existsSync(packageFilePath)) {
       // Load in the package.json file.
       const packageFile = JSON.parse(fs.readFileSync(packageFilePath).toString());
@@ -30,50 +49,69 @@ export function extractFunctionEntries(
 
       // Check that the file indeed exists.
       if (!fs.existsSync(path.join(cwd, entry))) {
-        console.log(`Cannot locate entrypoint, ${entry} not found`);
-        throw new Error('Compilation failed');
+        throw new Error(`Compilation failed. Cannot locate entrypoint, ${entry} not found`);
       }
 
       return [{ entry, func: null }];
     }
   }
 
-  return Object.keys(functions).map((functionAlias) => {
-    const func = functions[functionAlias];
-    const h = func.handler;
-    const fnName = path.extname(h);
-    const fnNameLastAppearanceIndex = h.lastIndexOf(fnName);
-    // replace only last instance to allow the same name for file and handler
-    const fileName = h.substring(0, fnNameLastAppearanceIndex);
+  return Object.keys(functions)
+    .filter((functionAlias) => {
+      return !(functions[functionAlias] as EsbuildFunctionDefinitionHandler).skipEsbuild;
+    })
+    .map((functionAlias) => {
+      const func = functions[functionAlias] as EsbuildFunctionDefinitionHandler;
+      assert(func, `${functionAlias} not found in functions`);
 
-    const extensions = ['.ts', '.js'];
-    for (const extension of extensions) {
-      // Check if the .{extension} files exists. If so return that to watch
-      if (fs.existsSync(path.join(cwd, fileName + extension))) {
-        const entry = path.relative(cwd, fileName + extension);
-        return {
-          entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
-          func,
-          functionAlias,
-        };
+      const { handler, esbuildEntrypoint } = func;
+      const entrypoint = esbuildEntrypoint || handler;
+
+      const fnName = path.extname(entrypoint);
+      const fnNameLastAppearanceIndex = entrypoint.lastIndexOf(fnName);
+      // replace only last instance to allow the same name for file and handler
+      const fileName = entrypoint.substring(0, fnNameLastAppearanceIndex);
+
+      const extensions = resolveExtensions ?? DEFAULT_EXTENSIONS;
+
+      for (const extension of extensions) {
+        // Check if the .{extension} files exists. If so return that to watch
+        if (fs.existsSync(path.join(cwd, fileName + extension))) {
+          const entry = path.relative(cwd, fileName + extension);
+
+          return {
+            func,
+            functionAlias,
+            entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          };
+        }
+        if (fs.existsSync(path.join(cwd, path.join(fileName, 'index') + extension))) {
+          const entry = path.relative(cwd, path.join(fileName, 'index') + extension);
+
+          return {
+            func,
+            functionAlias,
+            entry: os.platform() === 'win32' ? entry.replace(/\\/g, '/') : entry,
+          };
+        }
       }
-    }
-
-    // Can't find the files. Watch will have an exception anyway. So throw one with error.
-    console.log(`Cannot locate handler - ${fileName} not found`);
-    throw new Error(
-      'Compilation failed. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json'
-    );
-  });
+      // Can't find the files. Watch will have an exception anyway. So throw one with error.
+      throw new Error(
+        `Compilation failed for function alias ${functionAlias}. Please ensure you have an index file with ext .ts or .js, or have a path listed as main key in package.json`
+      );
+    });
 }
 
 /**
  * Takes a dependency graph and returns a flat list of required production dependencies for all or the filtered deps
  * @param root the root of the dependency tree
- * @param rootDeps array of top level root dependencies to whitelist
+ * @param rootDepsFilter array of top level root dependencies to whitelist
+ * @param excludes dependencies to leave out, together with the dependencies only they bring in.
  */
-export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[] => {
+export const flatDep = (root: DependencyMap, rootDepsFilter: string[], excludes: string[] = []): string[] => {
   const flattenedDependencies = new Set<string>();
+
+  const excluded = new Set(excludes);
 
   /**
    *
@@ -85,14 +123,27 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
 
     Object.entries(deps).forEach(([depName, details]) => {
       // only for root level dependencies
-      if (filter && !filter.includes(depName)) return;
+      if (filter && !filter.includes(depName)) {
+        return;
+      }
+
+      // excluded dependencies are skipped together with everything they would bring in
+      if (excluded.has(depName)) {
+        return;
+      }
 
       if (details.isRootDep || filter) {
         // We already have this root dep and it's dependencies - skip this iteration
-        if (flattenedDependencies.has(depName)) return;
+        if (flattenedDependencies.has(depName)) {
+          return;
+        }
 
         flattenedDependencies.add(depName);
-        recursiveFind(root[depName].dependencies);
+
+        const dep = root[depName];
+
+        dep && recursiveFind(dep.dependencies);
+
         return;
       }
 
@@ -112,51 +163,191 @@ export const flatDep = (root: DependencyMap, rootDepsFilter: string[]): string[]
  * @example getBaseDep('@scope/package/register') returns '@scope/package'
  * @example getBaseDep('package/register') returns 'package'
  * @example getBaseDep('package') returns 'package'
- * @param path
+ * @param input
  */
-const getBaseDep = (path: string): string => /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(path)[0];
+const getBaseDep = (input: string): string | undefined => {
+  const result = /^@[^/]+\/[^/\n]+|^[^/\n]+/.exec(input);
+
+  if (Array.isArray(result) && result[0]) {
+    return result[0];
+  }
+};
+
+export const isESM = (buildOptions: Configuration): boolean => {
+  return buildOptions.format === 'esm' || (buildOptions.platform === 'neutral' && !buildOptions.format);
+};
 
 /**
- * Extracts the list of dependencies that appear in a bundle as `require(XXX)`
+ * Extracts the list of dependencies that appear in a bundle as `import 'XXX'`, `import('XXX')`, or `require('XXX')`.
  * @param bundlePath Absolute path to a bundled JS file
+ * @param useESM Should the bundle be treated as ESM
  */
-export const getDepsFromBundle = (bundlePath: string, platform: string): string[] => {
+export const getDepsFromBundle = (bundlePath: string, useESM: boolean): string[] => {
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  const deps =
-    platform === 'neutral'
-      ? Array.from<string>(matchAll(bundleContent, /from\s?"(.*?)";|import\s?"(.*?)";/gim)).map(
-          (match) => match[1] || match[2]
-        )
-      : Array.from<string>(matchAll(bundleContent, /require\("(.*?)"\)/gim)).map(
-          (match) => match[1]
-        );
-  return uniq(deps.map((dep): string => getBaseDep(dep)));
+  const deps: string[] = [];
+
+  const ast = parse(bundleContent, {
+    ecmaVersion: 'latest',
+    sourceType: useESM ? 'module' : 'script',
+  });
+
+  // I'm using `node: any` since the type definition is not accurate.
+  // There are properties at runtime that do not exist in the `acorn.Node` type.
+  simpleWalk(ast, {
+    CallExpression(node: any) {
+      // esbuild rewrites `require` to `__require` when bundling CJS code into an ESM output
+      if (node.callee.name === 'require' || node.callee.name === '__require') {
+        const [arg] = node.arguments;
+
+        if (typeof arg?.value === 'string') {
+          deps.push(arg.value);
+        }
+      }
+    },
+    ImportExpression(node: any) {
+      deps.push(node.source.value);
+    },
+    ImportDeclaration(node: any) {
+      deps.push(node.source.value);
+    },
+  });
+
+  const baseDeps = deps.map(getBaseDep).filter(Predicate.isString);
+
+  return uniq(baseDeps);
 };
 
-export const doSharePath = (child, parent) => {
-  if (child === parent) return true;
+export const doSharePath = (child: string, parent: string): boolean => {
+  if (child === parent) {
+    return true;
+  }
+
   const parentTokens = parent.split('/');
   const childToken = child.split('/');
-  return parentTokens.every((t, i) => childToken[i] === t);
+
+  return parentTokens.every((token, index) => childToken[index] === token);
 };
 
-export const providerRuntimeMatcher = Object.freeze({
-  aws: {
-    'nodejs16.x': 'node16',
-    'nodejs14.x': 'node14',
-    'nodejs12.x': 'node12',
-  },
+export type AwsNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `nodejs${Version}.x`]: `node${Version}`;
+};
+
+export type AzureNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `nodejs${Version}`]: `node${Version}`;
+};
+
+export type GoogleNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `nodejs${Version}`]: `node${Version}`;
+};
+
+export type ScalewayNodeProviderRuntimeMatcher<Versions extends number> = {
+  [Version in Versions as `node${Version}`]: `node${Version}`;
+};
+
+export type AwsNodeMatcher = AwsNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24 | 26>;
+
+export type AzureNodeMatcher = AzureNodeProviderRuntimeMatcher<12 | 14 | 16 | 18>;
+
+export type GoogleNodeMatcher = GoogleNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22 | 24>;
+
+export type ScalewayNodeMatcher = ScalewayNodeProviderRuntimeMatcher<12 | 14 | 16 | 18 | 20 | 22>;
+
+export type NodeMatcher = AwsNodeMatcher & AzureNodeMatcher & GoogleNodeMatcher & ScalewayNodeMatcher;
+
+export type AwsNodeMatcherKey = keyof AwsNodeMatcher;
+
+export type AzureNodeMatcherKey = keyof AzureNodeMatcher;
+
+export type GoogleNodeMatcherKey = keyof GoogleNodeMatcher;
+
+export type ScalewayNodeMatcherKey = keyof ScalewayNodeMatcher;
+
+export type NodeMatcherKey = AwsNodeMatcherKey | AzureNodeMatcherKey | GoogleNodeMatcherKey | ScalewayNodeMatcherKey;
+
+const awsNodeMatcher: AwsNodeMatcher = {
+  'nodejs26.x': 'node26',
+  'nodejs24.x': 'node24',
+  'nodejs22.x': 'node22',
+  'nodejs20.x': 'node20',
+  'nodejs18.x': 'node18',
+  'nodejs16.x': 'node16',
+  'nodejs14.x': 'node14',
+  'nodejs12.x': 'node12',
+};
+
+const azureNodeMatcher: AzureNodeMatcher = {
+  nodejs18: 'node18',
+  nodejs16: 'node16',
+  nodejs14: 'node14',
+  nodejs12: 'node12',
+};
+
+const googleNodeMatcher: GoogleNodeMatcher = {
+  nodejs24: 'node24',
+  nodejs22: 'node22',
+  nodejs20: 'node20',
+  nodejs18: 'node18',
+  nodejs16: 'node16',
+  nodejs14: 'node14',
+  nodejs12: 'node12',
+};
+
+const scalewayNodeMatcher: ScalewayNodeMatcher = {
+  node22: 'node22',
+  node20: 'node20',
+  node18: 'node18',
+  node16: 'node16',
+  node14: 'node14',
+  node12: 'node12',
+};
+
+const nodeMatcher: NodeMatcher = {
+  ...googleNodeMatcher,
+  ...awsNodeMatcher,
+  ...azureNodeMatcher,
+  ...scalewayNodeMatcher,
+};
+
+export const providerRuntimeMatcher = Object.freeze<Record<string, NodeMatcher>>({
+  aws: awsNodeMatcher as NodeMatcher,
+  azure: azureNodeMatcher as NodeMatcher,
+  google: googleNodeMatcher as NodeMatcher,
+  scaleway: scalewayNodeMatcher as NodeMatcher,
 });
 
+export const isNodeMatcherKey = (input: unknown): input is NodeMatcherKey =>
+  typeof input === 'string' && Object.keys(nodeMatcher).includes(input);
+
+export function assertIsSupportedRuntime(input: unknown): asserts input is NodeMatcherKey {
+  if (!isNodeMatcherKey(input)) {
+    throw new AssertionError({ actual: input, message: 'not a supported runtime' });
+  }
+}
+
 export const buildServerlessV3LoggerFromLegacyLogger = (
-  legacyLogger: (text: string) => void,
+  legacyLogger: Serverless['cli'],
   verbose?: boolean
 ): ServerlessPlugin.Logging['log'] => ({
-  error: legacyLogger,
-  warning: legacyLogger,
-  notice: legacyLogger,
-  info: legacyLogger,
-  debug: verbose ? legacyLogger : () => null,
-  verbose: legacyLogger,
-  success: legacyLogger,
+  error: legacyLogger.log.bind(legacyLogger),
+  warning: legacyLogger.log.bind(legacyLogger),
+  notice: legacyLogger.log.bind(legacyLogger),
+  info: legacyLogger.log.bind(legacyLogger),
+  debug: verbose ? legacyLogger.log.bind(legacyLogger) : () => null,
+  verbose: legacyLogger.log.bind(legacyLogger),
+  success: legacyLogger.log.bind(legacyLogger),
 });
+
+export const stripEntryResolveExtensions = (file: IFile, extensions: string[]): IFile => {
+  const resolveExtensionMatch = file.localPath.match(extensions.map((ext) => ext).join('|'));
+
+  if (resolveExtensionMatch?.length && !DEFAULT_EXTENSIONS.includes(resolveExtensionMatch[0])) {
+    const extensionParts = resolveExtensionMatch[0].split('.');
+
+    return {
+      ...file,
+      localPath: file.localPath.replace(resolveExtensionMatch[0], `.${extensionParts[extensionParts.length - 1]}`),
+    };
+  }
+
+  return file;
+};

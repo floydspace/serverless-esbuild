@@ -1,64 +1,66 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`individually 1`] = `
-"var l=Object.create;var n=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var r=e=>n(e,\\"__esModule\\",{value:!0}),u=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var p=(e,s)=>{r(e);for(var o in s)n(e,o,{get:s[o],enumerable:!0})},y=(e,s,o)=>{if(s&&typeof s==\\"object\\"||typeof s==\\"function\\")for(let t of d(s))!m.call(e,t)&&t!==\\"default\\"&&n(e,t,{get:()=>s[t],enumerable:!(o=a(s,t))||o.enumerable});return e},g=e=>y(r(n(e!=null?l(f(e)):{},\\"default\\",e&&e.__esModule&&\\"default\\"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);p(exports,{handler:()=>x});var c=g(require(\\"lodash\\"));async function x(e,s,o){console.log(c.VERSION),await new Promise(i=>setTimeout(i,500));let t={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};o(null,t)}u(x,\\"handler\\");0&&(module.exports={handler});
+""use strict";var c=Object.create;var r=Object.defineProperty;var a=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var u=(n,o)=>r(n,"name",{value:o,configurable:!0});var w=(n,o)=>{for(var e in o)r(n,e,{get:o[e],enumerable:!0})},l=(n,o,e,t)=>{if(o&&typeof o=="object"||typeof o=="function")for(let s of d(o))!m.call(n,s)&&s!==e&&r(n,s,{get:()=>o[s],enumerable:!(t=a(o,s))||t.enumerable});return n};var p=(n,o,e)=>(e=n!=null?c(f(n)):{},l(o||!n||!n.__esModule?r(e,"default",{value:n,enumerable:!0}):e,n)),y=n=>l(r({},"__esModule",{value:!0}),n);var k={};w(k,{handler:()=>g});module.exports=y(k);var i=p(require("lodash"));async function g(n,o,e){console.log(i.VERSION),await new Promise(s=>setTimeout(s,500));let t={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:n})};e(null,t)}u(g,"handler");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 2`] = `
-"var n=Object.defineProperty;var i=e=>n(e,\\"__esModule\\",{value:!0}),o=(e,s)=>n(e,\\"name\\",{value:s,configurable:!0});var r=(e,s)=>{i(e);for(var t in s)n(e,t,{get:s[t],enumerable:!0})};r(exports,{handler:()=>a});async function a(e,s,t){await new Promise(c=>setTimeout(c,500));let u={statusCode:200,body:JSON.stringify({message:\\"Go Serverless v1.0! Your function executed successfully!\\",input:e})};t(null,u)}o(a,\\"handler\\");0&&(module.exports={handler});
+""use strict";var t=Object.defineProperty;var i=Object.getOwnPropertyDescriptor;var l=Object.getOwnPropertyNames;var c=Object.prototype.hasOwnProperty;var u=(e,n)=>t(e,"name",{value:n,configurable:!0});var a=(e,n)=>{for(var s in n)t(e,s,{get:n[s],enumerable:!0})},d=(e,n,s,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let o of l(n))!c.call(e,o)&&o!==s&&t(e,o,{get:()=>n[o],enumerable:!(r=i(n,o))||r.enumerable});return e};var w=e=>d(t({},"__esModule",{value:!0}),e);var y={};a(y,{handler:()=>f});module.exports=w(y);async function f(e,n,s){await new Promise(o=>setTimeout(o,500));let r={statusCode:200,body:JSON.stringify({message:"Go Serverless v1.0! Your function executed successfully!",input:e})};s(null,r)}u(f,"handler");0&&(module.exports={handler});
 "
 `;
 
 exports[`individually 3`] = `"2010-09-09"`;
 
-exports[`individually 4`] = `
-Object {
-  "Hello1LambdaFunctionQualifiedArn": Object {
+exports[`individually 4`] = `"The AWS CloudFormation template for this Serverless application"`;
+
+exports[`individually 5`] = `
+{
+  "Hello1LambdaFunctionQualifiedArn": {
     "Description": "Current Lambda function version",
-    "Export": Object {
+    "Export": {
       "Name": "sls-serverless-example-dev-Hello1LambdaFunctionQualifiedArn",
     },
-    "Value": Object {
-      "Ref": "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo",
+    "Value": {
+      "Ref": Any<String>,
     },
   },
-  "Hello2LambdaFunctionQualifiedArn": Object {
+  "Hello2LambdaFunctionQualifiedArn": {
     "Description": "Current Lambda function version",
-    "Export": Object {
+    "Export": {
       "Name": "sls-serverless-example-dev-Hello2LambdaFunctionQualifiedArn",
     },
-    "Value": Object {
-      "Ref": "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE",
+    "Value": {
+      "Ref": Any<String>,
     },
   },
-  "ServerlessDeploymentBucketName": Object {
-    "Export": Object {
+  "ServerlessDeploymentBucketName": {
+    "Export": {
       "Name": "sls-serverless-example-dev-ServerlessDeploymentBucketName",
     },
-    "Value": Object {
+    "Value": {
       "Ref": "ServerlessDeploymentBucket",
     },
   },
-  "ServiceEndpoint": Object {
+  "ServiceEndpoint": {
     "Description": "URL of the service endpoint",
-    "Export": Object {
+    "Export": {
       "Name": "sls-serverless-example-dev-ServiceEndpoint",
     },
-    "Value": Object {
-      "Fn::Join": Array [
+    "Value": {
+      "Fn::Join": [
         "",
-        Array [
+        [
           "https://",
-          Object {
+          {
             "Ref": "ApiGatewayRestApi",
           },
           ".execute-api.",
-          Object {
+          {
             "Ref": "AWS::Region",
           },
           ".",
-          Object {
+          {
             "Ref": "AWS::URLSuffix",
           },
           "/dev",
@@ -69,34 +71,80 @@ Object {
 }
 `;
 
-exports[`individually 5`] = `
-Object {
-  "ApiGatewayMethodHelloGet": Object {
-    "DependsOn": Array [
-      "Hello2LambdaPermissionApiGateway",
+exports[`individually 6`] = `
+{
+  "ApiGatewayMethodHello1Get": {
+    "DependsOn": [
+      "Hello1LambdaPermissionApiGateway",
     ],
-    "Properties": Object {
+    "Properties": {
       "ApiKeyRequired": false,
       "AuthorizationType": "NONE",
       "HttpMethod": "GET",
-      "Integration": Object {
+      "Integration": {
         "IntegrationHttpMethod": "POST",
         "Type": "AWS_PROXY",
-        "Uri": Object {
-          "Fn::Join": Array [
+        "Uri": {
+          "Fn::Join": [
             "",
-            Array [
+            [
               "arn:",
-              Object {
+              {
                 "Ref": "AWS::Partition",
               },
               ":apigateway:",
-              Object {
+              {
                 "Ref": "AWS::Region",
               },
               ":lambda:path/2015-03-31/functions/",
-              Object {
-                "Fn::GetAtt": Array [
+              {
+                "Fn::GetAtt": [
+                  "Hello1LambdaFunction",
+                  "Arn",
+                ],
+              },
+              "/invocations",
+            ],
+          ],
+        },
+      },
+      "MethodResponses": [],
+      "RequestParameters": {},
+      "ResourceId": {
+        "Ref": "ApiGatewayResourceHello1",
+      },
+      "RestApiId": {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Method",
+  },
+  "ApiGatewayMethodHello2Get": {
+    "DependsOn": [
+      "Hello2LambdaPermissionApiGateway",
+    ],
+    "Properties": {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "HttpMethod": "GET",
+      "Integration": {
+        "IntegrationHttpMethod": "POST",
+        "Type": "AWS_PROXY",
+        "Uri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
                   "Hello2LambdaFunction",
                   "Arn",
                 ],
@@ -106,36 +154,51 @@ Object {
           ],
         },
       },
-      "MethodResponses": Array [],
-      "RequestParameters": Object {},
-      "ResourceId": Object {
-        "Ref": "ApiGatewayResourceHello",
+      "MethodResponses": [],
+      "RequestParameters": {},
+      "ResourceId": {
+        "Ref": "ApiGatewayResourceHello2",
       },
-      "RestApiId": Object {
+      "RestApiId": {
         "Ref": "ApiGatewayRestApi",
       },
     },
     "Type": "AWS::ApiGateway::Method",
   },
-  "ApiGatewayResourceHello": Object {
-    "Properties": Object {
-      "ParentId": Object {
-        "Fn::GetAtt": Array [
+  "ApiGatewayResourceHello1": {
+    "Properties": {
+      "ParentId": {
+        "Fn::GetAtt": [
           "ApiGatewayRestApi",
           "RootResourceId",
         ],
       },
-      "PathPart": "hello",
-      "RestApiId": Object {
+      "PathPart": "hello1",
+      "RestApiId": {
         "Ref": "ApiGatewayRestApi",
       },
     },
     "Type": "AWS::ApiGateway::Resource",
   },
-  "ApiGatewayRestApi": Object {
-    "Properties": Object {
-      "EndpointConfiguration": Object {
-        "Types": Array [
+  "ApiGatewayResourceHello2": {
+    "Properties": {
+      "ParentId": {
+        "Fn::GetAtt": [
+          "ApiGatewayRestApi",
+          "RootResourceId",
+        ],
+      },
+      "PathPart": "hello2",
+      "RestApiId": {
+        "Ref": "ApiGatewayRestApi",
+      },
+    },
+    "Type": "AWS::ApiGateway::Resource",
+  },
+  "ApiGatewayRestApi": {
+    "Properties": {
+      "EndpointConfiguration": {
+        "Types": [
           "EDGE",
         ],
       },
@@ -144,13 +207,13 @@ Object {
     },
     "Type": "AWS::ApiGateway::RestApi",
   },
-  "Hello1LambdaFunction": Object {
-    "DependsOn": Array [
+  "Hello1LambdaFunction": {
+    "DependsOn": [
       "Hello1LogGroup",
     ],
-    "Properties": Object {
-      "Code": Object {
-        "S3Bucket": Object {
+    "Properties": {
+      "Code": {
+        "S3Bucket": {
           "Ref": "ServerlessDeploymentBucket",
         },
         "S3Key": StringContaining "hello1.zip",
@@ -158,45 +221,45 @@ Object {
       "FunctionName": "serverless-example-dev-hello1",
       "Handler": "hello1.handler",
       "MemorySize": 1024,
-      "Role": Object {
-        "Fn::GetAtt": Array [
+      "Role": {
+        "Fn::GetAtt": [
           "IamRoleLambdaExecution",
           "Arn",
         ],
       },
-      "Runtime": "nodejs12.x",
+      "Runtime": "nodejs18.x",
       "Timeout": 6,
     },
     "Type": "AWS::Lambda::Function",
   },
-  "Hello1LambdaPermissionApiGateway": Object {
-    "Properties": Object {
+  "Hello1LambdaPermissionApiGateway": {
+    "Properties": {
       "Action": "lambda:InvokeFunction",
-      "FunctionName": Object {
-        "Fn::GetAtt": Array [
+      "FunctionName": {
+        "Fn::GetAtt": [
           "Hello1LambdaFunction",
           "Arn",
         ],
       },
       "Principal": "apigateway.amazonaws.com",
-      "SourceArn": Object {
-        "Fn::Join": Array [
+      "SourceArn": {
+        "Fn::Join": [
           "",
-          Array [
+          [
             "arn:",
-            Object {
+            {
               "Ref": "AWS::Partition",
             },
             ":execute-api:",
-            Object {
+            {
               "Ref": "AWS::Region",
             },
             ":",
-            Object {
+            {
               "Ref": "AWS::AccountId",
             },
             ":",
-            Object {
+            {
               "Ref": "ApiGatewayRestApi",
             },
             "/*/*",
@@ -206,29 +269,19 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello1LambdaVersionRov7i9fIwcn3AXADkyUVGUVL7O5AeThTAlrxWsLjsEo": Object {
-    "DeletionPolicy": "Retain",
-    "Properties": Object {
-      "CodeSha256": "zvn3/B4BtuYoEDUiWabnbK+IBitTWrDVHjhmVsdilTk=",
-      "FunctionName": Object {
-        "Ref": "Hello1LambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
-  "Hello1LogGroup": Object {
-    "Properties": Object {
+  "Hello1LogGroup": {
+    "Properties": {
       "LogGroupName": "/aws/lambda/serverless-example-dev-hello1",
     },
     "Type": "AWS::Logs::LogGroup",
   },
-  "Hello2LambdaFunction": Object {
-    "DependsOn": Array [
+  "Hello2LambdaFunction": {
+    "DependsOn": [
       "Hello2LogGroup",
     ],
-    "Properties": Object {
-      "Code": Object {
-        "S3Bucket": Object {
+    "Properties": {
+      "Code": {
+        "S3Bucket": {
           "Ref": "ServerlessDeploymentBucket",
         },
         "S3Key": StringContaining "hello2.zip",
@@ -236,45 +289,45 @@ Object {
       "FunctionName": "serverless-example-dev-hello2",
       "Handler": "hello2.handler",
       "MemorySize": 1024,
-      "Role": Object {
-        "Fn::GetAtt": Array [
+      "Role": {
+        "Fn::GetAtt": [
           "IamRoleLambdaExecution",
           "Arn",
         ],
       },
-      "Runtime": "nodejs12.x",
+      "Runtime": "nodejs18.x",
       "Timeout": 6,
     },
     "Type": "AWS::Lambda::Function",
   },
-  "Hello2LambdaPermissionApiGateway": Object {
-    "Properties": Object {
+  "Hello2LambdaPermissionApiGateway": {
+    "Properties": {
       "Action": "lambda:InvokeFunction",
-      "FunctionName": Object {
-        "Fn::GetAtt": Array [
+      "FunctionName": {
+        "Fn::GetAtt": [
           "Hello2LambdaFunction",
           "Arn",
         ],
       },
       "Principal": "apigateway.amazonaws.com",
-      "SourceArn": Object {
-        "Fn::Join": Array [
+      "SourceArn": {
+        "Fn::Join": [
           "",
-          Array [
+          [
             "arn:",
-            Object {
+            {
               "Ref": "AWS::Partition",
             },
             ":execute-api:",
-            Object {
+            {
               "Ref": "AWS::Region",
             },
             ":",
-            Object {
+            {
               "Ref": "AWS::AccountId",
             },
             ":",
-            Object {
+            {
               "Ref": "ApiGatewayRestApi",
             },
             "/*/*",
@@ -284,33 +337,23 @@ Object {
     },
     "Type": "AWS::Lambda::Permission",
   },
-  "Hello2LambdaVersion3Oj08lv37eh2o6tSuQ1RBHFHv928o5VNv2ag0rSE": Object {
-    "DeletionPolicy": "Retain",
-    "Properties": Object {
-      "CodeSha256": "JATk1Y3OqG7tx8Vw+NlNrcgBqJZWAj6nJHJV5y4MarE=",
-      "FunctionName": Object {
-        "Ref": "Hello2LambdaFunction",
-      },
-    },
-    "Type": "AWS::Lambda::Version",
-  },
-  "Hello2LogGroup": Object {
-    "Properties": Object {
+  "Hello2LogGroup": {
+    "Properties": {
       "LogGroupName": "/aws/lambda/serverless-example-dev-hello2",
     },
     "Type": "AWS::Logs::LogGroup",
   },
-  "IamRoleLambdaExecution": Object {
-    "Properties": Object {
-      "AssumeRolePolicyDocument": Object {
-        "Statement": Array [
-          Object {
-            "Action": Array [
+  "IamRoleLambdaExecution": {
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Statement": [
+          {
+            "Action": [
               "sts:AssumeRole",
             ],
             "Effect": "Allow",
-            "Principal": Object {
-              "Service": Array [
+            "Principal": {
+              "Service": [
                 "lambda.amazonaws.com",
               ],
             },
@@ -319,29 +362,30 @@ Object {
         "Version": "2012-10-17",
       },
       "Path": "/",
-      "Policies": Array [
-        Object {
-          "PolicyDocument": Object {
-            "Statement": Array [
-              Object {
-                "Action": Array [
+      "Policies": [
+        {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
                   "logs:CreateLogStream",
                   "logs:CreateLogGroup",
+                  "logs:TagResource",
                 ],
                 "Effect": "Allow",
-                "Resource": Array [
-                  Object {
+                "Resource": [
+                  {
                     "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/serverless-example-dev*:*",
                   },
                 ],
               },
-              Object {
-                "Action": Array [
+              {
+                "Action": [
                   "logs:PutLogEvents",
                 ],
                 "Effect": "Allow",
-                "Resource": Array [
-                  Object {
+                "Resource": [
+                  {
                     "Fn::Sub": "arn:\${AWS::Partition}:logs:\${AWS::Region}:\${AWS::AccountId}:log-group:/aws/lambda/serverless-example-dev*:*:*",
                   },
                 ],
@@ -349,10 +393,10 @@ Object {
             ],
             "Version": "2012-10-17",
           },
-          "PolicyName": Object {
-            "Fn::Join": Array [
+          "PolicyName": {
+            "Fn::Join": [
               "-",
-              Array [
+              [
                 "serverless-example",
                 "dev",
                 "lambda",
@@ -361,13 +405,13 @@ Object {
           },
         },
       ],
-      "RoleName": Object {
-        "Fn::Join": Array [
+      "RoleName": {
+        "Fn::Join": [
           "-",
-          Array [
+          [
             "serverless-example",
             "dev",
-            Object {
+            {
               "Ref": "AWS::Region",
             },
             "lambdaRole",
@@ -377,12 +421,12 @@ Object {
     },
     "Type": "AWS::IAM::Role",
   },
-  "ServerlessDeploymentBucket": Object {
-    "Properties": Object {
-      "BucketEncryption": Object {
-        "ServerSideEncryptionConfiguration": Array [
-          Object {
-            "ServerSideEncryptionByDefault": Object {
+  "ServerlessDeploymentBucket": {
+    "Properties": {
+      "BucketEncryption": {
+        "ServerSideEncryptionConfiguration": [
+          {
+            "ServerSideEncryptionByDefault": {
               "SSEAlgorithm": "AES256",
             },
           },
@@ -391,49 +435,49 @@ Object {
     },
     "Type": "AWS::S3::Bucket",
   },
-  "ServerlessDeploymentBucketPolicy": Object {
-    "Properties": Object {
-      "Bucket": Object {
+  "ServerlessDeploymentBucketPolicy": {
+    "Properties": {
+      "Bucket": {
         "Ref": "ServerlessDeploymentBucket",
       },
-      "PolicyDocument": Object {
-        "Statement": Array [
-          Object {
+      "PolicyDocument": {
+        "Statement": [
+          {
             "Action": "s3:*",
-            "Condition": Object {
-              "Bool": Object {
+            "Condition": {
+              "Bool": {
                 "aws:SecureTransport": false,
               },
             },
             "Effect": "Deny",
             "Principal": "*",
-            "Resource": Array [
-              Object {
-                "Fn::Join": Array [
+            "Resource": [
+              {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:",
-                    Object {
+                    {
                       "Ref": "AWS::Partition",
                     },
                     ":s3:::",
-                    Object {
+                    {
                       "Ref": "ServerlessDeploymentBucket",
                     },
                     "/*",
                   ],
                 ],
               },
-              Object {
-                "Fn::Join": Array [
+              {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:",
-                    Object {
+                    {
                       "Ref": "AWS::Partition",
                     },
                     ":s3:::",
-                    Object {
+                    {
                       "Ref": "ServerlessDeploymentBucket",
                     },
                   ],
@@ -449,18 +493,44 @@ Object {
 }
 `;
 
-exports[`individually 6`] = `
-Object {
-  "DependsOn": Array [
-    "ApiGatewayMethodHelloGet",
-    "ApiGatewayMethodHelloGet",
+exports[`individually 7`] = `
+{
+  "DependsOn": [
+    "ApiGatewayMethodHello1Get",
+    "ApiGatewayMethodHello2Get",
   ],
-  "Properties": Object {
-    "RestApiId": Object {
+  "Properties": {
+    "RestApiId": {
       "Ref": "ApiGatewayRestApi",
     },
     "StageName": "dev",
   },
   "Type": "AWS::ApiGateway::Deployment",
+}
+`;
+
+exports[`individually 8`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "Hello1LambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
+}
+`;
+
+exports[`individually 9`] = `
+{
+  "DeletionPolicy": "Retain",
+  "Properties": {
+    "CodeSha256": Any<String>,
+    "FunctionName": {
+      "Ref": "Hello2LambdaFunction",
+    },
+  },
+  "Type": "AWS::Lambda::Version",
 }
 `;

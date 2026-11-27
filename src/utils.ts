@@ -1,11 +1,12 @@
-import { bestzip } from 'bestzip';
 import archiver from 'archiver';
-import childProcess from 'child_process';
+import { bestzip } from 'bestzip';
+import * as Cause from 'effect/Cause';
+import * as Effect from 'effect/Effect';
+import execa from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
-import os from 'os';
-import { join } from 'ramda';
-import { IFiles } from './types';
+import type { ESMPluginsModule, IFiles } from './types';
+import { FsUtils } from './utils/effect-fs';
 
 export class SpawnError extends Error {
   constructor(message: string, public stdout: string, public stderr: string) {
@@ -25,152 +26,118 @@ export class SpawnError extends Error {
  * @param {string[]} [args] - Arguments
  * @param {Object} [options] - Options for child_process.spawn
  */
-export function spawnProcess(
-  command: string,
-  args: string[],
-  options: childProcess.SpawnOptionsWithoutStdio
-) {
-  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-    const child = childProcess.spawn(command, args, options);
-    let stdout = '';
-    let stderr = '';
-    // Configure stream encodings
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    // Listen to stream events
-    child.stdout.on('data', (data) => {
-      stdout += data;
-    });
-    child.stderr.on('data', (data) => {
-      stderr += data;
-    });
-    child.on('error', (err) => {
-      reject(err);
-    });
-    child.on('close', (exitCode) => {
-      if (exitCode !== 0) {
-        reject(
-          new SpawnError(
-            `${command} ${join(' ', args)} failed with code ${exitCode}`,
-            stdout,
-            stderr
-          )
-        );
-      } else {
-        resolve({ stdout, stderr });
-      }
-    });
-  });
+export function spawnProcess(command: string, args: string[], options: execa.Options) {
+  return execa(command, args, options);
 }
+
+const rootOf = (p: string) => path.parse(path.resolve(p)).root;
+const isPathRoot = (p: string) => rootOf(p) === path.resolve(p);
+const findUpEffect = (
+  names: string[],
+  directory = process.cwd()
+): Effect.Effect<string, Cause.NoSuchElementError, FsUtils> =>
+  Effect.gen(function* () {
+    const fsUtils = yield* FsUtils;
+    let current = path.resolve(directory);
+    while (true) {
+      const dir = current;
+      if (yield* fsUtils.anyExists(names.map((name) => path.join(dir, name)))) return dir;
+      if (isPathRoot(dir)) return yield* Effect.fail(new Cause.NoSuchElementError());
+      current = path.dirname(dir);
+    }
+  });
 
 /**
  * Find a file by walking up parent directories
  */
-export function findUp(
-  names: string | string[],
-  directory: string = process.cwd()
-): string | undefined {
-  const absoluteDirectory = path.resolve(directory);
-
-  if (typeof names === 'string') {
-    names = [names];
-  }
-
-  /* For vs. .forEach so it can exit when we get a hit. */
-  for (const name of names) {
-    if (fs.existsSync(path.join(directory, name))) {
-      return directory;
-    }
-  }
-
-  const { root } = path.parse(absoluteDirectory);
-  if (absoluteDirectory === root) {
-    return undefined;
-  }
-
-  return findUp(names, path.dirname(absoluteDirectory));
-}
+export const findUp = (name: string) =>
+  findUpEffect([name]).pipe(
+    Effect.orElseSucceed(() => undefined),
+    Effect.provide(FsUtils.layerSync),
+    Effect.runSync
+  );
 
 /**
  * Forwards `rootDir` or finds project root folder.
  */
-export function findProjectRoot(rootDir?: string): string | undefined {
-  return rootDir ?? findUp(['yarn.lock', 'package-lock.json']);
-}
-
-export const humanSize = (size: number) => {
-  const i = Math.floor(Math.log(size) / Math.log(1024));
-  const sanitized = (size / Math.pow(1024, i)).toFixed(2);
-  return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][i]}`;
-};
-
-export const zip = async (
-  zipPath: string,
-  filesPathList: IFiles,
-  useNativeZip = false
-): Promise<void> => {
-  // create a temporary directory to hold the final zip structure
-  const tempDirName = `${path.basename(zipPath).slice(0, -4)}-${Date.now().toString()}`;
-  const tempDirPath = path.join(os.tmpdir(), tempDirName);
-  fs.mkdirpSync(tempDirPath);
-
-  // copy all required files from origin path to (sometimes modified) target path
-  await Promise.all(
-    filesPathList.map((file) => fs.copy(file.rootPath, path.join(tempDirPath, file.localPath)))
+export const findProjectRoot = (rootDir?: string) =>
+  Effect.fromNullishOr(rootDir).pipe(
+    Effect.catch(() => findUpEffect(['yarn.lock', 'pnpm-lock.yaml', 'package-lock.json'])),
+    Effect.orElseSucceed(() => undefined),
+    Effect.provide(FsUtils.layerSync),
+    Effect.runSync
   );
 
-  // prepare zip folder
-  fs.mkdirpSync(path.dirname(zipPath));
+export const humanSize = (size: number) => {
+  const exponent = Math.floor(Math.log(size) / Math.log(1024));
+  const sanitized = (size / 1024 ** exponent).toFixed(2);
 
-  if (useNativeZip) {
-    // zip the temporary directory
-    await bestzip({
-      source: '*',
-      destination: zipPath,
-      cwd: tempDirPath,
-    });
-
-    // delete the temporary folder
-    fs.removeSync(tempDirPath);
-  } else {
-    const zip = archiver.create('zip');
-    const output = fs.createWriteStream(zipPath);
-
-    // write zip
-    output.on('open', () => {
-      zip.pipe(output);
-
-      filesPathList.forEach((file) => {
-        const stats = fs.statSync(file.rootPath);
-        if (stats.isDirectory()) return;
-
-        zip.append(fs.readFileSync(file.rootPath), {
-          name: file.localPath,
-          mode: stats.mode,
-          date: new Date(0), // necessary to get the same hash when zipping the same content
-        });
-      });
-
-      zip.finalize();
-    });
-
-    return new Promise((resolve, reject) => {
-      output.on('close', () => {
-        // delete the temporary folder
-        fs.removeSync(tempDirPath);
-
-        resolve();
-      });
-      zip.on('error', (err) => reject(err));
-    });
-  }
+  return `${sanitized} ${['B', 'KB', 'MB', 'GB', 'TB'][exponent]}`;
 };
+
+export const zip = async (zipPath: string, filesPathList: IFiles, useNativeZip = false): Promise<void> => {
+  // create a temporary directory to hold the final zip structure
+  const baseName = path.basename(zipPath, path.extname(zipPath));
+
+  const archiveEffect = Effect.gen(function* () {
+    const fsUtils = yield* FsUtils;
+    const temp = yield* fsUtils.makeTempDirectoryScoped(`${baseName}-`);
+
+    // copy all required files from origin path to (sometimes modified) target path
+    yield* Effect.all(
+      filesPathList.map((file) => fsUtils.copy(file.rootPath, path.join(temp, file.localPath))),
+      { discard: true }
+    );
+    // prepare zip folder
+    yield* fsUtils.makePath(path.dirname(zipPath));
+    // zip the temporary directory
+    yield* Effect.tryPromise(() =>
+      useNativeZip ? bestzip({ source: '*', destination: zipPath, cwd: temp }) : nodeZip(zipPath, filesPathList)
+    );
+  }).pipe(Effect.scoped);
+
+  await archiveEffect.pipe(Effect.provide(FsUtils.layer), Effect.runPromise);
+};
+
+function nodeZip(zipPath: string, filesPathList: IFiles): Promise<void> {
+  const zipArchive = archiver.create('zip');
+  const output = fs.createWriteStream(zipPath);
+
+  // write zip
+  output.on('open', () => {
+    zipArchive.pipe(output);
+
+    filesPathList.forEach((file) => {
+      const stats = fs.statSync(file.rootPath);
+      if (stats.isDirectory()) return;
+
+      zipArchive.append(fs.readFileSync(file.rootPath), {
+        name: file.localPath,
+        mode: stats.mode,
+        date: new Date(0), // necessary to get the same hash when zipping the same content
+      });
+    });
+
+    zipArchive.finalize();
+  });
+
+  return new Promise((resolve, reject) => {
+    output.on('close', resolve);
+    zipArchive.on('error', (err) => reject(err));
+  });
+}
 
 export function trimExtension(entry: string) {
   return entry.slice(0, -path.extname(entry).length);
 }
 
 export const isEmpty = (obj: Record<string, unknown>) => {
+  // eslint-disable-next-line no-unreachable-loop
   for (const _i in obj) return false;
+
   return true;
+};
+
+export const isESMModule = (obj: unknown): obj is ESMPluginsModule => {
+  return typeof obj === 'object' && obj !== null && 'default' in obj;
 };
