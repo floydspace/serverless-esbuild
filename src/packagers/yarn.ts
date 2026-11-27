@@ -1,6 +1,6 @@
 import * as Predicate from 'effect/Predicate';
 import { any, isEmpty, reduce, replace, split, startsWith } from 'ramda';
-import { satisfies, valid as isValidSemver } from 'semver';
+import { satisfies, valid as isValidSemver, validRange as isValidSemverRange } from 'semver';
 
 import type { DependenciesResult, DependencyMap, PackagerOptions } from '../types';
 import { SpawnError, spawnProcess } from '../utils';
@@ -39,7 +39,7 @@ const getNameAndVersion = (name: string): { name: string; version: string } => {
   }
 
   // Everything after the name is the version (separated by a single '@'):
-  const versionStartIndex = (packageNameMatch?.index || 0) + packageNameMatch[0].length + 1;
+  const versionStartIndex = packageNameMatch[0].length + 1;
 
   return {
     name: packageNameMatch[0],
@@ -150,10 +150,13 @@ export class Yarn implements Packager {
 
         if (tree.shadow) {
           // Package is resolved somewhere else
-          // If either version is not valid semver, we can't compare, so include the package by default. For e.g. 'github:' references where semver doesn't apply.
+          // Shadow versions are usually ranges (e.g. '^1.0.0'), which are compared against the root version.
+          // Only when a version can't be compared (e.g. 'git+ssh://' or 'github:' references) include the package by default.
           if (
             dependency &&
-            (satisfies(dependency.version, version) || !isValidSemver(dependency.version) || !isValidSemver(version))
+            (!isValidSemver(dependency.version) ||
+              !isValidSemverRange(version) ||
+              satisfies(dependency.version, version))
           ) {
             // Package is at root level
             // {
