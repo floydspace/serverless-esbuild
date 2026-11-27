@@ -167,6 +167,61 @@ describe('pack', () => {
     });
   });
 
+  describe('default excluded files', () => {
+    function createPlugin(individually: boolean, patterns: string[]): EsbuildServerlessPlugin {
+      return {
+        buildResults: [
+          {
+            bundlePath: 'hello1.js',
+            functionAlias: 'hello1',
+            func: { handler: 'hello1.handler', events: [], package: {} },
+          },
+        ],
+        serverless: {
+          service: { service: 'testApp', package: { individually, patterns } },
+          cli: mockCli,
+          getVersion: vi.fn().mockReturnValue('3.28.1'),
+        },
+        buildOptions: {
+          packager: 'yarn',
+          exclude: ['aws-sdk'],
+          external: [],
+          nativeZip: false,
+          zipConcurrency: Infinity,
+        },
+        buildDirPath: '/workdir/.esbuild/.build',
+        workDirPath: '/workdir/.esbuild',
+        serviceDirPath: '/workdir',
+        log: { debug: vi.fn(), verbose: vi.fn() },
+      } as unknown as EsbuildServerlessPlugin;
+    }
+
+    it.each([true, false])(
+      'should exclude lockfiles and package.json by default (individually: %s)',
+      async (individually) => {
+        vi.mocked(globby).sync.mockReturnValue(['hello1.js', 'package.json', 'yarn.lock']);
+        const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+        await pack.call(createPlugin(individually, []));
+
+        expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual(['hello1.js']);
+      }
+    );
+
+    it.each([true, false])(
+      'should include files explicitly listed in package.patterns (individually: %s)',
+      async (individually) => {
+        vi.mocked(globby).sync.mockReturnValue(['hello1.js', 'package.json', 'yarn.lock']);
+        vi.mocked(globby).mockResolvedValue(['package.json']);
+        const zipSpy = vi.spyOn(utils, 'zip').mockResolvedValue();
+
+        await pack.call(createPlugin(individually, ['package.json']));
+
+        expect(zipSpy.mock.calls[0]?.[1].map(({ localPath }) => localPath)).toEqual(['hello1.js', 'package.json']);
+      }
+    );
+  });
+
   describe('individually', () => {
     it('should create zips with the functionAlias as the name', async () => {
       const buildResults: FunctionBuildResult[] = [

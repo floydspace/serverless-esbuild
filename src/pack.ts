@@ -106,6 +106,9 @@ export async function pack(this: EsbuildServerlessPlugin) {
   assertIsString(buildDirPath, 'buildDirPath is not a string');
   assertIsString(workDirPath, 'workDirPath is not a string');
 
+  // files explicitly requested via `package.patterns` win over the default exclusions
+  const packageFiles = await globby(this.serverless.service.package?.patterns ?? []);
+
   // get a list of all path in build
   const files: IFiles = globby
     .sync('**', {
@@ -113,7 +116,7 @@ export async function pack(this: EsbuildServerlessPlugin) {
       dot: true,
       onlyFiles: true,
     })
-    .filter((file) => !excludedFiles.includes(file))
+    .filter((file) => !excludedFiles.includes(file) || packageFiles.includes(file))
     .map((localPath) => ({ localPath, rootPath: path.join(buildDirPath, localPath) }))
     .map((file) => {
       if (this.buildOptions?.resolveExtensions && this.buildOptions.resolveExtensions.length > 0) {
@@ -182,8 +185,6 @@ export async function pack(this: EsbuildServerlessPlugin) {
 
   // get a tree of all production dependencies
   const packagerDependenciesList = hasExternals ? await packager.getProdDependencies(buildDirPath) : {};
-
-  const packageFiles = await globby(this.serverless.service.package.patterns);
 
   const zipMapper = async (buildResult: FunctionBuildResult) => {
     const { func, functionAlias, bundlePath } = buildResult;

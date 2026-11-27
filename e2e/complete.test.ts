@@ -14,6 +14,11 @@ test('complete', () => {
 
   expect(nodeModules).toEqual(expect.stringContaining('isin-validator'));
 
+  // package.json is excluded by default, but kept when listed in package.patterns
+  const packageJson = JSON.parse(fs.readFileSync(path.join(testArtifactPath, 'package.json')).toString());
+
+  expect(packageJson.name).toBe('complete');
+
   expect(cloudformation.AWSTemplateFormatVersion).toMatchSnapshot();
 
   expect(cloudformation.Description).toMatchSnapshot();
